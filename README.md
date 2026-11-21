@@ -1,44 +1,53 @@
 # FGRE — Fandaqah Group Reporting Engine
 
-Centralized group reporting for hotel chains (2+ properties), independent of the PMS each hotel runs
+Centralized group reporting for hotel chains (2+ properties), whichever PMS each hotel runs
 (Fandaqah, Nazeel, Opera, …).
 
-PMS reports (Manager Flash, Trial Balance, …) arrive as PDF by email or via MCP, are read and
-normalized by AI into structured data, stored in PostgreSQL, and presented as consolidated group
-reports and dashboards for owners.
+PMS reports (Manager Flash, trial balances) arrive by **email** (any mailbox) or from a PMS
+**MCP server**. Structured data is imported directly; PDFs are read by AI. Every figure is
+cross-checked before it is stored, and the group dashboard shows all hotels in one place, in
+Arabic and English.
 
-- Stack: Laravel 13 (PHP 8.4) + PostgreSQL
+- Stack: Laravel 13 (PHP 8.4), PostgreSQL, Inertia + Vue 3 + Tailwind 4
 - Branching: `main` (production) ← `staging` ← `feature/*`
-- Architecture: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · Brand: [docs/BRAND.md](docs/BRAND.md)
+- Docs: [Architecture](docs/ARCHITECTURE.md) · [Mailbox setup](docs/MAILBOX.md) · [MCP setup](docs/MCP.md) ·
+  [Brand](docs/BRAND.md) · [Fandaqah PMS reference](docs/fandaqah-pms-reference.md)
 
-## Local setup
+## Run locally
 
-Requirements: PHP 8.3+ (with `pdo_pgsql`, `pgsql`, `mbstring`, `intl`, `zip`, `curl`, `openssl`,
-`fileinfo`), Composer 2, PostgreSQL 15+.
+Requirements: PHP 8.3+ (`pdo_pgsql`, `pgsql`, `mbstring`, `intl`, `zip`, `curl`, `openssl`,
+`fileinfo`, `bcmath`), Composer 2, Node 20+, PostgreSQL 15+.
 
 ```bash
 composer install
-cp .env.example .env
-php artisan key:generate
-# create the database (e.g. `createdb fgre`), then set DB_* in .env
-php artisan migrate --seed
-php artisan test
+npm install && npm run build
+cp .env.example .env && php artisan key:generate
+# create the database (createdb fgre) and set DB_* in .env
+php artisan migrate --seed          # APP_ENV=local also seeds the demo groups
+php artisan serve                   # http://127.0.0.1:8000
 ```
 
-To process reports, set `ANTHROPIC_API_KEY` in `.env`, then:
+Demo logins (password `password`):
 
-```bash
-php artisan fgre:ingest-file path/to/report.pdf --from=sender@pms.example   # or enable the mailbox:
-# FGRE_INBOX_ENABLED=true + IMAP_* settings, then run the scheduler
-php artisan queue:work
-php artisan schedule:work
-```
+| Email | Sees |
+|---|---|
+| `owner@demo.example` | everything, in two groups (Al Noor Hospitality Group, Demo Hotel Group) |
+| `finance@demo.example` | dashboard, financials, review queue |
+| `viewer@demo.example` | dashboard for two hotels only, no financials |
 
-A property must exist with the sender in `allowed_sender_emails` before its reports are accepted.
+Al Noor Hospitality Group is generated demo data (5 hotels on 3 PMSs, Jan 2025 – Nov 2026). Demo
+Hotel Group holds the real Fandaqah sample reports from `docs/samples/`.
 
-## How a report flows
+To process real reports, also run `php artisan queue:work` and `php artisan schedule:work`, and set
+`ANTHROPIC_API_KEY` plus the mailbox settings in `.env`.
 
-`email / MCP` → `inbound_messages` → `report_documents` (PDF stored, sha256 dedup) →
-`ProcessReportDocument` job: AI extraction (`ClaudeReportExtractor`) → hotel matching
-(`PropertyMatcher`) → checks (`ExtractionValidator`) → canonical tables (`ReportDataWriter`), or the
-review queue if anything doesn't add up.
+## Useful commands
+
+| Command | What it does |
+|---|---|
+| `php artisan test` | Test suite (AI faked; Fandaqah JSON samples are real) |
+| `php artisan fgre:ingest-file path.pdf\|.json --from=sender@pms` | Ingest a report file by hand |
+| `php artisan fgre:mailbox-test` | Check the mailbox settings |
+| `php artisan fgre:mcp-test {id}` | List a PMS MCP server's tools |
+| `php artisan fgre:eval-samples` | AI accuracy on the sample PDFs vs ground truth (calls the API) |
+| `php artisan fgre:reprocess {id}` | Run a document through the pipeline again |

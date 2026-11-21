@@ -104,6 +104,7 @@ class ProcessReportDocument implements ShouldBeUnique, ShouldQueue
             fromEmail: $document->inboundMessage?->from_email,
             subject: $document->inboundMessage?->subject,
             filename: $document->original_filename,
+            propertyId: $document->inboundMessage?->property_id,
         );
 
         [$property, $reason] = $matcher->match($hints, $output['property_code'] ?? null, $output['property_name'] ?? null);

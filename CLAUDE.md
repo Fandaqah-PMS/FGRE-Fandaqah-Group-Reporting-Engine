@@ -28,5 +28,9 @@ first; Fandaqah PMS facts are in [docs/fandaqah-pms-reference.md](docs/fandaqah-
 - Ingest a file: `php artisan fgre:ingest-file path/to/report.pdf|.json --from=sender@pms.example`
 - Process the queue: `php artisan queue:work`
 - Mailbox: `php artisan fgre:mailbox-test`, `php artisan fgre:poll-inbox`
+- MCP: `php artisan fgre:mcp-test {id}`, `php artisan fgre:poll-mcp` (see docs/MCP.md)
+- Frontend: `npm run dev` / `npm run build` (Inertia + Vue 3 pages in resources/js/Pages; UI strings in lang/ar.json)
+- Demo data: `php artisan migrate:fresh --seed` with APP_ENV=local (logins in README)
+- Charts: series colours only from resources/js/lib/palette.js (validated); text never in series colours
 - Re-run a document: `php artisan fgre:reprocess {id}`
 - AI accuracy on samples (costs money): `php artisan fgre:eval-samples`

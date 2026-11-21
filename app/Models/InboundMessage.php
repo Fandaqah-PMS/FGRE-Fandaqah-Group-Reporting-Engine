@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class InboundMessage extends Model
 {
     protected $fillable = [
-        'source', 'external_id', 'from_email', 'subject', 'received_at',
+        'source', 'property_id', 'external_id', 'from_email', 'subject', 'received_at',
         'attachment_count', 'status', 'status_reason',
     ];
 

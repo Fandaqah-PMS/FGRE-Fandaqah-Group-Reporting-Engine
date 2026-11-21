@@ -8,6 +8,7 @@
     "require": {
         "php": "^8.3",
         "anthropic-ai/sdk": "^1.12",
+        "inertiajs/inertia-laravel": "^3.7",
         "laravel/framework": "^13.17",
         "laravel/tinker": "^3.0",
         "webklex/laravel-imap": "^6.2"

@@ -17,7 +17,7 @@ class DatabaseSeeder extends Seeder
         $this->call(PmsProviderSeeder::class);
 
         if (app()->environment('local')) {
-            $this->call(DemoGroupSeeder::class);
+            $this->call([DemoGroupSeeder::class, DemoDataSeeder::class]);
         }
     }
 }

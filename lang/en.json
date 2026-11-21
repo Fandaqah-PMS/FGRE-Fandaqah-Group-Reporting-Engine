@@ -1,0 +1,10 @@
+{
+    "api": "API",
+    "email": "Email",
+    "front_office_trial_balance": "Trial balance (front office)",
+    "manager_flash": "Manager Flash",
+    "mcp": "MCP",
+    "trial_balance": "Trial balance (GL)",
+    "unknown": "Unknown",
+    "upload": "Upload"
+}

@@ -14,7 +14,8 @@ class Property extends Model
 
     protected $fillable = [
         'group_id', 'pms_provider_id', 'name', 'name_ar', 'code', 'pms_property_ref', 'timezone',
-        'currency', 'total_rooms', 'allowed_sender_emails', 'aliases', 'is_active',
+        'night_audit_time', 'currency', 'total_rooms', 'allowed_sender_emails', 'aliases', 'is_active',
+        'mcp_connection_id', 'mcp_settings',
     ];
 
     protected function casts(): array
@@ -22,6 +23,7 @@ class Property extends Model
         return [
             'allowed_sender_emails' => 'array',
             'aliases' => 'array',
+            'mcp_settings' => 'array',
             'is_active' => 'boolean',
             'total_rooms' => 'integer',
         ];
@@ -30,6 +32,11 @@ class Property extends Model
     public function pmsProvider(): BelongsTo
     {
         return $this->belongsTo(PmsProvider::class);
+    }
+
+    public function mcpConnection(): BelongsTo
+    {
+        return $this->belongsTo(McpConnection::class);
     }
 
     public function reportDocuments(): HasMany

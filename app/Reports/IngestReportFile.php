@@ -18,9 +18,10 @@ class IngestReportFile
     /**
      * @return ReportDocument|null null when this exact file was already ingested
      */
-    public function __invoke(string $contents, ?string $filename, ?InboundMessage $message = null): ?ReportDocument
+    public function __invoke(string $contents, ?string $filename, ?InboundMessage $message = null, bool $allowText = false): ?ReportDocument
     {
-        $mime = $this->detectMime($contents);
+        // Plain text is accepted only from sources that return text by design (MCP tools).
+        $mime = $this->detectMime($contents) ?? ($allowText && trim($contents) !== '' ? 'text/plain' : null);
         if ($mime === null) {
             throw new InvalidArgumentException("File [{$filename}] is not a PDF or JSON report.");
         }
@@ -36,7 +37,7 @@ class IngestReportFile
         }
 
         $disk = config('fgre.storage.disk');
-        $extension = $mime === 'application/pdf' ? 'pdf' : 'json';
+        $extension = ['application/pdf' => 'pdf', 'application/json' => 'json', 'text/plain' => 'txt'][$mime];
         $path = sprintf('%s/%s/%s.%s', config('fgre.storage.path'), now()->format('Y/m'), $sha256, $extension);
         Storage::disk($disk)->put($path, $contents);
 

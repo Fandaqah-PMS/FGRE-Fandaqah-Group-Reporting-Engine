@@ -41,6 +41,11 @@ class PropertyMatcher
      */
     public function match(DocumentHints $hints, ?string $printedCode, ?string $printedName): array
     {
+        // Hotel-specific sources (MCP pulls) already know the hotel: only check the report agrees.
+        if ($hints->propertyId !== null) {
+            return $this->confirmKnown($hints->propertyId, $printedName);
+        }
+
         $candidates = $this->candidatesForSender($hints->fromEmail);
 
         if ($candidates->isEmpty()) {
@@ -103,6 +108,21 @@ class PropertyMatcher
             $hints->fromEmail,
             $printedName ?? $printedCode ?? 'no hotel name',
         )];
+    }
+
+    /** @return array{0: ?Property, 1: ?string} */
+    private function confirmKnown(int $propertyId, ?string $printedName): array
+    {
+        $property = Property::withoutGlobalScope(GroupScope::class)->where('is_active', true)->find($propertyId);
+        if ($property === null) {
+            return [null, "Hotel #{$propertyId} of this source is missing or inactive."];
+        }
+
+        if ($printedName !== null && ! collect($property->knownNames())->contains(fn (string $n) => $this->nameMatches($n, $printedName))) {
+            return [null, "Source is set up for [{$property->name}] but the report is for [{$printedName}]. Add it as an alias if correct."];
+        }
+
+        return [$property, null];
     }
 
     private function same(?string $a, ?string $b): bool

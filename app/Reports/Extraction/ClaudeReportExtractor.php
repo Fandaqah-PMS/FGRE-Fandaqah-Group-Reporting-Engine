@@ -23,6 +23,14 @@ class ClaudeReportExtractor implements ReportExtractor
 {
     public function __construct(private readonly Client $client) {}
 
+    /** PDFs go in as base64; text and JSON (e.g. from an MCP tool) as a plain-text document. */
+    private function source(ReportDocument $document): array
+    {
+        return $document->mime_type === 'application/pdf'
+            ? ['type' => 'base64', 'mediaType' => 'application/pdf', 'data' => base64_encode($document->contents())]
+            : ['type' => 'text', 'mediaType' => 'text/plain', 'data' => $document->contents()];
+    }
+
     public function extract(ReportDocument $document): ExtractionResult
     {
         $model = config('fgre.ai.model');
@@ -38,14 +46,7 @@ class ClaudeReportExtractor implements ReportExtractor
                 messages: [[
                     'role' => 'user',
                     'content' => [
-                        [
-                            'type' => 'document',
-                            'source' => [
-                                'type' => 'base64',
-                                'mediaType' => 'application/pdf',
-                                'data' => base64_encode($document->contents()),
-                            ],
-                        ],
+                        ['type' => 'document', 'source' => $this->source($document)],
                         ['type' => 'text', 'text' => ExtractionSchema::userInstruction()],
                     ],
                 ]],

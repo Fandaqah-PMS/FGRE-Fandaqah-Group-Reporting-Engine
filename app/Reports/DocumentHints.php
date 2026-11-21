@@ -16,6 +16,7 @@ final readonly class DocumentHints
         public ?string $fromEmail = null,
         public ?string $subject = null,
         public ?string $filename = null,
+        public ?int $propertyId = null,
     ) {}
 
     /** The single business date stated in subject / file name; null when none or ambiguous. */

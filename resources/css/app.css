@@ -34,3 +34,27 @@
 :lang(ar) {
     font-family: var(--font-arabic);
 }
+
+/* Brand top band (same gradient as the PMS dashboards). */
+.top-band {
+    background: linear-gradient(160deg, #2c354d 0%, #262e43 55%, #222a3d 100%);
+}
+
+/* A light take on the identity's dot pattern, in the pattern colours. */
+.pattern {
+    background-image:
+        radial-gradient(circle at 12px 12px, #f58985 7px, transparent 7.5px),
+        radial-gradient(circle at 36px 12px, #fcc5a9 7px, transparent 7.5px),
+        radial-gradient(circle at 12px 36px, #b8d7d9 7px, transparent 7.5px),
+        radial-gradient(circle at 36px 36px, #214f5f 7px, transparent 7.5px);
+    background-size: 48px 48px;
+}
+
+/* Numbers line up in tables and tiles. */
+.tabular {
+    font-variant-numeric: tabular-nums;
+}
+
+.card {
+    @apply rounded-2xl border border-line bg-white;
+}

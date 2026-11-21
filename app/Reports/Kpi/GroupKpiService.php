@@ -24,7 +24,7 @@ class GroupKpiService
         $date = is_string($date) ? $date : $date->toDateString();
         $propertyIds = collect($propertyIds)->values();
 
-        $properties = Property::forGroup($groupId)->whereIn('id', $propertyIds)->orderBy('name')->get();
+        $properties = Property::forGroup($groupId)->with('pmsProvider')->whereIn('id', $propertyIds)->orderBy('name')->get();
 
         $stats = DailyPropertyStat::forGroup($groupId)
             ->whereIn('property_id', $propertyIds)
@@ -38,7 +38,7 @@ class GroupKpiService
         foreach ($properties as $property) {
             $stat = $stats->get($property->id);
             if ($stat === null) {
-                $missing[] = ['id' => $property->id, 'name' => $property->name];
+                $missing[] = ['id' => $property->id, 'name' => $property->name, 'name_ar' => $property->name_ar];
 
                 continue;
             }
@@ -48,6 +48,7 @@ class GroupKpiService
                 'property_id' => $property->id,
                 'name' => $property->name,
                 'name_ar' => $property->name_ar,
+                'pms' => $property->pmsProvider?->name,
                 'is_provisional' => $stat->is_provisional,
                 'currency' => $stat->currency,
                 ...$parts,
@@ -60,6 +61,7 @@ class GroupKpiService
         return [
             'date' => $date,
             'period' => $period->value,
+            'currency' => $properties->first()?->currency ?? 'SAR',
             'hotels' => $hotels,
             'group' => [
                 'hotel_count' => count($hotels),
@@ -69,5 +71,58 @@ class GroupKpiService
             ],
             'missing' => $missing,
         ];
+    }
+
+    /**
+     * Daily KPIs over a date range, this year and the same days last year, for the given
+     * hotels summed together (one hotel = that hotel's trend).
+     *
+     * @param  Collection<int, int>|array<int>  $propertyIds
+     * @return list<array{date: string, occupancy_pct: ?string, adr: ?string, revpar: ?string, total_revenue: ?string, ly_occupancy_pct: ?string, ly_adr: ?string, ly_revpar: ?string, ly_total_revenue: ?string, hotels: int}>
+     */
+    public function trend(int $groupId, string $from, string $to, Collection|array $propertyIds): array
+    {
+        $rows = DailyPropertyStat::forGroup($groupId)
+            ->whereIn('property_id', collect($propertyIds)->values())
+            ->whereDate('business_date', '>=', $from)
+            ->whereDate('business_date', '<=', $to)
+            ->whereIn('period', [StatPeriod::Day->value, StatPeriod::DayLastYear->value])
+            ->get()
+            ->groupBy(fn (DailyPropertyStat $s) => $s->business_date->toDateString());
+
+        $series = [];
+        foreach ($rows->sortKeys() as $date => $stats) {
+            [$ty, $ly] = $stats->partition(fn (DailyPropertyStat $s) => $s->period === StatPeriod::Day);
+            $tyParts = KpiCalculator::sumParts($ty->values());
+            $lyParts = KpiCalculator::sumParts($ly->values());
+            $tyKpi = KpiCalculator::compute($tyParts);
+            $lyKpi = KpiCalculator::compute($lyParts);
+
+            $series[] = [
+                'date' => $date,
+                'occupancy_pct' => $tyKpi['occupancy_pct'],
+                'adr' => $tyKpi['adr'],
+                'revpar' => $tyKpi['revpar'],
+                'total_revenue' => $tyParts['total_revenue'],
+                'ly_occupancy_pct' => $lyKpi['occupancy_pct'],
+                'ly_adr' => $lyKpi['adr'],
+                'ly_revpar' => $lyKpi['revpar'],
+                'ly_total_revenue' => $lyParts['total_revenue'],
+                'hotels' => $ty->count(),
+            ];
+        }
+
+        return $series;
+    }
+
+    /** Latest business date with a day row for any of the hotels, or null. */
+    public function latestDate(int $groupId, Collection|array $propertyIds): ?string
+    {
+        $date = DailyPropertyStat::forGroup($groupId)
+            ->whereIn('property_id', collect($propertyIds)->values())
+            ->where('period', StatPeriod::Day->value)
+            ->max('business_date');
+
+        return $date === null ? null : substr((string) $date, 0, 10);
     }
 }

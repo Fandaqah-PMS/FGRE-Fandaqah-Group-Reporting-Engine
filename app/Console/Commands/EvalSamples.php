@@ -41,7 +41,7 @@ class EvalSamples extends Command
 
             $path = 'eval/'.basename($pdf);
             Storage::disk('local')->put($path, file_get_contents($pdf));
-            $document = new ReportDocument(['storage_disk' => 'local', 'storage_path' => $path]);
+            $document = new ReportDocument(['storage_disk' => 'local', 'storage_path' => $path, 'mime_type' => 'application/pdf']);
 
             try {
                 $result = $claude->extract($document);

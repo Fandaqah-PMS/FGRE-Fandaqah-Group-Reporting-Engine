@@ -42,6 +42,9 @@ new source (Nazeel API, Opera export, Fandaqah MCP) only needs a new extractor.
 | D8 | **FGRE has its own login.** "Sign in with Fandaqah" (Passport OAuth, already in the PMS) can be added later. | Nazeel / Opera hotels' users are not PMS users. |
 | D9 | **Provisional days are stored and flagged**, then replaced by the final report. | Fandaqah marks open days; dashboards show them as provisional. |
 | D10 | Money: `numeric(18,2)` + currency; KPI math in bcmath, rounded half away from zero once. | Same rule as the PMS (X-D08). |
+| D11 | **Email is the universal channel**: FGRE never needs a change or a token in any PMS. **MCP is optional**: any PMS with an MCP server is read through a generic client plus per-hotel tool settings ([MCP.md](MCP.md)). | FGRE targets many PMSs (decided 2026-11-21). |
+| D12 | **Frontend: Inertia + Vue 3 + Tailwind 4**, one Laravel app, Arabic (RTL, default) and English. Charts are hand-written SVG/HTML components, like the PMS dashboards. | The team already writes Vue; full control over brand and RTL. |
+| D13 | **Chart colours:** navy / coral for chrome; data series use the validated order teal `#00849B`, coral `#F15F5A`, violet `#7468D0` (all pairs pass colour-blind and contrast checks). Navy and grey are too dark / too grey to tell series apart. | Readable for everyone, still on brand. |
 
 ## 4. Report types
 
@@ -72,12 +75,11 @@ consolidate by account number directly. Other PMSs will need an account mapping 
 - `php artisan fgre:eval-samples`: sends the sample PDFs to Claude and compares the result with
   the JSON ground truth. Needs `ANTHROPIC_API_KEY`; costs a few cents per PDF.
 
-## 7. Open questions
+## 7. Open items
 
-1. How should Fandaqah trial balances reach FGRE? (a) the PMS emails FST-001 / FIN-040 after Night
-   Audit, like the flash; (b) a token-protected JSON endpoint (recommended: no AI, exact);
-   (c) manual upload in FGRE.
-2. Could the PMS add the hotel id (`teams.id`) to the flash subject and file name? It would make
+1. Trial balances arrive by email like every other report (D11). Fandaqah PMS does not email them
+   yet; hotels can schedule them once the PMS supports it, or send them by hand.
+2. Optional PMS improvement: the hotel id (`teams.id`) in the flash subject and file name would make
    matching exact.
-3. Frontend stack for the dashboard (to be decided).
-4. Nazeel and Opera sample PDFs (pending).
+3. Nazeel and Opera sample PDFs (pending): run `fgre:eval-samples` on them when they arrive.
+4. Admin screens for hotels, users, senders and MCP connections (seeded / database for now).
