@@ -7,19 +7,20 @@ use PHPUnit\Framework\TestCase;
 
 class KpiCalculatorTest extends TestCase
 {
-    public function test_headline_kpis_exclude_comp_house_and_out_of_order(): void
+    public function test_usali_kpis_exclude_comp_and_house_use_and_keep_out_of_order_available(): void
     {
         $kpi = KpiCalculator::compute([
             'total_rooms' => 100, 'ooo_rooms' => 4, 'rooms_occupied' => 80,
             'comp_rooms' => 3, 'house_use_rooms' => 1, 'room_revenue' => '38000.00', 'total_revenue' => '45000.00',
         ]);
 
-        $this->assertSame(96, $kpi['sellable_rooms']);
+        $this->assertSame(100, $kpi['sellable_rooms']);
         $this->assertSame(76, $kpi['paid_occupied']);
-        $this->assertSame('79.17', $kpi['occupancy_pct']);   // 76 / 96 = 79.1666
-        $this->assertSame('500.00', $kpi['adr']);            // 38000 / 76
-        $this->assertSame('395.83', $kpi['revpar']);         // 38000 / 96 = 395.8333
-        $this->assertSame('468.75', $kpi['trevpar']);        // 45000 / 96
+        $this->assertSame('76.00', $kpi['occupancy_pct']);           // 76 / 100
+        $this->assertSame('79.17', $kpi['occupancy_excl_ooo_pct']);  // 76 / 96
+        $this->assertSame('500.00', $kpi['adr']);                    // 38000 / 76
+        $this->assertSame('380.00', $kpi['revpar']);                 // 38000 / 100
+        $this->assertSame('450.00', $kpi['trevpar']);                // 45000 / 100
     }
 
     public function test_zero_denominators_give_null(): void

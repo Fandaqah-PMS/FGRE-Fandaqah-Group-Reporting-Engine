@@ -13,7 +13,7 @@ class Property extends Model
     use BelongsToCurrentGroup, SoftDeletes;
 
     protected $fillable = [
-        'group_id', 'pms_provider_id', 'name', 'name_ar', 'code', 'pms_property_ref', 'timezone',
+        'group_id', 'pms_provider_id', 'name', 'name_ar', 'code', 'region', 'pms_property_ref', 'timezone',
         'night_audit_time', 'currency', 'total_rooms', 'allowed_sender_emails', 'aliases', 'is_active',
         'mcp_connection_id', 'mcp_settings',
     ];

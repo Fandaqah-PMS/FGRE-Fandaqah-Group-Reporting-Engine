@@ -3,15 +3,17 @@
 namespace App\Reports\Kpi;
 
 /**
- * The only place FGRE computes hotel KPIs. Same definitions as Fandaqah PMS
- * (decision X-D13), applied to every PMS so hotels compare like for like:
+ * The only place FGRE computes hotel KPIs. USALI 11th edition definitions, applied to
+ * every PMS so hotels compare like for like:
  *
- *   sellable rooms  = total rooms - out of order
- *   paid occupied   = rooms occupied - complimentary - house use
- *   Occupancy %     = paid occupied / sellable rooms x 100
- *   ADR             = room revenue / paid occupied
- *   RevPAR          = room revenue / sellable rooms
- *   TRevPAR         = total revenue / sellable rooms
+ *   rooms available = rooms in hotel (out-of-order rooms stay in inventory; only long-term
+ *                     removals such as renovation are taken out, by the PMS room count)
+ *   rooms sold      = rooms occupied - complimentary - house use (paid rooms)
+ *   Occupancy %     = rooms sold / rooms available x 100
+ *   ADR             = room revenue / rooms sold
+ *   RevPAR          = room revenue / rooms available
+ *   TRevPAR         = total revenue / rooms available
+ *   Occupancy excl. out of order = rooms sold / (rooms available - out of order) x 100 (secondary)
  *
  * Day use is not a room night. A zero or negative denominator gives null.
  * Over several hotels or days, pass the *summed* parts: ratios are recomputed,
@@ -31,28 +33,31 @@ final class KpiCalculator
 
     /**
      * @param  array<string, int|float|string|null>  $parts
-     * @return array{occupancy_pct: ?string, adr: ?string, revpar: ?string, trevpar: ?string, sellable_rooms: ?int, paid_occupied: ?int}
+     * @return array{occupancy_pct: ?string, adr: ?string, revpar: ?string, trevpar: ?string, occupancy_excl_ooo_pct: ?string, sellable_rooms: ?int, paid_occupied: ?int}
      */
     public static function compute(array $parts): array
     {
         $total = $parts['total_rooms'] ?? null;
         $occupied = $parts['rooms_occupied'] ?? null;
 
-        // Comp / house / OOO not printed by a PMS count as zero.
-        $sellable = $total === null ? null : (int) $total - (int) ($parts['ooo_rooms'] ?? 0);
-        $paidOccupied = $occupied === null ? null
+        // USALI: out-of-order rooms remain available. Comp / house use not printed count as zero.
+        $available = $total === null ? null : (int) $total;
+        $exclOoo = $total === null ? null : (int) $total - (int) ($parts['ooo_rooms'] ?? 0);
+        $sold = $occupied === null ? null
             : (int) $occupied - (int) ($parts['comp_rooms'] ?? 0) - (int) ($parts['house_use_rooms'] ?? 0);
 
         $roomRevenue = self::str($parts['room_revenue'] ?? null);
         $totalRevenue = self::str($parts['total_revenue'] ?? null);
+        $soldStr = $sold === null ? null : (string) $sold;
 
         return [
-            'occupancy_pct' => self::ratio($paidOccupied === null ? null : (string) $paidOccupied, $sellable, 100),
-            'adr' => self::ratio($roomRevenue, $paidOccupied),
-            'revpar' => self::ratio($roomRevenue, $sellable),
-            'trevpar' => self::ratio($totalRevenue, $sellable),
-            'sellable_rooms' => $sellable,
-            'paid_occupied' => $paidOccupied,
+            'occupancy_pct' => self::ratio($soldStr, $available, 100),
+            'adr' => self::ratio($roomRevenue, $sold),
+            'revpar' => self::ratio($roomRevenue, $available),
+            'trevpar' => self::ratio($totalRevenue, $available),
+            'occupancy_excl_ooo_pct' => self::ratio($soldStr, $exclOoo, 100),
+            'sellable_rooms' => $available,
+            'paid_occupied' => $sold,
         ];
     }
 

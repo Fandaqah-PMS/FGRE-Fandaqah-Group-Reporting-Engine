@@ -97,12 +97,13 @@ class FandaqahSamplesTest extends TestCase
 
         $ytd = app(GroupKpiService::class)->forDate($group->id, '2026-11-19', StatPeriod::YearToDate, [$property->id]);
 
-        // X-D13 headline: (79 - 0 - 0) / (21318 - 1662) × 100 = 0.4019 → 0.40
-        $this->assertSame('0.40', $ytd['group']['occupancy_pct']);
+        // USALI: (79 - 0 - 0) / 21318 × 100 = 0.3706 → 0.37
+        $this->assertSame('0.37', $ytd['group']['occupancy_pct']);
+        $this->assertSame('0.40', $ytd['group']['occupancy_excl_ooo_pct']);
         // 42941.98 / 79 = 543.569… → 543.57 (matches the printed ADR)
         $this->assertSame('543.57', $ytd['group']['adr']);
-        // 42941.98 / 19656 = 2.1847 → 2.18
-        $this->assertSame('2.18', $ytd['group']['revpar']);
+        // 42941.98 / 21318 = 2.0144 → 2.01
+        $this->assertSame('2.01', $ytd['group']['revpar']);
         $this->assertTrue($ytd['group']['is_provisional']);
 
         // Day: nothing sold, so ADR has no denominator.

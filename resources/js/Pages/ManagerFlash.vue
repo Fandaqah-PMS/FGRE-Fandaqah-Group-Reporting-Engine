@@ -4,6 +4,12 @@ import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import PageHeader from '../Components/PageHeader.vue';
 import ViewToggle from '../Components/ViewToggle.vue';
 import KpiCard from '../Components/KpiCard.vue';
+import ReportToolbar from '../Components/Report/ReportToolbar.vue';
+import CompareMatrix from '../Components/Report/CompareMatrix.vue';
+import HotelFocus from '../Components/Report/HotelFocus.vue';
+import GroupCharts from '../Components/Report/GroupCharts.vue';
+import { managerFlashSections } from '../lib/reports';
+import { downloadCsv, printPage } from '../lib/export';
 import Delta from '../Components/Delta.vue';
 import Icon from '../Components/Icon.vue';
 import ColumnChart from '../Components/Charts/ColumnChart.vue';
@@ -16,10 +22,79 @@ import { BRAND, LAST_YEAR_BAR, MIX, THIS_YEAR } from '../lib/palette';
 import { useViewMode } from '../lib/view';
 import { useI18n } from '../lib/i18n';
 
-const props = defineProps({ empty: Boolean, date: String, latest: String, currency: String, columns: Object, hotels: Array, missing: Array });
+const props = defineProps({ empty: Boolean, date: String, latest: String, currency: String, columns: Object, hotels: Array, missing: Array, regions: Array, budget: Object, hotelCount: Number, selection: Array });
 const { t, name, locale } = useI18n();
 const page = usePage();
 const view = useViewMode();
+
+// ---- Views: total (group as one) | compare (side by side) | focus (hotel vs group) ----
+const query = computed(() => Object.fromEntries(new URLSearchParams(page.url.split('?')[1] ?? '')));
+const mode = computed(() => (['total', 'compare', 'focus'].includes(query.value.view) && (props.hotels?.length ?? 0) > 1 ? query.value.view : 'total'));
+const basis = computed(() => (query.value.basis === 'budget' ? 'budget' : 'ly'));
+const basisLabel = computed(() => (basis.value === 'budget' ? t('Budget') : t('Last year')));
+const cmpPeriod = computed(() => (['day', 'mtd', 'ytd'].includes(query.value.period) ? query.value.period : 'day'));
+const focusId = computed(() => Number(query.value.focus) || props.hotels?.[0]?.id);
+function navigate(changes) {
+    const params = { ...query.value, date: props.date, ...changes };
+    Object.keys(params).forEach((k) => (params[k] === null || params[k] === undefined || params[k] === '') && delete params[k]);
+    router.get('/manager-flash', params, { preserveScroll: true, preserveState: true });
+}
+const sections = computed(() => managerFlashSections(t));
+const toolbarHotels = computed(() => (page.props.scope?.hotels ?? []).map((h) => ({ ...h, region: (props.hotels ?? []).find((x) => x.id === h.id)?.region ?? null })));
+
+const hotelById = (id) => (props.hotels ?? []).find((h) => h.id === id);
+const regionByKey = (k) => (props.regions ?? []).find((r) => r.key === k);
+const periodData = (col, p) => (col.kind === 'group' ? props.columns?.[p] : col.kind === 'region' ? regionByKey(col.id)?.periods?.[p] : hotelById(col.id)?.periods?.[p]) ?? {};
+const budgetData = (col, p) => (col.kind === 'group' ? props.budget?.group?.[p] : col.kind === 'region' ? props.budget?.regions?.[col.id]?.[p] : props.budget?.hotels?.[col.id]?.[p]) ?? {};
+const baseData = (col, p) => (basis.value === 'budget' ? budgetData(col, p) : periodData(col, `${p}_ly`));
+const cmpValue = (r, col) => periodData(col, cmpPeriod.value)[r.key] ?? null;
+const cmpBase = (r, col) => baseData(col, cmpPeriod.value)[r.key] ?? null;
+
+const compareColumns = computed(() => [
+    ...(props.hotels ?? []).map((h) => ({ id: h.id, kind: 'hotel', label: name(h), sub: h.pms, href: `/hotels/${h.id}?date=${props.date}` })),
+    ...(props.regions ?? []).filter((r) => r.hotelIds.length > 1).map((r) => ({ id: r.key, kind: 'region', label: t(r.key), sub: t(':n hotels', { n: r.hotelIds.length }) })),
+    { id: 'group', kind: 'group', label: t('Group'), sub: t(':n hotels', { n: props.columns?.[cmpPeriod.value]?.hotel_count ?? 0 }) },
+]);
+const cmpPeriodLabel = computed(() => ({ day: t('Day'), mtd: t('Month to date'), ytd: t('Year to date') })[cmpPeriod.value]);
+
+function focusGet(r) {
+    const hotel = { id: focusId.value, kind: 'hotel' };
+    const group = props.columns?.[cmpPeriod.value] ?? {};
+    const groupVal = r.agg === 'sum' && isNum(group[r.key]) && group.hotel_count ? Number(group[r.key]) / group.hotel_count : group[r.key] ?? null;
+    let best = null;
+    if (r.better) {
+        for (const h of props.hotels ?? []) {
+            const v = h.periods?.[cmpPeriod.value]?.[r.key];
+            if (isNum(v) && (best === null || (r.better === 'high' ? Number(v) > best.value : Number(v) < best.value))) best = { value: Number(v), name: name(h) };
+        }
+    }
+    return { value: cmpValue(r, hotel), group: groupVal, best, base: cmpBase(r, hotel) };
+}
+
+const chartHotels = computed(() => (props.hotels ?? []).map((h) => ({ id: h.id, name: h.name, name_ar: h.name_ar, ty: h.periods?.[cmpPeriod.value], base: baseData({ id: h.id, kind: 'hotel' }, cmpPeriod.value) })));
+
+function exportCsv() {
+    const rowsOf = () => sections.value.flatMap((s) => s.rows);
+    if (mode.value === 'compare') {
+        const cols = compareColumns.value;
+        downloadCsv(`manager-flash-compare-${cmpPeriod.value}-${props.date}.csv`, [
+            [t('Code'), t('Measure'), ...cols.flatMap((c) => [c.label, `${c.label} (${basisLabel.value})`])],
+            ...rowsOf().map((r) => [r.code, r.label, ...cols.flatMap((c) => [cmpValue(r, c), cmpBase(r, c)])]),
+        ]);
+    } else if (mode.value === 'focus') {
+        const h = hotelById(focusId.value);
+        downloadCsv(`manager-flash-${h?.name ?? 'hotel'}-${props.date}.csv`, [
+            [t('Code'), t('Measure'), name(h), t('Group'), t('Best hotel'), basisLabel.value],
+            ...rowsOf().map((r) => { const d = focusGet(r); return [r.code, r.label, d.value, d.group, d.best?.value ?? '', d.base]; }),
+        ]);
+    } else {
+        const keys = ['day', 'mtd', 'ytd', 'day_ly', 'mtd_ly', 'ytd_ly'];
+        downloadCsv(`manager-flash-${props.date}.csv`, [
+            [t('Code'), t('Measure'), t('Day'), t('MTD'), t('YTD'), t('Day LY'), t('MTD LY'), t('YTD LY')],
+            ...rowsOf().map((r) => [r.code, r.label, ...keys.map((k) => props.columns?.[k]?.[r.key] ?? '')]),
+        ]);
+    }
+}
 
 const scope = computed(() => page.props.scope ?? { current: null, hotels: [] });
 const scopeHotel = computed(() => scope.value.hotels.find((h) => h.id === scope.value.current) ?? null);
@@ -27,6 +102,7 @@ const multi = computed(() => (props.hotels?.length ?? 0) > 1);
 const col = (k) => props.columns?.[k] ?? {};
 const day = computed(() => col('day'));
 const dayLy = computed(() => col('day_ly'));
+const baseDay = computed(() => (basis.value === 'budget' ? props.budget?.group?.day ?? {} : dayLy.value));
 const provisional = computed(() => Object.values(props.columns ?? {}).some((c) => c?.is_provisional));
 
 const go = (date) => router.get('/manager-flash', { date }, { preserveScroll: true });
@@ -117,23 +193,41 @@ const flashCols = computed(() => [['day', t('Day')], ['mtd', t('MTD')], ['ytd', 
         </template>
         <template #actions>
             <input v-if="!empty" type="date" :value="date" :max="latest" dir="ltr" class="field !w-auto !py-2 text-sm font-semibold" :aria-label="t('Business date')" @change="go($event.target.value)" />
-            <ViewToggle />
+            <div v-if="mode !== 'total'" class="seg" role="tablist" :aria-label="t('Period')">
+                <button v-for="p in [['day', t('Day')], ['mtd', t('Month to date')], ['ytd', t('Year to date')]]" :key="p[0]" type="button" role="tab"
+                        :aria-selected="cmpPeriod === p[0]" @click="navigate({ period: p[0] })">{{ p[1] }}</button>
+            </div>
+            <ViewToggle v-if="mode !== 'focus'" />
         </template>
     </PageHeader>
 
+    <ReportToolbar v-if="!empty && columns?.day" class="mt-5" :view="mode" :basis="basis" :hotels="toolbarHotels" :selection="selection" :focus="focusId"
+                   :views="(hotels?.length ?? 0) > 1 ? ['total', 'compare', 'focus'] : ['total']" :can-export="!!page.props.auth?.can?.['export reports']"
+                   @change="navigate" @export="exportCsv" @print="printPage" />
+
+    <div v-if="!empty && columns?.day && mode === 'compare'" class="mt-6">
+        <CompareMatrix v-if="view === 'tables'" :sections="sections" :columns="compareColumns" :value="cmpValue" :base="cmpBase" :basis-label="basisLabel" />
+        <GroupCharts v-else :hotels="chartHotels" :group="columns[cmpPeriod]" :group-base="baseData({ kind: 'group' }, cmpPeriod)" :period-label="cmpPeriodLabel"
+                     :basis-label="basisLabel" :currency="currency" :date="date" />
+    </div>
+
+    <div v-if="!empty && columns?.day && mode === 'focus'" class="mt-6">
+        <HotelFocus :sections="sections" :hotel-name="name(hotelById(focusId))" :get="focusGet" :basis-label="basisLabel" />
+    </div>
+
     <div v-if="empty || !columns?.day" class="card mt-6 p-10 text-center text-ink-2">{{ t('No Manager Flash for this date.') }}</div>
 
-    <div v-else class="mt-6 space-y-6">
+    <div v-else-if="mode === 'total'" class="mt-6 space-y-6">
         <div v-if="multi && missing.length" class="flex items-center gap-3 rounded-2xl border border-coral/25 bg-coral-tint px-4 py-3 text-sm text-coral-dark">
             <Icon name="alert" :size="18" />{{ t('No report received yet for this date from:') }} <b>{{ missing.map((m) => name(m)).join('، ') }}</b>
         </div>
 
         <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <KpiCard :dot="BRAND.coral" :label="t('Occupancy · day')" :value="isNum(day.occupancy_pct) ? Number(day.occupancy_pct).toFixed(1) : '–'" unit="%"
-                     :current="day.occupancy_pct" :previous="dayLy.occupancy_pct" kind="pp" :previous-label="pct(dayLy.occupancy_pct)" />
-            <KpiCard :dot="BRAND.navy" :label="t('ADR · day')" :value="money(day.adr)" :unit="currency" :current="day.adr" :previous="dayLy.adr" :previous-label="money(dayLy.adr)" />
-            <KpiCard :dot="BRAND.green" :label="t('RevPAR · day')" :value="money(day.revpar)" :unit="currency" :current="day.revpar" :previous="dayLy.revpar" :previous-label="money(dayLy.revpar)" />
-            <KpiCard :dot="BRAND.peach" :label="t('Total revenue · day')" :value="compact(day.total_revenue)" :unit="currency" :current="day.total_revenue" :previous="dayLy.total_revenue" :previous-label="compact(dayLy.total_revenue)" />
+                     :current="day.occupancy_pct" :previous="baseDay.occupancy_pct ?? null" kind="pp" :note="`${basisLabel} ${pct(baseDay.occupancy_pct)}`" />
+            <KpiCard :dot="BRAND.navy" :label="t('ADR · day')" :value="money(day.adr)" :unit="currency" :current="day.adr" :previous="baseDay.adr ?? null" :note="`${basisLabel} ${money(baseDay.adr)}`" />
+            <KpiCard :dot="BRAND.green" :label="t('RevPAR · day')" :value="money(day.revpar)" :unit="currency" :current="day.revpar" :previous="baseDay.revpar ?? null" :note="`${basisLabel} ${money(baseDay.revpar)}`" />
+            <KpiCard :dot="BRAND.peach" :label="t('Total revenue · day')" :value="compact(day.total_revenue)" :unit="currency" :current="day.total_revenue" :previous="baseDay.total_revenue ?? null" :note="`${basisLabel} ${compact(baseDay.total_revenue)}`" />
         </section>
 
         <template v-if="view === 'charts'">

@@ -127,7 +127,7 @@ class WebPagesTest extends TestCase
         $this->ingestFlash(FakeReportExtractor::flash());
         $owner = $this->member($group);
 
-        foreach (['/' => 'Dashboard', '/group-report' => 'GroupReport', '/manager-flash' => 'ManagerFlash', '/trial-balance' => 'TrialBalance', '/ledgers' => 'Ledgers', '/documents' => 'Documents'] as $url => $component) {
+        foreach (['/' => 'Dashboard', '/manager-flash' => 'ManagerFlash', '/trial-balance' => 'TrialBalance', '/ledgers' => 'Ledgers', '/documents' => 'Documents'] as $url => $component) {
             $this->actingAs($owner)->get($url)->assertOk()->assertInertia(fn (Assert $page) => $page->component($component));
         }
         $this->actingAs($owner)->get('/financials')->assertRedirect('/trial-balance');

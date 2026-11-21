@@ -6,6 +6,8 @@ import ViewToggle from '../Components/ViewToggle.vue';
 import KpiCard from '../Components/KpiCard.vue';
 import Icon from '../Components/Icon.vue';
 import DivergingBars from '../Components/Charts/DivergingBars.vue';
+import ReportToolbar from '../Components/Report/ReportToolbar.vue';
+import { downloadCsv, printPage } from '../lib/export';
 import { money } from '../lib/format';
 import { BRAND } from '../lib/palette';
 import { useViewMode } from '../lib/view';
@@ -25,6 +27,12 @@ const ledgers = computed(() => [
     { key: 'ar', label: t('AR ledger'), icon: 'wallet', help: t('What companies and agents owe the hotel.'), color: BRAND.coral },
     { key: 'deposit', label: t('Deposit ledger'), icon: 'coins', help: t('Advance deposits held for future stays.'), color: BRAND.muted },
 ]);
+function exportCsv() {
+    downloadCsv(`front-office-ledgers-${props.date}.csv`, [
+        [t('Hotel'), ...ledgers.value.map((l) => l.label), t('Hotel balance')],
+        ...props.rows.map((r) => [name(r), r.guest, r.ar, r.deposit, Number(r.guest ?? 0) + Number(r.ar ?? 0) + Number(r.deposit ?? 0)]),
+    ]);
+}
 const hotelBalance = computed(() => ['guest', 'ar', 'deposit'].reduce((s, k) => s + Number(props.totals?.[k] ?? 0), 0));
 </script>
 
@@ -45,6 +53,8 @@ const hotelBalance = computed(() => ['guest', 'ar', 'deposit'].reduce((s, k) => 
             <ViewToggle />
         </template>
     </PageHeader>
+
+    <ReportToolbar v-if="rows.length" class="mt-5" :views="[]" :bases="[]" :can-export="!!page.props.auth?.can?.['export reports']" @export="exportCsv" @print="printPage" />
 
     <div v-if="!rows.length" class="card mt-6 p-10 text-center text-ink-2">{{ t('No front-office trial balance received yet.') }}</div>
 

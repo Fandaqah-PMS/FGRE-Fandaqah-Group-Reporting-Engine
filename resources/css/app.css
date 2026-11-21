@@ -165,3 +165,26 @@ body {
         animation: none;
     }
 }
+
+/* PDF export (browser print): white page, flat cards, full-width tables. */
+@media print {
+    @page {
+        size: A4 landscape;
+        margin: 10mm;
+    }
+    body {
+        background: #fff;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    .card {
+        box-shadow: none;
+        break-inside: avoid;
+    }
+    .overflow-x-auto {
+        overflow: visible !important;
+    }
+    .rise {
+        animation: none;
+    }
+}

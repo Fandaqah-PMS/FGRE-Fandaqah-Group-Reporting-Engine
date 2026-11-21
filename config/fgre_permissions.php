@@ -26,6 +26,7 @@ return [
         'export reports' => 'Export reports to Excel / CSV / PDF',
         'upload reports' => 'Upload report PDFs manually',
         'review documents' => 'Review and resolve documents that failed checks',
+        'manage budgets' => 'Upload monthly budgets per hotel',
         'manage properties' => 'Add and edit hotels, senders and aliases',
         'manage users' => 'Invite users and set their role and hotels',
     ],
@@ -34,7 +35,7 @@ return [
         'owner' => ['*'],
         'finance' => [
             'view dashboard', 'view reports', 'view financials', 'export reports',
-            'upload reports', 'review documents',
+            'upload reports', 'review documents', 'manage budgets',
         ],
         'operations' => ['view dashboard', 'view reports', 'export reports', 'upload reports'],
         'viewer' => ['view dashboard', 'view reports'],

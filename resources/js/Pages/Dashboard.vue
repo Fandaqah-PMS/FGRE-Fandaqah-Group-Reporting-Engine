@@ -14,6 +14,8 @@ import Gauge from '../Components/Charts/Gauge.vue';
 import Heatmap from '../Components/Charts/Heatmap.vue';
 import HotelBars from '../Components/Charts/HotelBars.vue';
 import SegmentBar from '../Components/Charts/SegmentBar.vue';
+import AttentionList from '../Components/AttentionList.vue';
+import RankingTable from '../Components/RankingTable.vue';
 import { compact, dayNum, int, isNum, longDate, money, monthLabel, pct, shortDate, weekday } from '../lib/format';
 import { BRAND, LAST_YEAR_BAR, MIX, SERIES, THIS_YEAR } from '../lib/palette';
 import { useViewMode } from '../lib/view';
@@ -21,7 +23,7 @@ import { useI18n } from '../lib/i18n';
 
 const props = defineProps({
     empty: Boolean, filters: Object, currency: String, group: Object, groupLy: Object, hotels: Array, missing: Array,
-    hotelCount: Number, trend: Array, monthly: Array, heatmap: Object, month: Array, mtd: Object, mtdLy: Object,
+    hotelCount: Number, trend: Array, monthly: Array, heatmap: Object, month: Array, mtd: Object, mtdLy: Object, attention: Array, ranking: Array,
 });
 
 const { t, name, locale } = useI18n();
@@ -146,6 +148,8 @@ const sortBy = (key) => (sort.value = { key, dir: sort.value.key === key ? -sort
                 <span v-if="group.is_provisional" class="chip bg-coral text-white">{{ t('Includes provisional figures') }}</span>
             </Hero>
 
+            <AttentionList :items="attention ?? []" :date="filters.date" />
+
             <!-- KPI cards -->
             <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
                 <KpiCard :dot="BRAND.coral" :label="t('Occupancy')" :value="isNum(group.occupancy_pct) ? Number(group.occupancy_pct).toFixed(1) : '–'" unit="%"
@@ -253,6 +257,8 @@ const sortBy = (key) => (sort.value = { key, dir: sort.value.key === key ? -sort
                     <p class="mt-2 text-xs text-muted">{{ t('Current month to date, compared with the same days last year.') }}</p>
                 </section>
 
+                <RankingTable v-if="ranking?.length" :rows="ranking" :date="filters.date" />
+
                 <section v-if="multi" class="grid gap-6 xl:grid-cols-2">
                     <div class="card rise p-6">
                         <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -273,6 +279,7 @@ const sortBy = (key) => (sort.value = { key, dir: sort.value.key === key ? -sort
 
             <!-- TABLES -->
             <template v-else>
+                <RankingTable v-if="ranking?.length" :rows="ranking" :date="filters.date" />
                 <section v-if="multi" class="card overflow-hidden">
                     <div class="flex items-center justify-between px-6 pt-6 pb-4">
                         <h3 class="card-title">{{ t('Hotel comparison') }}</h3>

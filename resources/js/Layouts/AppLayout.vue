@@ -22,12 +22,12 @@ const sections = computed(() => [
         { href: '/', icon: 'grid', label: t('Dashboard'), show: can.value['view dashboard'], active: path.value === '/' },
     ] },
     { label: t('Reports'), items: [
-        { href: '/group-report', icon: 'layers', label: t('Group report'), show: can.value['view reports'] },
         { href: '/manager-flash', icon: 'flash', label: t('Manager Flash'), show: can.value['view reports'] },
         { href: '/trial-balance', icon: 'scale', label: t('Trial Balance'), show: can.value['view financials'] },
         { href: '/ledgers', icon: 'book', label: t('Front Office Ledgers'), show: can.value['view financials'] },
     ] },
     { label: t('Data'), items: [
+        { href: '/budgets', icon: 'calendar', label: t('Budgets'), show: can.value['view reports'] },
         { href: '/documents', icon: 'inbox', label: t('Reports received'), show: can.value['view reports'], badge: page.props.reviewCount },
     ] },
 ].map((s) => ({ ...s, items: s.items.filter((i) => i.show).map((i) => ({ ...i, active: i.active ?? path.value.startsWith(i.href) })) })).filter((s) => s.items.length));
@@ -40,7 +40,7 @@ const logout = () => router.post('/logout');
 <template>
     <div class="min-h-screen bg-paper">
         <!-- Sidebar -->
-        <aside class="fixed inset-y-0 start-0 z-50 flex w-[17rem] flex-col border-e border-line bg-white transition-transform duration-300"
+        <aside class="print:hidden fixed inset-y-0 start-0 z-50 flex w-[17rem] flex-col border-e border-line bg-white transition-transform duration-300"
                :class="drawer ? 'translate-x-0' : 'max-lg:ltr:-translate-x-full max-lg:rtl:translate-x-full'">
             <div class="flex h-[5.5rem] items-center justify-between border-b border-line px-6">
                 <Link href="/" aria-label="Fandaqah"><img src="/brand/logo.png" alt="Fandaqah" class="h-[3.1rem] w-auto" /></Link>
@@ -78,8 +78,8 @@ const logout = () => router.post('/logout');
         <div v-if="drawer" class="fixed inset-0 z-40 bg-navy/40 backdrop-blur-[2px] lg:hidden" @click="drawer = false" />
 
         <!-- Main -->
-        <div class="lg:ps-[17rem]">
-            <header class="sticky top-0 z-30 border-b border-line bg-white/90 backdrop-blur">
+        <div class="lg:ps-[17rem] print:!ps-0">
+            <header class="print:hidden sticky top-0 z-30 border-b border-line bg-white/90 backdrop-blur">
                 <div class="flex h-[5.5rem] items-center gap-3 px-4 sm:px-8">
                     <button type="button" class="rounded-xl border border-line p-2 text-navy lg:hidden" :aria-label="t('Open menu')" @click="drawer = true"><Icon name="menu" /></button>
                     <HotelSwitcher class="min-w-0 flex-1 sm:flex-none" />

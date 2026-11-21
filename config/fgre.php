@@ -86,6 +86,31 @@ return [
     |
     */
 
+    /*
+    |--------------------------------------------------------------------------
+    | Needs attention thresholds (dashboard)
+    |--------------------------------------------------------------------------
+    */
+
+    'attention' => [
+        'occupancy_drop_pp' => 5,      // MTD occupancy down this many points vs last year
+        'adr_drop_pct' => 5,           // MTD ADR down this % vs last year
+        'revpar_index_gap' => 15,      // RevPAR index below 100 − this (vs group)
+        'budget_gap_pct' => 5,         // MTD revenue below budget by this % (2× = critical)
+        'ar_growth_pct' => 15,         // AR (city ledger) balance up this % in a day
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Morning email (group Manager Flash, side by side)
+    |--------------------------------------------------------------------------
+    */
+
+    'morning_email' => [
+        'enabled' => (bool) env('FGRE_MORNING_EMAIL', true),
+        'time' => env('FGRE_MORNING_EMAIL_TIME', '08:00'),   // Asia/Riyadh unless the group says otherwise
+    ],
+
     'validation' => [
         'money_tolerance' => 0.05,      // absolute, in report currency
         'percent_tolerance' => 0.15,    // absolute, in percentage points

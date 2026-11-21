@@ -8,6 +8,10 @@ import Icon from '../Components/Icon.vue';
 import ColumnChart from '../Components/Charts/ColumnChart.vue';
 import Donut from '../Components/Charts/Donut.vue';
 import HotelBars from '../Components/Charts/HotelBars.vue';
+import ReportToolbar from '../Components/Report/ReportToolbar.vue';
+import CompareMatrix from '../Components/Report/CompareMatrix.vue';
+import HotelFocus from '../Components/Report/HotelFocus.vue';
+import { downloadCsv, printPage } from '../lib/export';
 import { compact, money } from '../lib/format';
 import { BRAND } from '../lib/palette';
 import { useViewMode } from '../lib/view';
@@ -17,6 +21,47 @@ const props = defineProps({ dates: Array, date: String, periodStart: String, hot
 const { t, name } = useI18n();
 const page = usePage();
 const view = useViewMode();
+
+// Views: total (group as one) | compare (accounts × hotels) | focus (one hotel vs average hotel)
+const query = computed(() => Object.fromEntries(new URLSearchParams(page.url.split('?')[1] ?? '')));
+const multiHotels = computed(() => props.hotels.length > 1);
+const mode = computed(() => (['total', 'compare', 'focus'].includes(query.value.view) && multiHotels.value ? query.value.view : 'total'));
+const focusId = computed(() => Number(query.value.focus) || props.hotels[0]?.id);
+function navigate(changes) {
+    const params = { ...query.value, date: props.date, ...changes };
+    Object.keys(params).forEach((k) => (params[k] === null || params[k] === undefined || params[k] === '') && delete params[k]);
+    router.get('/trial-balance', params, { preserveScroll: true, preserveState: true });
+}
+const CLASS_ORDER = ['assets', 'liabilities', 'equity', 'revenue', 'expenses', 'other'];
+// Revenue, liability and equity accounts carry credit balances: show them positive so "higher" reads naturally.
+const SIGN = { liabilities: -1, equity: -1, revenue: -1 };
+const tbSections = computed(() => CLASS_ORDER.map((c) => ({
+    key: c, title: t(`class_${c}`),
+    rows: props.accounts.filter((a) => a.class === c).map((a) => ({
+        code: a.code, key: a.code, label: a.name, f: (v) => (v === null || v === undefined ? '–' : money(v, 0)),
+        better: c === 'revenue' ? 'high' : c === 'expenses' ? 'low' : null, agg: 'sum', account: a, sign: SIGN[c] ?? 1,
+    })),
+})).filter((s) => s.rows.length));
+const tbColumns = computed(() => [
+    ...props.hotels.map((h) => ({ id: h.id, kind: 'hotel', label: name(h) })),
+    { id: 'group', kind: 'group', label: t('Group'), sub: t(':n hotels', { n: props.hotels.length }) },
+]);
+const tbValue = (r, col) => {
+    const v = col.kind === 'group' ? r.account.total : r.account.hotels[col.id];
+    return v === undefined || v === null ? null : r.sign * Number(v);
+};
+const tbFocus = (r) => ({
+    value: tbValue(r, { kind: 'hotel', id: focusId.value }),
+    group: props.hotels.length ? tbValue(r, { kind: 'group' }) / props.hotels.length : null,
+    best: null,
+    base: null,
+});
+function exportCsv() {
+    downloadCsv(`trial-balance-${props.date}.csv`, [
+        [t('Code'), t('Account'), t('Class'), ...props.hotels.map((h) => name(h)), t('Group')],
+        ...props.accounts.map((a) => [a.code, a.name, t(`class_${a.class}`), ...props.hotels.map((h) => a.hotels[h.id] ?? ''), a.total]),
+    ]);
+}
 
 const scope = computed(() => page.props.scope ?? { current: null, hotels: [] });
 const scopeHotel = computed(() => scope.value.hotels.find((h) => h.id === scope.value.current) ?? null);
@@ -71,13 +116,25 @@ const marginRows = computed(() => props.summary.byHotel.map((h) => ({ id: h.id, 
                     @change="router.get('/trial-balance', { date: $event.target.value }, { preserveScroll: true })">
                 <option v-for="d in dates" :key="d" :value="d">{{ d }}</option>
             </select>
-            <ViewToggle />
+            <ViewToggle v-if="mode === 'total'" />
         </template>
     </PageHeader>
 
+    <ReportToolbar v-if="accounts.length" class="mt-5" :view="mode" :hotels="hotels" :focus="focusId" :bases="[]"
+                   :views="multiHotels ? ['total', 'compare', 'focus'] : ['total']" :can-export="!!page.props.auth?.can?.['export reports']"
+                   @change="navigate" @export="exportCsv" @print="printPage" />
+
+    <div v-if="accounts.length && mode === 'compare'" class="mt-6">
+        <p class="mb-3 text-xs text-ink-2">{{ t('Closing balances. Revenue, liability and equity accounts are shown as positive credit balances.') }}</p>
+        <CompareMatrix :sections="tbSections" :columns="tbColumns" :value="tbValue" :base="() => null" basis-label="" />
+    </div>
+    <div v-if="accounts.length && mode === 'focus'" class="mt-6">
+        <HotelFocus :sections="tbSections" :hotel-name="name(hotels.find((h) => h.id === focusId))" :get="tbFocus" basis-label="" :show-base="false" />
+    </div>
+
     <div v-if="!accounts.length" class="card mt-6 p-10 text-center text-ink-2">{{ t('No trial balance received yet.') }}</div>
 
-    <div v-else class="mt-6 space-y-6">
+    <div v-else-if="mode === 'total'" class="mt-6 space-y-6">
         <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <KpiCard :dot="BRAND.coral" :label="t('Revenue')" :value="compact(summary.revenue)" :unit="currency" />
             <KpiCard :dot="BRAND.navy" :label="t('Expenses')" :value="compact(summary.expenses)" :unit="currency" />

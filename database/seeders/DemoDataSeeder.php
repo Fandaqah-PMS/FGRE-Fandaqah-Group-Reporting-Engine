@@ -35,6 +35,8 @@ class DemoDataSeeder extends Seeder
         'nazeel' => 'noreply@nazeel.example',
     ];
 
+    public const REGIONS = ['RUH-WAH' => 'Central', 'JED-COR' => 'Western', 'MED-GAT' => 'Western', 'KHB-BAY' => 'Eastern', 'AHB-HGT' => 'Southern'];
+
     /** name, name_ar, code, pms, rooms, base occupancy, base ADR, F&B ratio, season profile */
     private const HOTELS = [
         ['Al Waha Hotel Riyadh', 'فندق الواحة الرياض', 'RUH-WAH', 'fandaqah', 120, 0.71, 540, 0.22, 'business'],
@@ -60,6 +62,7 @@ class DemoDataSeeder extends Seeder
                 'name' => $name,
                 'name_ar' => $nameAr,
                 'total_rooms' => $rooms,
+                'region' => self::REGIONS[$code],
                 'allowed_sender_emails' => [self::SENDERS[$pms]],
             ]);
         }
@@ -72,6 +75,7 @@ class DemoDataSeeder extends Seeder
             $this->writeStats($property, $days, $i);
             $this->writeTrialBalances($property, $days);
             $this->writeLedgers($property);
+            $this->writeBudgets($property, $days);
         }
 
         $this->writeReviewQueue($properties);
@@ -330,6 +334,26 @@ class DemoDataSeeder extends Seeder
                 'currency' => 'SAR',
                 'created_at' => now(),
                 'updated_at' => now(),
+            ]);
+        }
+    }
+
+    /** 2026 budget: each month of 2025 actuals plus a growth target (rooms +3 %, rate +4 %). */
+    private function writeBudgets(Property $property, array $days): void
+    {
+        DB::table('budget_months')->where('property_id', $property->id)->delete();
+        for ($m = 1; $m <= 12; $m++) {
+            $from = CarbonImmutable::create(2025, $m, 1);
+            $sum = $this->sumDays($days, $from, $from->endOfMonth()->startOfDay());
+            $sold = $sum['rooms_occupied'] - $sum['comp_rooms'] - $sum['house_use_rooms'];
+            $room = round($sum['room_revenue'] * 1.03 * 1.04, -2);
+            $fnb = round($sum['fnb_revenue'] * 1.05, -2);
+            $other = round($sum['other_revenue'] * 1.03, -2);
+            DB::table('budget_months')->insert([
+                'group_id' => $property->group_id, 'property_id' => $property->id, 'month' => sprintf('2026-%02d-01', $m),
+                'rooms_sold' => (int) round($sold * 1.03), 'room_revenue' => $room, 'fnb_revenue' => $fnb,
+                'other_revenue' => $other, 'total_revenue' => $room + $fnb + $other,
+                'created_at' => now(), 'updated_at' => now(),
             ]);
         }
     }

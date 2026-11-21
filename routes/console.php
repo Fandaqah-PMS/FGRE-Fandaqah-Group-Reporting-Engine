@@ -19,3 +19,10 @@ Schedule::command('fgre:poll-inbox')
 Schedule::command('fgre:poll-mcp')
     ->everyFifteenMinutes()
     ->withoutOverlapping(30);
+
+// Morning email: the group Manager Flash after night audit (Saudi time by default).
+Schedule::command('fgre:send-morning-flash')
+    ->dailyAt((string) config('fgre.morning_email.time', '08:00'))
+    ->timezone('Asia/Riyadh')
+    ->withoutOverlapping(30)
+    ->when(fn () => (bool) config('fgre.morning_email.enabled'));

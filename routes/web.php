@@ -1,9 +1,9 @@
 <?php
 
 use App\Http\Controllers\Auth\SessionController;
+use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentsController;
-use App\Http\Controllers\GroupReportController;
 use App\Http\Controllers\LedgersController;
 use App\Http\Controllers\ManagerFlashController;
 use App\Http\Controllers\PreferencesController;
@@ -20,11 +20,14 @@ Route::post('/locale', [PreferencesController::class, 'locale']);
 
 Route::middleware(['auth', 'group'])->group(function () {
     Route::get('/', DashboardController::class)->name('dashboard');
-    Route::get('/group-report', GroupReportController::class)->name('group-report');
+    Route::get('/group-report', fn () => redirect('/manager-flash?view=compare'))->name('group-report');
     Route::get('/manager-flash', ManagerFlashController::class)->name('manager-flash');
     Route::get('/trial-balance', TrialBalanceController::class)->name('trial-balance');
     Route::get('/ledgers', LedgersController::class)->name('ledgers');
     Route::get('/documents', [DocumentsController::class, 'index'])->name('documents');
+    Route::get('/budgets', [BudgetController::class, 'index'])->name('budgets');
+    Route::get('/budgets/template', [BudgetController::class, 'template']);
+    Route::post('/budgets/import', [BudgetController::class, 'import']);
     Route::post('/documents/{document}/reprocess', [DocumentsController::class, 'reprocess']);
 
     // Hotel switch: all hotels (consolidated) or one hotel; applies to every page.
