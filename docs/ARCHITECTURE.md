@@ -44,7 +44,8 @@ new source (Nazeel API, Opera export, Fandaqah MCP) only needs a new extractor.
 | D10 | Money: `numeric(18,2)` + currency; KPI math in bcmath, rounded half away from zero once. | Same rule as the PMS (X-D08). |
 | D11 | **Email is the universal channel**: FGRE never needs a change or a token in any PMS. **MCP is optional**: any PMS with an MCP server is read through a generic client plus per-hotel tool settings ([MCP.md](MCP.md)). | FGRE targets many PMSs (decided 2026-11-21). |
 | D12 | **Frontend: Inertia + Vue 3 + Tailwind 4**, one Laravel app, Arabic (RTL, default) and English. Charts are hand-written SVG/HTML components, like the PMS dashboards. | The team already writes Vue; full control over brand and RTL. |
-| D13 | **Chart colours:** navy / coral for chrome; data series use the validated order teal `#00849B`, coral `#F15F5A`, violet `#7468D0` (all pairs pass colour-blind and contrast checks). Navy and grey are too dark / too grey to tell series apart. | Readable for everyone, still on brand. |
+| D13 | **Fandaqah identity only** (identity guide + web identity concept): white sidebar with the original logo, coral active item, navy hero with the original pattern, white cards. Charts use the core palette with fixed roles: this year coral, last year grey `#889594`, revenue mix navy / coral / peach, heatmaps a coral ramp. All pairs pass the colour-blind separation check; every chart also has a legend, labels and a table view. | The product must look like Fandaqah. |
+| D14 | **One hotel switch for every page**: "All hotels" (consolidated: parts summed, KPIs recomputed) or a single hotel, stored per group in the session. Every report page has a Charts / Tables switch. | Owners compare the group and drill into a hotel with one control. |
 
 ## 4. Report types
 

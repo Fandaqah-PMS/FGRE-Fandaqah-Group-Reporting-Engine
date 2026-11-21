@@ -4,12 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Enums\StatPeriod;
 use App\Reports\Kpi\GroupKpiService;
+use App\Support\HotelScope;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/** Group (or single-hotel) overview for one business date. */
 class DashboardController extends Controller
 {
     public const PERIODS = ['day' => StatPeriod::Day, 'mtd' => StatPeriod::MonthToDate, 'ytd' => StatPeriod::YearToDate];
@@ -20,28 +22,20 @@ class DashboardController extends Controller
     {
         Gate::authorize('view dashboard');
 
-        $user = $request->user();
-        $groupId = $user->current_group_id;
-        $propertyIds = $user->accessiblePropertyIds();
+        $groupId = $request->user()->current_group_id;
+        $propertyIds = HotelScope::propertyIds($request);
 
         $latest = $kpis->latestDate($groupId, $propertyIds);
-        $date = $this->validDate($request->query('date')) ?? $latest;
+        $date = $this->dateParam($request) ?? $latest;
         $period = array_key_exists($request->query('period'), self::PERIODS) ? $request->query('period') : 'day';
 
         if ($date === null) {
-            return Inertia::render('Dashboard', ['empty' => true, 'hotelCount' => $propertyIds->count()]);
+            return Inertia::render('Dashboard', ['empty' => true]);
         }
 
         $ty = $kpis->forDate($groupId, $date, self::PERIODS[$period], $propertyIds);
         $ly = $kpis->forDate($groupId, $date, self::LAST_YEAR[$period], $propertyIds);
         $lyByHotel = collect($ly['hotels'])->keyBy('property_id');
-
-        $hotels = collect($ty['hotels'])->map(fn (array $h) => [
-            ...$h,
-            'ly' => $lyByHotel->get($h['property_id']),
-        ])->values();
-
-        $trendFrom = CarbonImmutable::parse($date)->subDays(29)->toDateString();
 
         return Inertia::render('Dashboard', [
             'empty' => false,
@@ -49,15 +43,12 @@ class DashboardController extends Controller
             'currency' => $ty['currency'],
             'group' => $ty['group'],
             'groupLy' => $ly['group'],
-            'hotels' => $hotels,
+            'hotels' => collect($ty['hotels'])->map(fn (array $h) => [...$h, 'ly' => $lyByHotel->get($h['property_id'])])->values(),
             'missing' => $ty['missing'],
             'hotelCount' => $propertyIds->count(),
-            'trend' => $kpis->trend($groupId, $trendFrom, $date, $propertyIds),
+            'trend' => $kpis->trend($groupId, CarbonImmutable::parse($date)->subDays(29)->toDateString(), $date, $propertyIds),
+            'monthly' => $kpis->monthly($groupId, $date, $propertyIds),
+            'heatmap' => $propertyIds->count() > 1 ? $kpis->occupancyHeatmap($groupId, $date, $propertyIds) : null,
         ]);
-    }
-
-    private function validDate(mixed $value): ?string
-    {
-        return is_string($value) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $value) && strtotime($value) ? $value : null;
     }
 }

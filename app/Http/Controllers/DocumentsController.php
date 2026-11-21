@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\DocumentStatus;
 use App\Jobs\ProcessReportDocument;
 use App\Models\ReportDocument;
+use App\Support\HotelScope;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -19,7 +20,7 @@ class DocumentsController extends Controller
         Gate::authorize('view reports');
 
         $status = DocumentStatus::tryFrom((string) $request->query('status'));
-        $propertyIds = $request->user()->accessiblePropertyIds();
+        $propertyIds = HotelScope::propertyIds($request);
 
         $documents = ReportDocument::with(['property:id,name,name_ar', 'inboundMessage:id,source,from_email,subject'])
             ->whereIn('property_id', $propertyIds)

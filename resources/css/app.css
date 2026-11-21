@@ -1,53 +1,119 @@
-@import url('https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&family=El+Messiri:wght@500;600;700&family=Montserrat:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&family=El+Messiri:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700;800&display=swap');
 @import 'tailwindcss';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
-/* Fandaqah identity tokens (docs/BRAND.md, same values as the Fandaqah PMS dashboards). */
+/*
+ * Fandaqah identity (docs/BRAND.md). Core palette from the identity guide:
+ * coral #F15F5A · navy #262E43 · warm neutral #EDEBE6 · muted #889594 · peach #FCC5A9.
+ * Titles El Messiri, English body Montserrat, Arabic Almarai.
+ */
 @theme {
     --font-sans: 'Montserrat', 'Almarai', ui-sans-serif, system-ui, sans-serif;
     --font-display: 'El Messiri', 'Almarai', Georgia, serif;
-    --font-arabic: 'Almarai', ui-sans-serif, system-ui, sans-serif;
 
+    --color-coral: #f15f5a;
+    --color-coral-dark: #d94b46;
+    --color-coral-tint: #fdebe9;
     --color-navy: #262e43;
     --color-navy-light: #3a4360;
-    --color-navy-deep: #1c2233;
-    --color-coral: #f15f5a;
-    --color-coral-text: #d2443f;
-    --color-coral-tint: #fde8e6;
-    --color-off-white: #f8f7f4;
-    --color-warm: #edebe6;
+    --color-neutral: #edebe6;
+    --color-paper: #f8f7f4;
     --color-line: #ece9e3;
-    --color-grey: #889594;
-    --color-secondary: #5b6374;
+    --color-muted: #889594;
+    --color-ink-2: #5b6374;
     --color-peach: #fcc5a9;
-    --color-salmon: #f58985;
-    --color-teal: #214f5f;
-    --color-ice: #b8d7d9;
-    --color-success: #4c6b67;
-    --color-success-soft: #e4ecea;
+    --color-peach-tint: #fef1ea;
+    --color-success: #3f7a6f;
+    --color-success-tint: #e4efec;
     --color-danger: #b73530;
-    --color-danger-soft: #fbe1df;
+
+    --shadow-card: 0 1px 2px rgb(38 46 67 / 0.04), 0 10px 30px -12px rgb(38 46 67 / 0.12);
+    --shadow-coral: 0 10px 22px -6px rgb(241 95 90 / 0.45);
+    --radius-card: 1.125rem;
 }
 
-:lang(ar) {
-    font-family: var(--font-arabic);
+html {
+    font-family: var(--font-sans);
 }
 
-/* Brand top band (same gradient as the PMS dashboards). */
-.top-band {
-    background: linear-gradient(160deg, #2c354d 0%, #262e43 55%, #222a3d 100%);
+:lang(ar),
+[dir='rtl'] {
+    font-family: 'Almarai', 'Montserrat', ui-sans-serif, system-ui, sans-serif;
 }
 
-/* A light take on the identity's dot pattern, in the pattern colours. */
-.pattern {
-    background-image:
-        radial-gradient(circle at 12px 12px, #f58985 7px, transparent 7.5px),
-        radial-gradient(circle at 36px 12px, #fcc5a9 7px, transparent 7.5px),
-        radial-gradient(circle at 12px 36px, #b8d7d9 7px, transparent 7.5px),
-        radial-gradient(circle at 36px 36px, #214f5f 7px, transparent 7.5px);
-    background-size: 48px 48px;
+[dir='rtl'] .font-display {
+    font-family: 'El Messiri', 'Almarai', serif;
+}
+
+body {
+    background: var(--color-paper);
+    color: var(--color-navy);
+}
+
+@layer components {
+    .card {
+        @apply min-w-0 rounded-[var(--radius-card)] border border-line bg-white shadow-[var(--shadow-card)];
+    }
+
+    .card-title {
+        @apply font-display text-[1.15rem] font-semibold text-navy;
+    }
+
+    .eyebrow {
+        @apply text-[11px] font-bold tracking-[0.18em] text-coral uppercase;
+    }
+
+    [dir='rtl'] .eyebrow {
+        letter-spacing: 0;
+    }
+
+    .btn-coral {
+        @apply inline-flex items-center justify-center gap-2 rounded-xl bg-coral px-5 py-3 font-bold text-white shadow-[var(--shadow-coral)] transition hover:bg-coral-dark disabled:opacity-60;
+    }
+
+    .chip {
+        @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold;
+    }
+
+    .seg {
+        @apply flex max-w-full overflow-x-auto rounded-xl border border-line bg-white p-1;
+        scrollbar-width: none;
+    }
+
+    .seg > button {
+        @apply flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] font-semibold whitespace-nowrap text-ink-2 transition hover:text-navy;
+    }
+
+    .seg > button[aria-pressed='true'],
+    .seg > button[aria-selected='true'] {
+        @apply bg-navy text-white shadow-sm;
+    }
+
+    .field {
+        @apply w-full rounded-xl border border-line bg-white px-3.5 py-2.5 text-navy outline-none transition placeholder:text-muted focus:border-coral focus:ring-4 focus:ring-coral/15;
+    }
+
+    .tbl {
+        @apply w-full text-sm;
+    }
+
+    .tbl thead th {
+        @apply bg-paper px-4 py-3 text-start text-[11px] font-bold tracking-wider text-ink-2 uppercase;
+    }
+
+    [dir='rtl'] .tbl thead th {
+        letter-spacing: 0;
+    }
+
+    .tbl tbody td {
+        @apply border-t border-line px-4 py-3;
+    }
+
+    .tbl tbody tr:hover td {
+        @apply bg-paper/60;
+    }
 }
 
 /* Numbers line up in tables and tiles. */
@@ -55,6 +121,43 @@
     font-variant-numeric: tabular-nums;
 }
 
-.card {
-    @apply rounded-2xl border border-line bg-white;
+/* Original brand pattern artwork (public/brand/pattern.png), faded toward the content. */
+.brand-pattern {
+    background-image: url('/brand/pattern.png');
+    background-size: 340px auto;
+    background-repeat: repeat;
+    -webkit-mask-image: linear-gradient(to left, #000 35%, transparent 95%);
+    mask-image: linear-gradient(to left, #000 35%, transparent 95%);
+}
+
+[dir='rtl'] .brand-pattern {
+    -webkit-mask-image: linear-gradient(to right, #000 35%, transparent 95%);
+    mask-image: linear-gradient(to right, #000 35%, transparent 95%);
+}
+
+.brand-pattern-full {
+    background-image: url('/brand/pattern.png');
+    background-size: 420px auto;
+    background-repeat: repeat;
+}
+
+@keyframes rise {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.rise {
+    animation: rise 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .rise {
+        animation: none;
+    }
 }

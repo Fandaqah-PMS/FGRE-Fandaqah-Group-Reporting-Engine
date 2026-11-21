@@ -76,9 +76,11 @@ class WebPagesTest extends TestCase
         $viewer = $this->member($group, 'viewer', allProperties: false);
         $viewer->restrictedProperties()->attach($allowed->id);
 
-        $this->actingAs($viewer)->get('/financials')->assertForbidden();
+        $this->actingAs($viewer)->get('/trial-balance')->assertForbidden();
+        $this->actingAs($viewer)->get('/ledgers')->assertForbidden();
         $this->actingAs($viewer)->get("/hotels/{$other->id}")->assertNotFound();
-        $this->actingAs($viewer)->get("/hotels/{$allowed->id}")->assertOk();
+        $this->actingAs($viewer)->post('/scope', ['hotel' => $other->id])->assertNotFound();
+        $this->actingAs($viewer)->get("/hotels/{$allowed->id}")->assertRedirect('/');
     }
 
     public function test_hotels_of_another_group_are_not_found(): void
@@ -86,6 +88,49 @@ class WebPagesTest extends TestCase
         $foreign = $this->property($this->group('Other group'));
 
         $this->actingAs($this->member($this->group()))->get("/hotels/{$foreign->id}")->assertNotFound();
+    }
+
+    public function test_switching_to_one_hotel_scopes_every_page(): void
+    {
+        $group = $this->group();
+        $riyadh = $this->property($group);
+        $jeddah = $this->property($group, ['code' => 'JED', 'name' => 'Fandaqah Jeddah', 'name_ar' => 'فندقة جدة']);
+        $this->ingestFlash(FakeReportExtractor::flash());
+        $this->ingestFlash(FakeReportExtractor::flash(['property_name' => 'Fandaqah Jeddah']), '%PDF-1.7
+% jeddah');
+        $owner = $this->member($group);
+
+        $this->actingAs($owner)->get('/')->assertInertia(fn (Assert $page) => $page->where('group.hotel_count', 2)->where('scope.current', null));
+
+        $this->actingAs($owner)->post('/scope', ['hotel' => $jeddah->id])->assertRedirect();
+
+        $this->actingAs($owner)->get('/')->assertInertia(fn (Assert $page) => $page
+            ->where('scope.current', $jeddah->id)
+            ->where('group.hotel_count', 1)
+            ->where('heatmap', null));
+        $this->actingAs($owner)->get('/manager-flash')->assertOk()->assertInertia(fn (Assert $page) => $page
+            ->component('ManagerFlash')
+            ->has('hotels', 1)
+            ->where('hotels.0.id', $jeddah->id)
+            ->where('columns.day.occupancy_pct', '78.00'));
+
+        $this->actingAs($owner)->post('/scope', ['hotel' => 'all']);
+        $this->actingAs($owner)->get('/manager-flash')->assertInertia(fn (Assert $page) => $page->has('hotels', 2)
+            ->where('columns.day.rooms_occupied', '160'));
+        $this->assertNotNull($riyadh);
+    }
+
+    public function test_report_pages_render(): void
+    {
+        $group = $this->group();
+        $this->property($group);
+        $this->ingestFlash(FakeReportExtractor::flash());
+        $owner = $this->member($group);
+
+        foreach (['/' => 'Dashboard', '/manager-flash' => 'ManagerFlash', '/trial-balance' => 'TrialBalance', '/ledgers' => 'Ledgers', '/documents' => 'Documents'] as $url => $component) {
+            $this->actingAs($owner)->get($url)->assertOk()->assertInertia(fn (Assert $page) => $page->component($component));
+        }
+        $this->actingAs($owner)->get('/financials')->assertRedirect('/trial-balance');
     }
 
     public function test_only_reviewers_can_rerun_a_document(): void

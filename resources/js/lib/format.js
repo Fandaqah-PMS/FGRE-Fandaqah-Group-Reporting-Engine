@@ -45,6 +45,13 @@ export function shortDate(iso, locale = 'en') {
     return new Intl.DateTimeFormat(locale === 'ar' ? 'ar-SA-u-ca-gregory-nu-latn' : 'en-GB', { day: 'numeric', month: 'short' }).format(d);
 }
 
+/** '2026-11' → 'Nov' (or 'November 2026' when long). */
+export function monthLabel(ym, locale = 'en', long = false) {
+    if (!ym) return '–';
+    const d = new Date(`${ym}-01T00:00:00`);
+    return new Intl.DateTimeFormat(locale === 'ar' ? 'ar-SA-u-ca-gregory-nu-latn' : 'en-GB', long ? { month: 'long', year: 'numeric' } : { month: 'short' }).format(d);
+}
+
 export function longDate(iso, locale = 'en') {
     if (!iso) return '–';
     const d = new Date(`${iso}T00:00:00`);

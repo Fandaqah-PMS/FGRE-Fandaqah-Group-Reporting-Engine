@@ -3,7 +3,9 @@
 namespace App\Http\Middleware;
 
 use App\Enums\DocumentStatus;
+use App\Models\Property;
 use App\Models\ReportDocument;
+use App\Support\HotelScope;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -32,8 +34,20 @@ class HandleInertiaRequests extends Middleware
                     ->mapWithKeys(fn (string $p) => [$p => $user->hasGroupPermission($p)]),
             ],
             'reviewCount' => fn () => $user?->hasGroupPermission('review documents')
-                ? ReportDocument::where('status', DocumentStatus::NeedsReview)->count()
+                ? ReportDocument::where('status', DocumentStatus::NeedsReview)->whereIn('property_id', $user->accessiblePropertyIds())->count()
                 : 0,
+            // Hotel switch: the hotels the user may see, and the selected one (null = all).
+            'scope' => fn () => $user?->current_group_id === null ? null : [
+                'current' => HotelScope::selected($request),
+                'hotels' => Property::with('pmsProvider:id,name')
+                    ->whereIn('id', $user->accessiblePropertyIds())
+                    ->orderBy('name')
+                    ->get()
+                    ->map(fn (Property $p) => [
+                        'id' => $p->id, 'name' => $p->name, 'name_ar' => $p->name_ar,
+                        'pms' => $p->pmsProvider?->name, 'rooms' => $p->total_rooms,
+                    ])->values(),
+            ],
         ];
     }
 

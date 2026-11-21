@@ -1,78 +1,111 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
+import Icon from '../Components/Icon.vue';
+import HotelSwitcher from '../Components/HotelSwitcher.vue';
 import { useDocumentDirection, useI18n } from '../lib/i18n';
 
 useDocumentDirection();
 const page = usePage();
 const { t, name, locale } = useI18n();
+const drawer = ref(false);
+watch(() => page.url, () => (drawer.value = false));
 
 const auth = computed(() => page.props.auth);
 const can = computed(() => auth.value?.can ?? {});
+const path = computed(() => page.url.split('?')[0]);
+const initials = computed(() => (auth.value?.user?.name ?? '?').split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase());
+const currentGroup = computed(() => auth.value?.groups?.find((g) => g.id === auth.value.currentGroupId));
 
-const nav = computed(() => [
-    { href: '/', label: t('Dashboard'), show: can.value['view dashboard'], active: page.url === '/' || page.url.startsWith('/?') || page.url.startsWith('/hotels') },
-    { href: '/financials', label: t('Financials'), show: can.value['view financials'], active: page.url.startsWith('/financials') },
-    { href: '/documents', label: t('Reports received'), show: can.value['view reports'], active: page.url.startsWith('/documents'), badge: page.props.reviewCount },
-].filter((i) => i.show));
+const sections = computed(() => [
+    { label: t('Overview'), items: [
+        { href: '/', icon: 'grid', label: t('Dashboard'), show: can.value['view dashboard'], active: path.value === '/' },
+    ] },
+    { label: t('Reports'), items: [
+        { href: '/manager-flash', icon: 'flash', label: t('Manager Flash'), show: can.value['view reports'] },
+        { href: '/trial-balance', icon: 'scale', label: t('Trial Balance'), show: can.value['view financials'] },
+        { href: '/ledgers', icon: 'book', label: t('Front Office Ledgers'), show: can.value['view financials'] },
+    ] },
+    { label: t('Data'), items: [
+        { href: '/documents', icon: 'inbox', label: t('Reports received'), show: can.value['view reports'], badge: page.props.reviewCount },
+    ] },
+].map((s) => ({ ...s, items: s.items.filter((i) => i.show).map((i) => ({ ...i, active: i.active ?? path.value.startsWith(i.href) })) })).filter((s) => s.items.length));
 
-const switchGroup = (event) => router.post(`/groups/${event.target.value}/switch`);
 const toggleLocale = () => router.post('/locale', { locale: locale.value === 'ar' ? 'en' : 'ar' }, { preserveScroll: true });
+const switchGroup = (event) => router.post(`/groups/${event.target.value}/switch`);
 const logout = () => router.post('/logout');
 </script>
 
 <template>
-    <div class="min-h-screen bg-off-white">
-        <header class="top-band text-white">
-            <div class="mx-auto flex max-w-7xl flex-wrap items-center gap-x-6 gap-y-3 px-4 py-3 sm:px-6">
-                <Link href="/" class="flex items-baseline gap-2 me-2">
-                    <span class="font-display text-2xl font-bold tracking-wide">fandaqah</span>
-                    <span class="hidden text-xs font-medium uppercase tracking-[0.18em] text-peach sm:inline">{{ t('Group Reporting') }}</span>
-                </Link>
+    <div class="min-h-screen bg-paper">
+        <!-- Sidebar -->
+        <aside class="fixed inset-y-0 start-0 z-50 flex w-[17rem] flex-col border-e border-line bg-white transition-transform duration-300"
+               :class="drawer ? 'translate-x-0' : 'max-lg:ltr:-translate-x-full max-lg:rtl:translate-x-full'">
+            <div class="flex h-[5.5rem] items-center justify-between border-b border-line px-6">
+                <Link href="/" aria-label="Fandaqah"><img src="/brand/logo.png" alt="Fandaqah" class="h-[3.1rem] w-auto" /></Link>
+                <button type="button" class="rounded-lg p-1.5 text-ink-2 lg:hidden" :aria-label="t('Close menu')" @click="drawer = false"><Icon name="close" /></button>
+            </div>
 
-                <nav class="order-3 flex w-full gap-1 overflow-x-auto sm:order-none sm:w-auto">
-                    <Link
-                        v-for="item in nav"
-                        :key="item.href"
-                        :href="item.href"
-                        class="relative flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap transition"
-                        :class="item.active ? 'bg-white/12 text-white' : 'text-white/70 hover:bg-white/6 hover:text-white'"
-                    >
-                        {{ item.label }}
-                        <span v-if="item.badge" class="rounded-full bg-coral px-1.5 text-[11px] font-semibold leading-5 text-white" :title="t('Waiting for review')">{{ item.badge }}</span>
-                        <span v-if="item.active" class="absolute inset-x-3 -bottom-[13px] hidden h-[3px] rounded-full bg-coral sm:block" />
+            <nav class="flex-1 overflow-y-auto px-4 py-5">
+                <div v-for="section in sections" :key="section.label" class="mb-6">
+                    <div class="mb-2 px-3 text-[10px] font-bold tracking-[0.2em] text-muted uppercase">{{ section.label }}</div>
+                    <Link v-for="item in section.items" :key="item.href" :href="item.href"
+                          class="group mb-1 flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] font-semibold transition"
+                          :class="item.active ? 'bg-coral text-white shadow-[var(--shadow-coral)]' : 'text-navy hover:bg-paper'">
+                        <Icon :name="item.icon" :size="18" :class="item.active ? 'text-white' : 'text-ink-2 group-hover:text-coral'" />
+                        <span class="flex-1">{{ item.label }}</span>
+                        <span v-if="item.badge" class="rounded-full px-1.5 text-[11px] leading-5 font-bold"
+                              :class="item.active ? 'bg-white text-coral' : 'bg-coral text-white'">{{ item.badge }}</span>
+                        <span v-else-if="item.active" class="size-1.5 rounded-full bg-white" />
                     </Link>
-                </nav>
+                </div>
+            </nav>
 
-                <div class="ms-auto flex items-center gap-2">
-                    <select
-                        v-if="auth?.groups?.length > 1"
-                        :value="auth.currentGroupId"
-                        class="max-w-48 truncate rounded-lg border border-white/15 bg-white/8 px-2.5 py-1.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-coral/60"
-                        :aria-label="t('Hotel group')"
-                        @change="switchGroup"
-                    >
-                        <option v-for="g in auth.groups" :key="g.id" :value="g.id" class="text-navy">{{ name(g) }}</option>
+            <div class="relative overflow-hidden border-t border-line px-6 py-5">
+                <div class="brand-pattern pointer-events-none absolute inset-y-0 end-0 w-24 opacity-20" aria-hidden="true" />
+                <div class="relative">
+                    <div class="eyebrow">{{ t('Hotel group') }}</div>
+                    <select v-if="auth?.groups?.length > 1" :value="auth.currentGroupId" class="mt-1 w-full max-w-[11rem] truncate rounded-lg border border-line bg-white px-2 py-1.5 text-sm font-bold text-navy outline-none focus:ring-2 focus:ring-coral/30"
+                            :aria-label="t('Hotel group')" @change="switchGroup">
+                        <option v-for="g in auth.groups" :key="g.id" :value="g.id">{{ name(g) }}</option>
                     </select>
-                    <span v-else-if="auth?.groups?.length" class="hidden text-sm text-white/80 md:inline">{{ name(auth.groups[0]) }}</span>
-
-                    <button type="button" class="rounded-lg border border-white/15 px-2.5 py-1.5 text-sm font-medium hover:bg-white/8" @click="toggleLocale">
-                        {{ locale === 'ar' ? 'English' : 'العربية' }}
-                    </button>
-
-                    <div class="flex items-center gap-2 border-s border-white/15 ps-3">
-                        <span class="hidden text-sm text-white/80 lg:inline">{{ auth?.user?.name }}</span>
-                        <button type="button" class="rounded-lg px-2 py-1.5 text-sm text-white/70 hover:text-white" @click="logout">{{ t('Sign out') }}</button>
-                    </div>
+                    <div v-else class="mt-1 text-sm font-bold text-navy">{{ name(currentGroup) }}</div>
+                    <div class="mt-1 text-xs text-muted">{{ t('Group Reporting Engine') }}</div>
                 </div>
             </div>
-        </header>
+        </aside>
+        <div v-if="drawer" class="fixed inset-0 z-40 bg-navy/40 backdrop-blur-[2px] lg:hidden" @click="drawer = false" />
 
-        <main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
-            <div v-if="page.props.flash?.status" class="mb-5 rounded-xl border border-success/20 bg-success-soft px-4 py-3 text-sm text-success">
-                {{ page.props.flash.status }}
-            </div>
-            <slot />
-        </main>
+        <!-- Main -->
+        <div class="lg:ps-[17rem]">
+            <header class="sticky top-0 z-30 border-b border-line bg-white/90 backdrop-blur">
+                <div class="flex h-[5.5rem] items-center gap-3 px-4 sm:px-8">
+                    <button type="button" class="rounded-xl border border-line p-2 text-navy lg:hidden" :aria-label="t('Open menu')" @click="drawer = true"><Icon name="menu" /></button>
+                    <HotelSwitcher class="min-w-0 flex-1 sm:flex-none" />
+                    <div class="ms-auto flex items-center gap-2 sm:gap-3">
+                        <button type="button" class="grid h-11 min-w-11 place-items-center rounded-xl border border-line px-3 text-sm font-bold text-navy hover:border-coral/40" @click="toggleLocale">
+                            {{ locale === 'ar' ? 'EN' : 'العربية' }}
+                        </button>
+                        <div class="hidden items-center gap-3 sm:flex">
+                            <span class="grid size-11 place-items-center rounded-xl bg-peach text-sm font-extrabold text-navy">{{ initials }}</span>
+                            <div class="hidden leading-tight xl:block">
+                                <div class="text-sm font-bold text-navy">{{ auth?.user?.name }}</div>
+                                <div class="text-xs text-muted">{{ t(`role_${auth?.role}`) }}</div>
+                            </div>
+                        </div>
+                        <button type="button" class="grid size-11 place-items-center rounded-xl border border-line text-ink-2 hover:border-coral/40 hover:text-coral" :title="t('Sign out')" :aria-label="t('Sign out')" @click="logout">
+                            <Icon name="logout" />
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <main class="px-4 py-7 sm:px-8 sm:py-8">
+                <div v-if="page.props.flash?.status" class="mb-5 flex items-center gap-2 rounded-xl border border-success/20 bg-success-tint px-4 py-3 text-sm font-semibold text-success">
+                    <Icon name="check" :size="16" />{{ page.props.flash.status }}
+                </div>
+                <slot />
+            </main>
+        </div>
     </div>
 </template>
