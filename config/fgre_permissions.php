@@ -12,8 +12,10 @@
 | group it was given in. Groups are separate customers, so a permission held
 | in one group never counts in another.
 |
-| Roles are fixed (no per-group role editor yet). Add a permission here, then
-| add it to the roles that should have it.
+| These are the defaults. A group's owners can change what finance, operations
+| and viewer may do (Settings → Roles & permissions, table group_roles); the
+| owner role always has every permission. Add a new permission here, then add
+| it to the default roles that should have it.
 |
 */
 
@@ -29,6 +31,14 @@ return [
         'manage budgets' => 'Upload monthly budgets per hotel',
         'manage properties' => 'Add and edit hotels, senders and aliases',
         'manage users' => 'Invite users and set their role and hotels',
+        'manage settings' => 'Edit group settings and see the activity log',
+    ],
+
+    // How the permissions are grouped on the Roles & permissions page.
+    'categories' => [
+        'Reports' => ['view dashboard', 'view reports', 'view financials', 'export reports'],
+        'Data' => ['upload reports', 'review documents', 'manage budgets'],
+        'Administration' => ['manage properties', 'manage users', 'manage settings'],
     ],
 
     'roles' => [

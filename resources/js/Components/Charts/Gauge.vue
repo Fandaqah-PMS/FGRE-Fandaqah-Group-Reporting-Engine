@@ -48,14 +48,14 @@ const fill = computed(() => (isNum(props.value) && share(props.value) > 0.004 ? 
                 <path v-if="fill" :d="fill" fill="none" :stroke="`url(#gg-${uid})`" :stroke-width="W" stroke-linecap="round" />
             </svg>
             <div class="absolute inset-x-0 bottom-[6%] text-center">
-                <div class="leading-none font-extrabold text-navy tabular" :class="compact ? 'text-[1.55rem]' : 'text-[2.25rem]'" dir="ltr">
-                    {{ isNum(value) ? Number(value).toFixed(digits) : '–' }}<span v-if="suffix" :class="compact ? 'text-sm' : 'text-lg'">{{ suffix }}</span>
+                <div class="leading-none font-semibold text-navy tabular" :class="compact ? 'text-[1.35rem]' : 'text-[1.9rem]'" dir="ltr">
+                    {{ isNum(value) ? Number(value).toFixed(digits) : '–' }}<span v-if="suffix" class="font-medium text-ink-2" :class="compact ? 'text-xs' : 'text-base'">{{ suffix }}</span>
                 </div>
                 <div v-if="label" class="mt-1.5 text-xs font-medium text-ink-2">{{ label }}</div>
             </div>
         </div>
         <div v-if="isNum(previous)" class="mt-3 text-center text-xs text-muted">
-            {{ t('Last year') }} <bdi class="font-bold text-ink-2 tabular">{{ Number(previous).toFixed(digits) }}{{ suffix }}</bdi>
+            {{ t('Last year') }} <bdi class="font-semibold text-ink-2 tabular">{{ Number(previous).toFixed(digits) }}{{ suffix }}</bdi>
         </div>
     </div>
 </template>

@@ -263,7 +263,7 @@ const flashCols = computed(() => [['day', t('Day')], ['mtd', t('MTD')], ['ytd', 
                     <ul class="grid grid-cols-2 gap-3">
                         <li v-for="a in activity" :key="a.label" class="rounded-2xl bg-paper p-4">
                             <span class="grid size-8 place-items-center rounded-lg bg-white text-coral shadow-sm"><Icon :name="a.icon" :size="16" /></span>
-                            <div class="mt-3 text-2xl font-extrabold text-navy tabular" dir="ltr">{{ int(a.value) }}</div>
+                            <div class="mt-3 text-xl font-semibold text-navy tabular" dir="ltr">{{ int(a.value) }}</div>
                             <div class="mt-0.5 text-xs font-semibold text-ink-2">{{ a.label }}</div>
                             <div class="mt-1.5"><Delta :current="a.value" :previous="a.ly" /></div>
                         </li>

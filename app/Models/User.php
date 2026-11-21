@@ -3,6 +3,8 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Notifications\SetPasswordNotification;
+use App\Support\RolePermissions;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -32,6 +34,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_platform_admin' => 'boolean',
+            'last_login_at' => 'datetime',
         ];
     }
 
@@ -73,9 +76,7 @@ class User extends Authenticatable
             return false;
         }
 
-        $granted = config("fgre_permissions.roles.{$role}", []);
-
-        return in_array('*', $granted, true) || in_array($permission, $granted, true);
+        return in_array($permission, app(RolePermissions::class)->for($groupId ?? $this->current_group_id, $role), true);
     }
 
     /**
@@ -97,6 +98,12 @@ class User extends Authenticatable
         }
 
         return $query->pluck('id');
+    }
+
+    /** Password links (forgotten password, or the invitation of a new user) in the user's language. */
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new SetPasswordNotification($token));
     }
 
     public function switchGroup(HotelGroup $group): void

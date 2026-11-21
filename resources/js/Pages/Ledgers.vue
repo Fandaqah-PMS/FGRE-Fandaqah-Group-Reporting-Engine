@@ -101,7 +101,7 @@ const hotelBalance = computed(() => ['guest', 'ar', 'deposit'].reduce((s, k) => 
                                 <bdi>{{ bal(r[l.key]) }}</bdi>
                                 <div class="text-xs text-muted">{{ t('Yesterday') }} <bdi>{{ bal(r.opening[l.key]) }}</bdi></div>
                             </td>
-                            <td class="text-end font-bold"><bdi>{{ bal(Number(r.guest ?? 0) + Number(r.ar ?? 0) + Number(r.deposit ?? 0)) }}</bdi></td>
+                            <td class="text-end font-semibold"><bdi>{{ bal(Number(r.guest ?? 0) + Number(r.ar ?? 0) + Number(r.deposit ?? 0)) }}</bdi></td>
                         </tr>
                     </tbody>
                     <tfoot class="bg-paper font-bold">
@@ -139,7 +139,7 @@ const hotelBalance = computed(() => ['guest', 'ar', 'deposit'].reduce((s, k) => 
                         <li v-for="h in folios.hotels" :key="h.id">
                             <div class="flex items-baseline justify-between gap-2 text-sm">
                                 <span class="truncate font-bold text-navy">{{ name(h) }}</span>
-                                <bdi class="font-semibold tabular">{{ bal(h.owing) }}</bdi>
+                                <bdi class="font-medium tabular">{{ bal(h.owing) }}</bdi>
                             </div>
                             <div class="mt-1.5 flex h-2.5 gap-0.5 overflow-hidden rounded-full bg-paper">
                                 <span class="h-full rounded-full" :style="{ width: `${(100 * (h.owing - h.unpaid)) / folioMax}%`, background: BRAND.navy }" />
@@ -187,7 +187,7 @@ const hotelBalance = computed(() => ['guest', 'ar', 'deposit'].reduce((s, k) => 
                                     <td class="text-xs whitespace-nowrap text-ink-2"><bdi>{{ stay(f) }}</bdi></td>
                                     <td class="text-end"><bdi>{{ money(f.charges, 0) }}</bdi></td>
                                     <td class="text-end"><bdi>{{ money(f.payments, 0) }}</bdi></td>
-                                    <td class="text-end font-bold" :class="f.balance < 0 ? 'text-ink-2' : 'text-navy'"><bdi>{{ bal(f.balance) }}</bdi></td>
+                                    <td class="text-end font-semibold" :class="f.balance < 0 ? 'text-ink-2' : 'text-navy'"><bdi>{{ bal(f.balance) }}</bdi></td>
                                 </tr>
                             </tbody>
                         </table>

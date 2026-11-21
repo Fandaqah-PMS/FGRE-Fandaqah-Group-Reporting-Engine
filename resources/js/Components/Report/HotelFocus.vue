@@ -52,7 +52,7 @@ const data = computed(() => props.sections.map((s) => ({ ...s, rows: s.rows.map(
                         <tr><td :colspan="showBase ? 8 : 6" class="bg-paper px-4 py-2 text-[11px] font-bold tracking-wider text-coral uppercase">{{ s.title }}</td></tr>
                         <tr v-for="{ r, d } in s.rows" :key="r.key" class="border-t border-line">
                             <td class="px-4 py-2.5"><span class="me-2 text-[11px] font-bold text-muted" dir="ltr">{{ r.code }}</span><span class="font-semibold text-navy" :title="r.label">{{ r.name ?? r.label }}</span></td>
-                            <td class="px-3 text-end font-extrabold text-navy"><bdi>{{ r.f(d.value) }}</bdi></td>
+                            <td class="px-3 text-end font-semibold text-navy tabular"><bdi>{{ r.f(d.value) }}</bdi></td>
                             <td class="px-3">
                                 <div class="relative h-3 rounded-full bg-neutral" dir="ltr">
                                     <div class="absolute inset-y-0 left-0 rounded-full bg-navy" :style="{ width: isNum(d.value) ? pos(d.value, d) : '0' }" />

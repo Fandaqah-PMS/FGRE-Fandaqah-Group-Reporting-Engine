@@ -120,14 +120,19 @@ body {
     }
 }
 
-/* Numbers line up in tables and tiles. */
+/*
+ * Numbers line up in tables and tiles, and use Montserrat in both languages: Almarai only
+ * ships heavy weights (700 / 800), which made figures look too bold in Arabic. Arabic letters
+ * inside a .tabular element still fall back to Almarai.
+ */
 .tabular {
+    font-family: 'Montserrat', 'Almarai', ui-sans-serif, system-ui, sans-serif;
     font-variant-numeric: tabular-nums;
 }
 
 /* Original brand pattern artwork (public/brand/pattern.png), faded toward the content. */
 .brand-pattern {
-    background-image: url('/brand/pattern.png');
+    background-image: url('../../public/brand/pattern.png');
     background-size: 340px auto;
     background-repeat: repeat;
     -webkit-mask-image: linear-gradient(to left, #000 35%, transparent 95%);
@@ -140,7 +145,7 @@ body {
 }
 
 .brand-pattern-full {
-    background-image: url('/brand/pattern.png');
+    background-image: url('../../public/brand/pattern.png');
     background-size: 420px auto;
     background-repeat: repeat;
 }

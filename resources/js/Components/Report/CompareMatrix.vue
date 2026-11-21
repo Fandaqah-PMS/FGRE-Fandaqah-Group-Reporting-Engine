@@ -74,7 +74,7 @@ const colBg = (c) => (c.kind === 'group' ? 'bg-coral-tint/50' : c.kind === 'regi
                                 </div>
                             </td>
                             <td v-for="c in columns" :key="c.id" class="px-3 py-2 text-end" :class="[colBg(c), mark(r, c) === 'best' && '!bg-success-tint', mark(r, c) === 'worst' && '!bg-coral-tint/70']">
-                                <bdi class="block font-bold text-navy" :class="c.kind === 'group' && 'font-extrabold'">{{ r.f(value(r, c)) }}</bdi>
+                                <bdi class="block font-medium text-navy tabular" :class="c.kind === 'group' && '!font-semibold'">{{ r.f(value(r, c)) }}</bdi>
                                 <template v-for="ch in [change(r, value(r, c), base(r, c))]" :key="'c'">
                                     <bdi v-if="ch" class="block text-[11px] font-semibold"
                                          :class="tone(r, ch.d) === 'good' ? 'text-success' : tone(r, ch.d) === 'bad' ? 'text-coral-dark' : 'text-muted'">

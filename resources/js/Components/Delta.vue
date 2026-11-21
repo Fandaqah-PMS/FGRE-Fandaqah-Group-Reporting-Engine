@@ -17,7 +17,7 @@ const good = computed(() => d.value && (d.value.value === 0 ? null : (d.value.va
 </script>
 
 <template>
-    <span v-if="d" class="inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[11px] font-bold tabular" dir="ltr"
+    <span v-if="d" class="inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[11px] font-semibold tabular" dir="ltr"
           :class="good === null ? 'bg-neutral text-ink-2' : good ? 'bg-success-tint text-success' : 'bg-coral-tint text-coral-dark'"
           :title="t('vs last year')">
         <svg v-if="d.value !== 0" width="9" height="9" viewBox="0 0 10 10" aria-hidden="true" :class="d.value < 0 && 'rotate-180'">

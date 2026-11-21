@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import { Head, router, useForm, usePage } from '@inertiajs/vue3';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
 import Icon from '../../Components/Icon.vue';
 import { useDocumentDirection, useI18n } from '../../lib/i18n';
 
@@ -48,7 +48,10 @@ const features = [
                         </div>
                     </div>
                     <div>
-                        <label class="mb-2 block text-[13px] font-bold text-navy" for="password">{{ t('Password') }}</label>
+                        <div class="mb-2 flex items-center justify-between">
+                            <label class="text-[13px] font-bold text-navy" for="password">{{ t('Password') }}</label>
+                            <Link href="/forgot-password" class="text-xs font-bold text-coral hover:underline">{{ t('Forgot password?') }}</Link>
+                        </div>
                         <div class="relative">
                             <Icon name="lock" :size="18" class="pointer-events-none absolute start-3.5 top-1/2 -translate-y-1/2 text-muted" />
                             <input id="password" v-model="form.password" :type="showPassword ? 'text' : 'password'" autocomplete="current-password" required dir="ltr"

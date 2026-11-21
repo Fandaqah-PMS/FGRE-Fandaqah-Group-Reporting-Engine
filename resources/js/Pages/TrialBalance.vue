@@ -144,7 +144,7 @@ const marginRows = computed(() => props.summary.byHotel.map((h) => ({ id: h.id, 
                     <span class="text-[13px] font-semibold text-ink-2">{{ t('Debits = credits') }}</span>
                     <span class="grid size-10 place-items-center rounded-xl" :class="balanced ? 'bg-success-tint text-success' : 'bg-coral-tint text-coral'"><Icon :name="balanced ? 'check' : 'alert'" :size="19" /></span>
                 </div>
-                <div class="mt-2 text-[1.6rem] font-extrabold" :class="balanced ? 'text-success' : 'text-coral-dark'">{{ balanced ? t('Balanced') : t('Not balanced') }}</div>
+                <div class="mt-2 text-[1.3rem] font-semibold" :class="balanced ? 'text-success' : 'text-coral-dark'">{{ balanced ? t('Balanced') : t('Not balanced') }}</div>
                 <div class="mt-1 text-xs text-muted">{{ t(':n accounts · :h hotels', { n: accounts.length, h: hotels.length }) }}</div>
             </div>
         </section>

@@ -103,6 +103,28 @@ class DemoDataSeeder extends Seeder
         $viewer->restrictedProperties()->sync([$properties[1]->id, $properties[2]->id]);
         $viewer->forceFill(['current_group_id' => $group->id])->save();
 
+        // A colleague invited but not signed in yet, and sign-in times for the others.
+        $ops = User::updateOrCreate(['email' => 'operations@demo.example'], ['name' => 'Madinah Operations', 'password' => Str::random(40), 'locale' => 'ar']);
+        $ops->groups()->syncWithoutDetaching([$group->id => ['role' => 'operations', 'all_properties' => false]]);
+        $ops->restrictedProperties()->sync([$properties[2]->id]);
+        $ops->forceFill(['current_group_id' => $group->id, 'last_login_at' => null])->save();
+        foreach ([[$owner, 1], [$finance, 5], [$viewer, 50]] as [$u, $hours]) {
+            $u->forceFill(['last_login_at' => now()->subHours($hours)])->save();
+        }
+
+        // Activity log samples.
+        DB::table('audit_logs')->where('group_id', $group->id)->delete();
+        foreach ([
+            [$owner->id, 'user.added', $viewer->email, ['role' => 'viewer', 'hotels' => 2], 30],
+            [$owner->id, 'hotel.updated', $properties[1]->name, ['fields' => ['total_rooms', 'allowed_sender_emails']], 12],
+            [$owner->id, 'user.added', $ops->email, ['role' => 'operations', 'hotels' => 1], 2],
+        ] as [$by, $action, $subject, $details, $daysAgo]) {
+            DB::table('audit_logs')->insert([
+                'group_id' => $group->id, 'user_id' => $by, 'action' => $action, 'subject' => $subject,
+                'details' => json_encode($details), 'ip' => '127.0.0.1', 'created_at' => now()->subDays($daysAgo),
+            ]);
+        }
+
         // Email subscriptions: the owner gets the daily report (Arabic) and a weekly chart summary (English).
         DB::table('report_subscriptions')->where('user_id', $owner->id)->delete();
         foreach ([

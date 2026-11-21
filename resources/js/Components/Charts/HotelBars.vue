@@ -44,7 +44,7 @@ const width = (v) => (isNum(v) && Number(v) > 0 ? `${(Number(v) / max.value) * 1
                 <div class="mb-1.5 flex items-center gap-2 text-[13px]">
                     <span class="grid size-5 place-items-center rounded-md bg-neutral text-[10px] font-bold text-ink-2">{{ i + 1 }}</span>
                     <Link :href="`/hotels/${row.id}`" class="min-w-0 flex-1 truncate font-semibold text-navy hover:text-coral">{{ name(row) }}</Link>
-                    <bdi class="font-bold text-navy tabular">{{ format(row.ty) }}</bdi>
+                    <bdi class="font-semibold text-navy tabular">{{ format(row.ty) }}</bdi>
                     <Delta v-if="showLy" :current="row.ty" :previous="row.ly" :kind="deltaKind" />
                 </div>
                 <div class="relative flex flex-col gap-[3px]">

@@ -31,6 +31,10 @@ const sections = computed(() => [
         { href: '/budgets', icon: 'calendar', label: t('Budgets'), show: can.value['view reports'] },
         { href: '/documents', icon: 'inbox', label: t('Reports received'), show: can.value['view reports'], badge: page.props.reviewCount },
     ] },
+    { label: t('Administration'), items: [
+        { href: '/settings/users', icon: 'users', label: t('Users & roles'), show: can.value['manage users'], active: ['/settings/users', '/settings/roles'].includes(path.value) },
+        { href: '/settings/profile', icon: 'settings', label: t('Settings'), show: true, active: path.value.startsWith('/settings') && !['/settings/users', '/settings/roles'].includes(path.value) },
+    ] },
 ].map((s) => ({ ...s, items: s.items.filter((i) => i.show).map((i) => ({ ...i, active: i.active ?? path.value.startsWith(i.href) })) })).filter((s) => s.items.length));
 
 const toggleLocale = () => router.post('/locale', { locale: locale.value === 'ar' ? 'en' : 'ar' }, { preserveScroll: true });
@@ -88,13 +92,13 @@ const logout = () => router.post('/logout');
                         <button type="button" class="grid h-11 min-w-11 place-items-center rounded-xl border border-line px-3 text-sm font-bold text-navy hover:border-coral/40" @click="toggleLocale">
                             {{ locale === 'ar' ? 'EN' : 'العربية' }}
                         </button>
-                        <div class="hidden items-center gap-3 sm:flex">
-                            <span class="grid size-11 place-items-center rounded-xl bg-peach text-sm font-extrabold text-navy">{{ initials }}</span>
+                        <Link href="/settings/profile" class="hidden items-center gap-3 rounded-xl sm:flex hover:opacity-90" :title="t('Profile')">
+                            <span class="grid size-11 place-items-center rounded-xl bg-peach text-sm font-bold text-navy">{{ initials }}</span>
                             <div class="hidden leading-tight xl:block">
                                 <div class="text-sm font-bold text-navy">{{ auth?.user?.name }}</div>
                                 <div class="text-xs text-muted">{{ t(`role_${auth?.role}`) }}</div>
                             </div>
-                        </div>
+                        </Link>
                         <button type="button" class="grid size-11 place-items-center rounded-xl border border-line text-ink-2 hover:border-coral/40 hover:text-coral" :title="t('Sign out')" :aria-label="t('Sign out')" @click="logout">
                             <Icon name="logout" />
                         </button>

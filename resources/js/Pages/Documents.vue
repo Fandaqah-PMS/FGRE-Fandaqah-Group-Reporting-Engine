@@ -36,7 +36,7 @@ const sourceIcon = (s) => ({ email: 'mail', mcp: 'layers', upload: 'inbox', api:
               :class="(status ?? null) === tile.key && 'ring-2 ring-coral'">
             <span class="grid size-12 place-items-center rounded-2xl" :class="tile.tone"><Icon :name="tile.icon" :size="22" /></span>
             <span>
-                <span class="block text-2xl font-extrabold text-navy tabular" dir="ltr">{{ int(tile.value) }}</span>
+                <span class="block text-xl font-semibold text-navy tabular" dir="ltr">{{ int(tile.value) }}</span>
                 <span class="block text-[13px] font-semibold text-ink-2">{{ tile.label }}</span>
             </span>
         </Link>

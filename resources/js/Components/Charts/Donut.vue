@@ -56,7 +56,7 @@ const activeArc = computed(() => arcs.value.find((a) => a.key === active.value))
             </svg>
             <div class="absolute inset-[27%] grid place-items-center rounded-full bg-white text-center shadow-[0_6px_16px_-6px_rgba(38,46,67,0.25),inset_0_1px_2px_rgba(38,46,67,0.06)]">
                 <div class="px-1">
-                    <div class="text-[1.35rem] leading-none font-extrabold text-navy tabular" dir="ltr">
+                    <div class="text-[1.2rem] leading-none font-semibold text-navy tabular" dir="ltr">
                         {{ activeArc ? format(activeArc.value) : (centerValue ?? format(total)) }}
                     </div>
                     <div class="mt-1 line-clamp-2 text-[10.5px] leading-tight font-semibold text-muted">{{ activeArc ? activeArc.label : centerLabel }}</div>
@@ -68,7 +68,7 @@ const activeArc = computed(() => arcs.value.find((a) => a.key === active.value))
                 @pointerenter="active = a.key" @pointerleave="active = null">
                 <span class="size-2.5 shrink-0 rounded-full" :style="{ background: a.color }" />
                 <span class="min-w-0 flex-1 font-medium text-ink-2">{{ a.label }}</span>
-                <bdi class="font-bold text-navy tabular">{{ format(a.value) }}</bdi>
+                <bdi class="font-semibold text-navy tabular">{{ format(a.value) }}</bdi>
                 <bdi class="w-12 text-end text-xs text-muted tabular">{{ (a.share * 100).toFixed(1) }}%</bdi>
             </li>
         </ul>

@@ -99,6 +99,15 @@ return [
             'expire' => 60,
             'throttle' => 60,
         ],
+
+        // New users added in Settings → Users: a longer-lived link, kept in its own table so
+        // an invitation token can never be used as a (shorter) password-reset token or back.
+        'invites' => [
+            'provider' => 'users',
+            'table' => 'user_invite_tokens',
+            'expire' => 60 * 24 * 7,
+            'throttle' => 0,
+        ],
     ],
 
     /*

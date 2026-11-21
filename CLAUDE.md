@@ -9,7 +9,9 @@ first; Fandaqah PMS facts are in [docs/fandaqah-pms-reference.md](docs/fandaqah-
   Background code (jobs, commands) has no logged-in user: query with `Model::forGroup($id)`.
   Bypass `GroupScope` only on purpose (cross-group matching, platform admin) and comment why.
 - **Permissions:** add new ones to `config/fgre_permissions.php` (lowercase words with spaces) and
-  to the roles that need them. Check with Gates (`can:` / `Gate::allows`), in the current group.
+  to the default roles that need them (and a `categories` entry). Groups may override non-owner roles
+  (`group_roles`, read via `App\Support\RolePermissions`). Check with Gates (`can:` / `Gate::allows`),
+  in the current group. Record settings changes with `AuditLog::record()`.
 - **KPIs:** only `App\Reports\Kpi\KpiCalculator` computes occupancy / ADR / RevPAR, from parts.
   Never average ratios; never show `printed_*` columns as KPIs.
 - Dashboards and group reports read only the canonical tables, never raw AI output.

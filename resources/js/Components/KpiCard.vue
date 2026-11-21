@@ -35,8 +35,8 @@ const { t } = useI18n();
         </div>
         <div class="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-1">
             <span dir="ltr" class="flex items-baseline gap-1">
-                <span class="text-[1.85rem] leading-none font-extrabold tracking-tight text-navy tabular">{{ value }}</span>
-                <span v-if="unit" class="text-xs font-bold text-navy/60">{{ unit }}</span>
+                <span class="text-[1.6rem] leading-none font-semibold tracking-tight text-navy tabular">{{ value }}</span>
+                <span v-if="unit" class="text-[11px] font-medium text-muted">{{ unit }}</span>
             </span>
             <Delta v-if="previous !== null" :current="current" :previous="previous" :kind="kind" />
         </div>

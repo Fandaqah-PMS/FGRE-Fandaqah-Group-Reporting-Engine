@@ -34,6 +34,7 @@ Demo logins (password `password`):
 | `owner@demo.example` | everything, in two groups (Al Noor Hospitality Group, Demo Hotel Group) |
 | `finance@demo.example` | dashboard, financials, review queue |
 | `viewer@demo.example` | dashboard for two hotels only, no financials |
+| `operations@demo.example` | invited, not signed in yet (shows "Invitation pending" in Settings → Users); no password until the invitation link is used |
 
 Al Noor Hospitality Group is generated demo data (5 hotels on 3 PMSs, Jan 2025 – Nov 2026). Demo
 Hotel Group holds the real Fandaqah sample reports from `docs/samples/`.

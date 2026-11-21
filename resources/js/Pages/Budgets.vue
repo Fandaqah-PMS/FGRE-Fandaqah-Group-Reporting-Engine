@@ -107,7 +107,7 @@ const upload = (e) => {
                                 </template>
                                 <span v-else class="text-muted">–</span>
                             </td>
-                            <td class="bg-coral-tint/50 px-3 text-end font-extrabold text-navy"><bdi>{{ compact(hotelYear(h)) }}</bdi></td>
+                            <td class="bg-coral-tint/50 px-3 text-end font-semibold text-navy tabular"><bdi>{{ compact(hotelYear(h)) }}</bdi></td>
                         </tr>
                     </tbody>
                 </table>

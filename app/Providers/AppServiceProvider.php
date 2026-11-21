@@ -6,6 +6,7 @@ use Anthropic\Client as AnthropicClient;
 use App\Models\User;
 use App\Reports\Extraction\ClaudeReportExtractor;
 use App\Reports\Extraction\ReportExtractor;
+use App\Support\RolePermissions;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -24,6 +25,9 @@ class AppServiceProvider extends ServiceProvider
 
         // The extractor used for PDFs.
         $this->app->bind(ReportExtractor::class, ClaudeReportExtractor::class);
+
+        // Role permissions per group (config defaults + group overrides), cached per request.
+        $this->app->singleton(RolePermissions::class);
     }
 
     /**

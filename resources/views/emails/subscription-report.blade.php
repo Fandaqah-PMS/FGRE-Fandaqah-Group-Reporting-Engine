@@ -67,7 +67,7 @@
                     <td width="25%" valign="top" style="padding:0 6px;">
                         <div style="background:#F8F7F4;border-radius:12px;padding:12px;">
                             <div style="font-size:11px;color:{{ $ink2 }};font-weight:700;">{{ $label }}</div>
-                            <div style="font-size:19px;font-weight:700;margin-top:4px;" dir="ltr">{{ $fmt($main['group']['ty'][$field] ?? null, $kind) }}</div>
+                            <div style="font-size:18px;font-weight:600;margin-top:4px;font-family:Montserrat,'Segoe UI',Arial,sans-serif;" dir="ltr">{{ $fmt($main['group']['ty'][$field] ?? null, $kind) }}</div>
                             @if ($d)
                                 <div style="font-size:11px;font-weight:700;margin-top:2px;color:{{ $d[0] >= 0 ? $up : $down }};" dir="ltr">{{ $d[0] >= 0 ? '▲' : '▼' }} {{ $d[1] }}</div>
                             @else
@@ -177,7 +177,7 @@
                             @foreach ([...$p['hotels'], $p['group']] as $i => $h)
                                 @php $d = $delta($h['ty'][$field] ?? null, $h['ly'][$field] ?? null, $kind); $isGroup = $i === count($p['hotels']); @endphp
                                 <td style="padding:9px 10px;text-align:{{ $end }};{{ $isGroup ? 'background:#FDEBE9;' : '' }}">
-                                    <div style="font-weight:700;" dir="ltr">{{ $fmt($h['ty'][$field] ?? null, $kind) }}</div>
+                                    <div style="font-weight:600;" dir="ltr">{{ $fmt($h['ty'][$field] ?? null, $kind) }}</div>
                                     @if ($d)
                                         <div style="font-size:11px;color:{{ $d[0] >= 0 ? $up : $down }};" dir="ltr">{{ $d[0] >= 0 ? '▲' : '▼' }} {{ $d[1] }}</div>
                                     @endif

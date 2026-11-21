@@ -73,7 +73,7 @@ const shown = (c) => (expanded[c.hotel.id] ? c.issues : c.issues.slice(0, 3));
                 <div v-for="s in ['critical', 'warning', 'info', 'ok']" v-show="counts[s] || s === 'ok'" :key="s"
                      class="flex items-center gap-2 rounded-xl border border-line bg-white py-1.5 ps-1.5 pe-3">
                     <span class="grid size-7 place-items-center rounded-lg" :class="STATUS[s].pill"><Icon :name="STATUS[s].icon" :size="14" /></span>
-                    <span class="font-display text-lg leading-none font-semibold text-navy tabular">{{ counts[s] }}</span>
+                    <span class="text-base leading-none font-semibold text-navy tabular">{{ counts[s] }}</span>
                     <span class="text-xs font-semibold text-ink-2">{{ t(STATUS[s].label) }}</span>
                 </div>
             </div>

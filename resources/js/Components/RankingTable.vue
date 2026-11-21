@@ -55,11 +55,11 @@ const sign = (v, unit = '%') => (isNum(v) ? `${v >= 0 ? '+' : '−'}${Math.abs(v
                 </tr></thead>
                 <tbody>
                     <tr v-for="(r, i) in ranked" :key="r.id">
-                        <td><span class="grid size-8 place-items-center rounded-lg text-sm font-extrabold" :class="medal(i)">{{ i + 1 }}</span></td>
+                        <td><span class="grid size-8 place-items-center rounded-lg text-sm font-bold" :class="medal(i)">{{ i + 1 }}</span></td>
                         <td><Link :href="`/hotels/${r.id}?date=${date}`" class="font-bold text-navy hover:text-coral">{{ name(r) }}</Link><div class="text-xs text-muted">{{ r.pms }}</div></td>
-                        <td class="text-end"><bdi :class="by === 'occupancy_pct' && 'font-extrabold text-navy'">{{ pct(r[period]?.occupancy_pct) }}</bdi></td>
-                        <td class="text-end"><bdi :class="by === 'adr' && 'font-extrabold text-navy'">{{ money(r[period]?.adr) }}</bdi></td>
-                        <td class="text-end"><bdi :class="by === 'revpar' && 'font-extrabold text-navy'">{{ money(r[period]?.revpar) }}</bdi></td>
+                        <td class="text-end"><bdi :class="by === 'occupancy_pct' && 'font-semibold text-navy'">{{ pct(r[period]?.occupancy_pct) }}</bdi></td>
+                        <td class="text-end"><bdi :class="by === 'adr' && 'font-semibold text-navy'">{{ money(r[period]?.adr) }}</bdi></td>
+                        <td class="text-end"><bdi :class="by === 'revpar' && 'font-semibold text-navy'">{{ money(r[period]?.revpar) }}</bdi></td>
                         <td class="text-end"><bdi>{{ compact(r[period]?.total_revenue) }}</bdi></td>
                         <td class="text-end">
                             <bdi class="chip !px-2 !py-0.5" :class="growth(r, 'total_revenue') >= 0 ? 'bg-success-tint text-success' : 'bg-coral-tint text-coral-dark'">{{ sign(growth(r, 'total_revenue')) }}</bdi>
