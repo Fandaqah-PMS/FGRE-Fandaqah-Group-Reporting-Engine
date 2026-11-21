@@ -47,9 +47,10 @@ const logout = () => router.post('/logout');
         <!-- Sidebar -->
         <aside class="print:hidden fixed inset-y-0 start-0 z-50 flex w-[17rem] flex-col border-e border-line bg-white transition-transform duration-300"
                :class="drawer ? 'translate-x-0' : 'max-lg:ltr:-translate-x-full max-lg:rtl:translate-x-full'">
-            <div class="flex h-[5.5rem] items-center justify-between border-b border-line px-6">
-                <Link href="/" aria-label="Fandaqah"><img src="/brand/logo.png" alt="Fandaqah" class="h-[3.1rem] w-auto" /></Link>
-                <button type="button" class="rounded-lg p-1.5 text-ink-2 lg:hidden" :aria-label="t('Close menu')" @click="drawer = false"><Icon name="close" /></button>
+            <div class="relative flex h-[5.5rem] items-center justify-between overflow-hidden border-b border-line px-6">
+                <div class="art-end absolute inset-y-0 end-0 w-28 opacity-80 [background-size:190px_auto]" aria-hidden="true" />
+                <Link href="/" aria-label="Fandaqah" class="relative"><img src="/brand/logo.png" alt="Fandaqah" class="h-[3.1rem] w-auto" /></Link>
+                <button type="button" class="relative rounded-lg bg-white p-1.5 text-ink-2 shadow-sm lg:hidden" :aria-label="t('Close menu')" @click="drawer = false"><Icon name="close" /></button>
             </div>
 
             <nav class="flex-1 overflow-y-auto px-4 py-5">
@@ -67,16 +68,19 @@ const logout = () => router.post('/logout');
                 </div>
             </nav>
 
-            <div class="relative overflow-hidden border-t border-line px-6 py-5">
-                <div class="brand-pattern pointer-events-none absolute inset-y-0 end-0 w-24 opacity-20" aria-hidden="true" />
-                <div class="relative">
-                    <div class="eyebrow">{{ t('Hotel group') }}</div>
-                    <select v-if="auth?.groups?.length > 1" :value="auth.currentGroupId" class="mt-1 w-full max-w-[11rem] truncate rounded-lg border border-line bg-white px-2 py-1.5 text-sm font-bold text-navy outline-none focus:ring-2 focus:ring-coral/30"
-                            :aria-label="t('Hotel group')" @change="switchGroup">
-                        <option v-for="g in auth.groups" :key="g.id" :value="g.id">{{ name(g) }}</option>
-                    </select>
-                    <div v-else class="mt-1 text-sm font-bold text-navy">{{ name(currentGroup) }}</div>
-                    <div class="mt-1 text-xs text-muted">{{ t('Group Reporting Engine') }}</div>
+            <div class="p-4">
+                <div class="relative overflow-hidden rounded-2xl bg-navy px-4 py-4 text-white">
+                    <div class="art-end absolute inset-y-0 end-0 w-3/4 opacity-45 [background-size:170px_auto]" aria-hidden="true" />
+                    <div class="absolute inset-0 bg-gradient-to-r from-navy via-navy/85 to-navy/10 rtl:bg-gradient-to-l" aria-hidden="true" />
+                    <div class="relative">
+                        <div class="eyebrow">{{ t('Hotel group') }}</div>
+                        <select v-if="auth?.groups?.length > 1" :value="auth.currentGroupId" class="mt-1.5 w-full max-w-[12rem] truncate rounded-lg border border-white/20 bg-navy/70 px-2 py-1.5 text-sm font-bold text-white outline-none backdrop-blur focus:ring-2 focus:ring-coral/40"
+                                :aria-label="t('Hotel group')" @change="switchGroup">
+                            <option v-for="g in auth.groups" :key="g.id" :value="g.id" class="text-navy">{{ name(g) }}</option>
+                        </select>
+                        <div v-else class="mt-1.5 text-sm font-bold text-white">{{ name(currentGroup) }}</div>
+                        <div class="mt-1 text-xs text-white/60">{{ t('Group Reporting Engine') }}</div>
+                    </div>
                 </div>
             </div>
         </aside>
@@ -85,7 +89,11 @@ const logout = () => router.post('/logout');
         <!-- Main -->
         <div class="lg:ps-[17rem] print:!ps-0">
             <header class="print:hidden sticky top-0 z-30 border-b border-line bg-white/90 backdrop-blur">
-                <div class="flex h-[5.5rem] items-center gap-3 px-4 sm:px-8">
+                <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+                    <div class="art-center absolute inset-y-0 start-1/2 w-[30rem] -translate-x-1/2 opacity-50 max-xl:hidden rtl:translate-x-1/2 [background-size:210px_auto]" />
+                </div>
+                <div class="art-ribbon pointer-events-none absolute inset-x-0 -bottom-px h-[5px]" aria-hidden="true" />
+                <div class="relative flex h-[5.5rem] items-center gap-3 px-4 sm:px-8">
                     <button type="button" class="rounded-xl border border-line p-2 text-navy lg:hidden" :aria-label="t('Open menu')" @click="drawer = true"><Icon name="menu" /></button>
                     <HotelSwitcher class="min-w-0 flex-1 sm:flex-none" />
                     <div class="ms-auto flex items-center gap-2 sm:gap-3">

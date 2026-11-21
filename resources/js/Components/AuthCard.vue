@@ -13,7 +13,7 @@ const toggleLocale = () => router.post('/locale', { locale: locale.value === 'ar
 <template>
     <Head :title="title" />
     <div class="relative flex min-h-screen flex-col overflow-hidden bg-paper px-6 py-8">
-        <div class="brand-pattern pointer-events-none absolute inset-y-0 end-0 w-1/3 opacity-[0.07]" aria-hidden="true" />
+        <div class="art-corner absolute -end-10 -top-10 size-[26rem] opacity-60 [background-size:240px_auto]" aria-hidden="true" />
         <div class="relative flex items-center justify-between">
             <img src="/brand/logo.png" alt="Fandaqah" class="h-12 w-auto" />
             <button type="button" class="flex items-center gap-2 rounded-xl border border-line bg-white px-3 py-2 text-sm font-bold text-navy hover:border-coral/40" @click="toggleLocale">
