@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\SessionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentsController;
+use App\Http\Controllers\GroupReportController;
 use App\Http\Controllers\LedgersController;
 use App\Http\Controllers\ManagerFlashController;
 use App\Http\Controllers\PreferencesController;
@@ -19,6 +20,7 @@ Route::post('/locale', [PreferencesController::class, 'locale']);
 
 Route::middleware(['auth', 'group'])->group(function () {
     Route::get('/', DashboardController::class)->name('dashboard');
+    Route::get('/group-report', GroupReportController::class)->name('group-report');
     Route::get('/manager-flash', ManagerFlashController::class)->name('manager-flash');
     Route::get('/trial-balance', TrialBalanceController::class)->name('trial-balance');
     Route::get('/ledgers', LedgersController::class)->name('ledgers');

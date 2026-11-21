@@ -22,6 +22,7 @@ const sections = computed(() => [
         { href: '/', icon: 'grid', label: t('Dashboard'), show: can.value['view dashboard'], active: path.value === '/' },
     ] },
     { label: t('Reports'), items: [
+        { href: '/group-report', icon: 'layers', label: t('Group report'), show: can.value['view reports'] },
         { href: '/manager-flash', icon: 'flash', label: t('Manager Flash'), show: can.value['view reports'] },
         { href: '/trial-balance', icon: 'scale', label: t('Trial Balance'), show: can.value['view financials'] },
         { href: '/ledgers', icon: 'book', label: t('Front Office Ledgers'), show: can.value['view financials'] },

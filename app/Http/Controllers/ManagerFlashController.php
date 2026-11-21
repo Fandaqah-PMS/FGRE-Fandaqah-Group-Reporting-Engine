@@ -13,7 +13,7 @@ use Inertia\Response;
 /**
  * Manager Flash for one business date: the six columns (Day / MTD / YTD, this
  * year and last year) for the selected hotel, or consolidated over all hotels
- * (parts summed, KPIs recomputed), plus a per-hotel breakdown.
+ * (parts summed, KPIs recomputed), plus the same per hotel.
  */
 class ManagerFlashController extends Controller
 {
@@ -21,13 +21,19 @@ class ManagerFlashController extends Controller
     {
         Gate::authorize('view reports');
 
+        return Inertia::render('ManagerFlash', $this->data($request, $kpis));
+    }
+
+    /** Shared with the group report. @return array<string, mixed> */
+    public function data(Request $request, GroupKpiService $kpis): array
+    {
         $groupId = $request->user()->current_group_id;
         $propertyIds = HotelScope::propertyIds($request);
         $latest = $kpis->latestDate($groupId, $propertyIds);
         $date = $this->dateParam($request) ?? $latest;
 
         if ($date === null) {
-            return Inertia::render('ManagerFlash', ['empty' => true]);
+            return ['empty' => true];
         }
 
         $columns = [];
@@ -48,7 +54,7 @@ class ManagerFlashController extends Controller
             }
         }
 
-        return Inertia::render('ManagerFlash', [
+        return [
             'empty' => false,
             'date' => $date,
             'latest' => $latest,
@@ -56,6 +62,7 @@ class ManagerFlashController extends Controller
             'columns' => $columns,
             'hotels' => array_values($hotels),
             'missing' => $missing,
-        ]);
+            'hotelCount' => $propertyIds->count(),
+        ];
     }
 }

@@ -16,20 +16,27 @@ const props = defineProps({
     deltaKind: { type: String, default: 'pct' },
     showLy: { type: Boolean, default: true },
     color: { type: String, default: THIS_YEAR },
+    reference: { default: null },          // e.g. the group figure, drawn as a dashed coral line
+    referenceLabel: { type: String, default: '' },
 });
 
 const { t, name } = useI18n();
 const hover = ref(null);
 const sorted = computed(() => [...props.rows].sort((a, b) => Number(b.ty ?? -1) - Number(a.ty ?? -1)));
-const max = computed(() => Math.max(1e-9, ...props.rows.flatMap((r) => [Number(r.ty ?? 0), Number(r.ly ?? 0)])));
+const max = computed(() => Math.max(1e-9, Number(props.reference ?? 0), ...props.rows.flatMap((r) => [Number(r.ty ?? 0), Number(r.ly ?? 0)])));
 const width = (v) => (isNum(v) && Number(v) > 0 ? `${(Number(v) / max.value) * 100}%` : '0%');
 </script>
 
 <template>
     <div>
-        <div v-if="showLy" class="mb-4 flex flex-wrap gap-4 text-xs font-semibold text-ink-2" role="list" :aria-label="t('Legend')">
-            <span class="flex items-center gap-1.5" role="listitem"><span class="size-2.5 rounded-[3px]" :style="{ background: THIS_YEAR }" />{{ t('This year') }}</span>
-            <span class="flex items-center gap-1.5" role="listitem"><span class="size-2.5 rounded-[3px]" :style="{ background: LAST_YEAR }" />{{ t('Last year') }}</span>
+        <div v-if="showLy || isNum(reference)" class="mb-4 flex flex-wrap gap-4 text-xs font-semibold text-ink-2" role="list" :aria-label="t('Legend')">
+            <template v-if="showLy">
+                <span class="flex items-center gap-1.5" role="listitem"><span class="size-2.5 rounded-[3px]" :style="{ background: color }" />{{ t('This year') }}</span>
+                <span class="flex items-center gap-1.5" role="listitem"><span class="size-2.5 rounded-[3px]" :style="{ background: LAST_YEAR }" />{{ t('Last year') }}</span>
+            </template>
+            <span v-if="isNum(reference)" class="flex items-center gap-1.5" role="listitem">
+                <span class="h-3 border-s-2 border-dashed border-coral" />{{ referenceLabel || t('Group') }} <bdi class="tabular text-navy">{{ format(reference) }}</bdi>
+            </span>
         </div>
         <ul class="space-y-4">
             <li v-for="(row, i) in sorted" :key="row.id" class="relative outline-none" tabindex="0"
@@ -40,7 +47,8 @@ const width = (v) => (isNum(v) && Number(v) > 0 ? `${(Number(v) / max.value) * 1
                     <bdi class="font-bold text-navy tabular">{{ format(row.ty) }}</bdi>
                     <Delta v-if="showLy" :current="row.ty" :previous="row.ly" :kind="deltaKind" />
                 </div>
-                <div class="flex flex-col gap-[3px]">
+                <div class="relative flex flex-col gap-[3px]">
+                    <span v-if="isNum(reference)" class="pointer-events-none absolute -inset-y-1 z-[1] border-s-2 border-dashed border-coral" :style="{ insetInlineStart: width(reference) }" aria-hidden="true" />
                     <div class="h-3 rounded-e-[4px] transition-all" :class="hover === row.id && 'brightness-105'" :style="{ width: width(row.ty), background: color }" />
                     <div v-if="showLy" class="h-1.5 rounded-e-[4px]" :style="{ width: width(row.ly), background: LAST_YEAR }" />
                 </div>
