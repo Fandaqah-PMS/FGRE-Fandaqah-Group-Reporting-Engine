@@ -14,7 +14,8 @@ import Gauge from '../Components/Charts/Gauge.vue';
 import Heatmap from '../Components/Charts/Heatmap.vue';
 import HotelBars from '../Components/Charts/HotelBars.vue';
 import SegmentBar from '../Components/Charts/SegmentBar.vue';
-import AttentionList from '../Components/AttentionList.vue';
+import HealthBoard from '../Components/HealthBoard.vue';
+import SubscribeButton from '../Components/Subscriptions/SubscribeButton.vue';
 import RankingTable from '../Components/RankingTable.vue';
 import { compact, dayNum, int, isNum, longDate, money, monthLabel, pct, shortDate, weekday } from '../lib/format';
 import { BRAND, LAST_YEAR_BAR, MIX, SERIES, THIS_YEAR } from '../lib/palette';
@@ -137,6 +138,7 @@ const sortBy = (key) => (sort.value = { key, dir: sort.value.key === key ? -sort
                     <button v-for="p in periods" :key="p.key" type="button" role="tab" :aria-selected="filters.period === p.key" @click="apply({ period: p.key })">{{ p.label }}</button>
                 </div>
                 <ViewToggle />
+                <SubscribeButton v-if="page.props.auth?.can?.['view reports']" />
             </template>
         </PageHeader>
 
@@ -148,7 +150,7 @@ const sortBy = (key) => (sort.value = { key, dir: sort.value.key === key ? -sort
                 <span v-if="group.is_provisional" class="chip bg-coral text-white">{{ t('Includes provisional figures') }}</span>
             </Hero>
 
-            <AttentionList :items="attention ?? []" :date="filters.date" />
+            <HealthBoard :items="attention ?? []" :date="filters.date" />
 
             <!-- KPI cards -->
             <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">

@@ -4,6 +4,7 @@ namespace App\Reports;
 
 use App\Enums\ReportType;
 use App\Models\DailyPropertyStat;
+use App\Models\GuestLedgerLine;
 use App\Models\LedgerBalance;
 use App\Models\Property;
 use App\Models\ReportDocument;
@@ -38,6 +39,7 @@ class ReportDataWriter
             ReportType::ManagerFlash => $this->writeFlash($base, $output['manager_flash'], (bool) ($output['provisional'] ?? false)),
             ReportType::TrialBalance => $this->writeTrialBalance($base, $output['trial_balance'], $output['period_start'] ?? null),
             ReportType::FrontOfficeTrialBalance => $this->writeFrontOffice($base, $output['front_office_trial_balance']),
+            ReportType::GuestTrialBalance => $this->writeGuestLedger($base, $output['guest_trial_balance']),
             ReportType::Unknown => throw new \LogicException('Cannot store data for an unknown report type.'),
         });
     }
@@ -133,6 +135,41 @@ class ReportDataWriter
                 'amount' => round((float) $tx['amount'], 2),
             ]);
         }
+    }
+
+    /**
+     * Guest folios, plus the guest ledger total in ledger_balances (so the ledgers page and
+     * group totals see it even when no front-office trial balance is sent).
+     *
+     * @param  array<string, mixed>  $g
+     */
+    private function writeGuestLedger(array $base, array $g): void
+    {
+        $this->clear([GuestLedgerLine::class], $base);
+
+        $now = now();
+        $rows = array_map(fn (array $l) => [
+            ...$base,
+            'room' => $l['room'],
+            'guest_name' => $l['name'],
+            'arrival' => $l['arrival'],
+            'departure' => $l['departure'],
+            'opening_balance' => round((float) $l['opening_balance'], 2),
+            'debit' => round((float) $l['debit'] + (float) $l['transfer_debit'], 2),
+            'credit' => round((float) $l['credit'] + (float) $l['transfer_credit'], 2),
+            'closing_balance' => round((float) $l['closing_balance'], 2),
+            'status' => $l['status'],
+            'created_at' => $now,
+            'updated_at' => $now,
+        ], $g['lines']);
+        foreach (array_chunk($rows, 500) as $chunk) {
+            GuestLedgerLine::insert($chunk);
+        }
+
+        LedgerBalance::forGroup($base['group_id'])->updateOrCreate(
+            ['property_id' => $base['property_id'], 'business_date' => $base['business_date'], 'ledger' => 'guest'],
+            [...$base, 'opening_balance' => round(array_sum(array_column($rows, 'opening_balance')), 2), 'closing_balance' => round(array_sum(array_column($rows, 'closing_balance')), 2)],
+        );
     }
 
     /** @param list<class-string<Model>> $models */

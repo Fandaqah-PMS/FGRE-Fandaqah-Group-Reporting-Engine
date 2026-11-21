@@ -49,8 +49,8 @@ new source (Nazeel API, Opera export, Fandaqah MCP) only needs a new extractor.
 
 | D15 | **Every report has three views** from one row definition (`resources/js/lib/reports.js`): Group total, Side by side (report rows × hotels, hotel-set subtotals, group; best/weakest shaded), Hotel vs group (bullet bars vs group, best hotel and basis). Same toolbar everywhere: compare with Last year or Budget, pick hotels or a hotel set, export to Excel (CSV) or PDF (print). | One way to read and compare all hotels, for current and future reports. |
 | D16 | **Budget to date**: monthly budgets per hotel (CSV template, row-level validation, all-or-nothing import), spread evenly over the month's days; group and set budgets count only hotels that reported (like for like). | Hospitality-standard budget comparison. |
-| D17 | **Needs attention** on the dashboard (missing / provisional reports, review queue, occupancy or ADR down vs last year, RevPAR index below group, revenue below budget, unbalanced trial balance, AR growth) with thresholds in `config/fgre.php`; **hotel ranking** by RevPAR, occupancy, ADR, growth or budget achieved. | Owners first want to know what is wrong and who leads. |
-| D18 | **Morning email**: the group Manager Flash side by side (Day and MTD vs last year) plus needs-attention items, daily at 08:00 Riyadh to owners and finance users who keep it on; once per business date. | The owner reads the group on the phone without logging in. |
+| D17 | **Hotel health board** on the dashboard: one card per hotel with a status (Action needed / Watch / Note / On track) built from the needs-attention checks (missing / provisional reports, review queue, occupancy or ADR down vs last year, RevPAR index below group, revenue below budget, unbalanced trial balance, AR growth, guests checked out still owing, very large guest folios) with thresholds in `config/fgre.php`; **hotel ranking** by RevPAR, occupancy, ADR, growth or budget achieved. | Owners first want to know what is wrong and who leads. |
+| D18 | **Email subscriptions** (`report_subscriptions`): each user picks daily (once per business date, after the chosen time, waiting for a late night audit), weekly (chosen weekday, last 7 days + MTD) or monthly (chosen day, previous month + YTD); charts (KPI tiles and bar charts drawn with email-safe tables), tables (hotels side by side + CSV) or both; all or some of their hotels; Arabic or English. `fgre:send-subscriptions` runs every 15 minutes in the group timezone; hotels and permission are re-checked at send time. | Each owner gets the group in the inbox the way they read it. |
 
 ## 4. Report types
 
@@ -59,6 +59,7 @@ new source (Nazeel API, Opera export, Fandaqah MCP) only needs a new extractor.
 | `manager_flash` | Fandaqah EOD-016, Opera Manager Report | `daily_property_stats` (Day / MTD / YTD × this year / last year), `revenue_lines` |
 | `trial_balance` (general ledger) | Fandaqah FST-001 / FAC-001 | `trial_balance_lines` (standard + local account no., signed balances; may cover a period) |
 | `front_office_trial_balance` | Opera trial_balance, Fandaqah FIN-040 | `ledger_balances` (guest / AR / deposit / package), `transaction_code_lines` |
+| `guest_trial_balance` | Fandaqah EOD-010 Guest Trial Balance | `guest_ledger_lines` (one folio per guest / company: room, stay, opening, debits, credits, closing, status), guest total in `ledger_balances` |
 
 Fandaqah hotels share the NTMP chart of accounts, so their general-ledger trial balances
 consolidate by account number directly. Other PMSs will need an account mapping table

@@ -74,6 +74,10 @@ final class ExtractionSchema
           Daily transactions by transaction code (Revenue, Non Revenue, Paid Out, Payment) and ledger
           roll-forwards (Guest Ledger, AR / City Ledger, Deposit Ledger, Package Ledger) with
           "Balance Yesterday" and "Balance Today".
+        - guest_trial_balance: Guest Trial Balance (program gl_trial_balance, EOD-010): one line per
+          guest or company folio (room / account number, name, arrival and departure dates, opening
+          balance, debits, transfer debit, credits, transfer credit, closing balance, folio numbers,
+          status such as CKIN / CKOT), with subtotal and total lines at the end.
         - unknown: anything else. Fill only the header fields; leave every section null.
         Fill only the section for the detected type; the other sections are null.
 
@@ -107,6 +111,12 @@ final class ExtractionSchema
         {$metrics}
         Skip metrics the report does not print. Do not map a "minus Comp / House / OOO" variant row to
         a plain metric.
+        Some flash reports print a single period column instead of Day / Month / Year (e.g. the
+        filter says "Calendar/Month 2026, 04" and the only column is "APRIL 2026"). Then put the
+        values in mtd (a month) or ytd (a year) and leave the other columns null; set period_start to
+        the first day of that month or year; set business_date to the last day of the period if it had
+        ended when the report was printed, otherwise to the day before the print date, and add an issue
+        saying the end date was taken from the print date.
         revenue_departments: revenue lines by department or outlet if the report has them (Rooms,
         Restaurant, Room Service, Laundry ...), with category rooms, fnb or other. Not subtotals or
         totals, and not the block / individual / member splits. Empty array if there are none.
@@ -132,6 +142,15 @@ final class ExtractionSchema
         between (Charges, Payments, Deposits Transferred at Check-In ...). Do not treat the
         "Daily Transactions" summary block as a ledger.
         printed_hotel_balance: the "Hotel Balance" amount, if printed.
+
+        ## guest_trial_balance
+        lines: every folio line in order, across all pages; not subtotal or total lines. room and name
+        as printed (a name can wrap onto two lines: join them). arrival / departure as YYYY-MM-DD.
+        opening_balance, debit, transfer_debit, credit, transfer_credit, closing_balance as printed
+        (negative = credit balance). status: in_house for CKIN / checked in, checked_out for CKOT /
+        checked out, other for anything else. The business_date is the "For Date" in the filter.
+        printed_totals: the final Total line (opening, debit, transfer_debit, credit, transfer_credit,
+        closing). Folio numbers are not needed.
         If the report's own check lines say something is NOT in balance, mention it in issues.
         PROMPT;
     }
@@ -160,7 +179,7 @@ final class ExtractionSchema
 
         return [
             ...$object([
-                'report_type' => ['type' => 'string', 'enum' => ['manager_flash', 'trial_balance', 'front_office_trial_balance', 'unknown']],
+                'report_type' => ['type' => 'string', 'enum' => ['manager_flash', 'trial_balance', 'front_office_trial_balance', 'guest_trial_balance', 'unknown']],
                 'report_title_as_printed' => $str,
                 'property_name' => $str,
                 'property_code' => $str,
@@ -173,6 +192,7 @@ final class ExtractionSchema
                 'manager_flash' => $nullableRef('manager_flash'),
                 'trial_balance' => $nullableRef('trial_balance'),
                 'front_office_trial_balance' => $nullableRef('front_office_trial_balance'),
+                'guest_trial_balance' => $nullableRef('guest_trial_balance'),
             ]),
             '$defs' => [
                 'manager_flash' => $object([
@@ -223,6 +243,29 @@ final class ExtractionSchema
                         'closing_balance' => ['type' => 'number'],
                     ])),
                     'printed_hotel_balance' => $num,
+                ]),
+                'guest_trial_balance' => $object([
+                    'lines' => $listOf($object([
+                        'room' => $str,
+                        'name' => $str,
+                        'arrival' => $date,
+                        'departure' => $date,
+                        'opening_balance' => ['type' => 'number'],
+                        'debit' => ['type' => 'number'],
+                        'transfer_debit' => ['type' => 'number'],
+                        'credit' => ['type' => 'number'],
+                        'transfer_credit' => ['type' => 'number'],
+                        'closing_balance' => ['type' => 'number'],
+                        'status' => ['type' => 'string', 'enum' => ['in_house', 'checked_out', 'other']],
+                    ])),
+                    'printed_totals' => ['anyOf' => [$object([
+                        'opening_balance' => ['type' => 'number'],
+                        'debit' => ['type' => 'number'],
+                        'transfer_debit' => ['type' => 'number'],
+                        'credit' => ['type' => 'number'],
+                        'transfer_credit' => ['type' => 'number'],
+                        'closing_balance' => ['type' => 'number'],
+                    ]), ['type' => 'null']]],
                 ]),
             ],
         ];

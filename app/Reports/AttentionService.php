@@ -4,6 +4,7 @@ namespace App\Reports;
 
 use App\Enums\DocumentStatus;
 use App\Enums\StatPeriod;
+use App\Models\GuestLedgerLine;
 use App\Models\LedgerBalance;
 use App\Models\Property;
 use App\Models\ReportDocument;
@@ -98,6 +99,22 @@ class AttentionService
             $open = (float) $row->opening_balance;
             if ($open > 0 && ((float) $row->closing_balance / $open - 1) * 100 >= $th['ar_growth_pct']) {
                 $add('warning', 'ar_growing', $row->property_id, ['value' => round(((float) $row->closing_balance / $open - 1) * 100, 1)]);
+            }
+        }
+
+        // Guest trial balance: folios still owing after check-out, and very large open folios.
+        $guestDates = GuestLedgerLine::forGroup($groupId)->whereIn('property_id', $propertyIds)
+            ->selectRaw('property_id, max(business_date) as d')->groupBy('property_id')->pluck('d', 'property_id');
+        foreach ($guestDates as $id => $d) {
+            $folios = GuestLedgerLine::forGroup($groupId)->where('property_id', $id)
+                ->whereDate('business_date', substr((string) $d, 0, 10))->get(['status', 'closing_balance']);
+            $unpaid = $folios->where('status', 'checked_out')->filter(fn ($f) => (float) $f->closing_balance > 0.005);
+            if ($unpaid->isNotEmpty()) {
+                $add('warning', 'guest_checked_out_balance', (int) $id, ['count' => $unpaid->count(), 'value' => number_format($unpaid->sum(fn ($f) => (float) $f->closing_balance), 0)]);
+            }
+            $large = $folios->filter(fn ($f) => (float) $f->closing_balance >= $th['guest_balance_large']);
+            if ($large->isNotEmpty()) {
+                $add('info', 'guest_large_balance', (int) $id, ['count' => $large->count(), 'value' => number_format((float) $large->max(fn ($f) => (float) $f->closing_balance), 0)]);
             }
         }
 

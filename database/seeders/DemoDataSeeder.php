@@ -75,6 +75,7 @@ class DemoDataSeeder extends Seeder
             $this->writeStats($property, $days, $i);
             $this->writeTrialBalances($property, $days);
             $this->writeLedgers($property);
+            $this->writeGuestFolios($property, $i);
             $this->writeBudgets($property, $days);
         }
 
@@ -101,11 +102,23 @@ class DemoDataSeeder extends Seeder
         $viewer->groups()->syncWithoutDetaching([$group->id => ['role' => 'viewer', 'all_properties' => false]]);
         $viewer->restrictedProperties()->sync([$properties[1]->id, $properties[2]->id]);
         $viewer->forceFill(['current_group_id' => $group->id])->save();
+
+        // Email subscriptions: the owner gets the daily report (Arabic) and a weekly chart summary (English).
+        DB::table('report_subscriptions')->where('user_id', $owner->id)->delete();
+        foreach ([
+            ['frequency' => 'daily', 'send_time' => '08:00', 'content' => 'both', 'locale' => 'ar', 'weekday' => null],
+            ['frequency' => 'weekly', 'send_time' => '09:00', 'content' => 'charts', 'locale' => 'en', 'weekday' => 0],
+        ] as $sub) {
+            DB::table('report_subscriptions')->insert([
+                ...$sub, 'user_id' => $owner->id, 'group_id' => $group->id, 'report' => 'manager_flash',
+                'include_attention' => true, 'is_active' => true, 'created_at' => now(), 'updated_at' => now(),
+            ]);
+        }
     }
 
     private function wipe(Property $property): void
     {
-        foreach (['daily_property_stats', 'revenue_lines', 'trial_balance_lines', 'ledger_balances', 'transaction_code_lines'] as $table) {
+        foreach (['daily_property_stats', 'revenue_lines', 'trial_balance_lines', 'ledger_balances', 'transaction_code_lines', 'guest_ledger_lines'] as $table) {
             DB::table($table)->where('property_id', $property->id)->delete();
         }
         $documentIds = DB::table('report_documents')->where('property_id', $property->id)->pluck('id');
@@ -336,6 +349,61 @@ class DemoDataSeeder extends Seeder
                 'updated_at' => now(),
             ]);
         }
+    }
+
+    /** Fictional guests and companies for demo folios. */
+    private const GUESTS = [
+        'Faisal Al-Otaibi', 'Noura Al-Qahtani', 'Khalid Al-Harbi', 'Reem Al-Dosari', 'Omar Al-Shehri', 'Lama Al-Ghamdi',
+        'Yousef Al-Mutairi', 'Hind Al-Zahrani', 'Majed Al-Anazi', 'Sara Al-Malki', 'Turki Al-Subaie', 'Dana Al-Rashid',
+        'Desert Rose Travel', 'Najd Events Co.', 'Red Sea Tours', 'Gulf Medical Group', 'Saudi Training Institute', 'Oasis Engineering',
+    ];
+
+    /**
+     * A guest trial balance for 2026-11-19: in-house folios, some in credit (paid ahead), and for
+     * some hotels guests who checked out without settling. The guest ledger total follows the folios.
+     */
+    private function writeGuestFolios(Property $property, int $hotelIndex): void
+    {
+        $date = '2026-11-19';
+        $documentId = $this->document($property, 'guest_trial_balance', $date, null, false, 'nightaudit@'.Str::slug($property->code).'.example', 'EOD-010 Guest Trial Balance.pdf');
+        $count = min(28, (int) round($property->total_rooms * 0.18));
+        $unpaid = [0 => 2, 1 => 1, 2 => 0, 3 => 0, 4 => 3][$hotelIndex] ?? 0;
+
+        $rows = [];
+        for ($n = 0; $n < $count; $n++) {
+            $nights = mt_rand(1, 6);
+            $arrival = CarbonImmutable::parse($date)->subDays(mt_rand(0, $nights));
+            $rate = 380 + mt_rand(0, 420);
+            $charges = round($rate * mt_rand(1, $nights + 1) * (1 + mt_rand(0, 30) / 100), 2);
+            $status = $n < $unpaid ? 'checked_out' : 'in_house';
+            $payments = match (true) {
+                $status === 'checked_out' => round($charges * mt_rand(0, 40) / 100, 2),
+                $n % 5 === 0 => round($charges + mt_rand(200, 1500), 2),     // paid ahead: credit balance
+                default => round($charges * mt_rand(0, 90) / 100, 2),
+            };
+            $isCompany = $n % 6 === 3;
+            if ($isCompany && $hotelIndex === 1) {
+                $charges = round($charges * 9, 2);                            // a long-stay company folio
+            }
+            $opening = round($charges * 0.7 - $payments * 0.6, 2);
+            $debit = round($charges * 0.3, 2);
+            $credit = round($payments * 0.4, 2);
+            $rows[] = [
+                'group_id' => $property->group_id, 'property_id' => $property->id, 'report_document_id' => $documentId,
+                'business_date' => $date, 'room' => (string) ($isCompany ? 9000 + $n : 100 * mt_rand(1, 6) + mt_rand(1, 30)),
+                'guest_name' => self::GUESTS[($n * 7 + $hotelIndex * 3) % count(self::GUESTS)],
+                'arrival' => $arrival->toDateString(), 'departure' => $status === 'checked_out' ? $date : $arrival->addDays($nights + 1)->toDateString(),
+                'opening_balance' => $opening, 'debit' => $debit, 'credit' => $credit,
+                'closing_balance' => round($opening + $debit - $credit, 2), 'status' => $status, 'currency' => 'SAR',
+                'created_at' => now(), 'updated_at' => now(),
+            ];
+        }
+        DB::table('guest_ledger_lines')->insert($rows);
+
+        DB::table('ledger_balances')->where(['property_id' => $property->id, 'ledger' => 'guest'])->whereDate('business_date', $date)->update([
+            'opening_balance' => round(array_sum(array_column($rows, 'opening_balance')), 2),
+            'closing_balance' => round(array_sum(array_column($rows, 'closing_balance')), 2),
+        ]);
     }
 
     /** 2026 budget: each month of 2025 actuals plus a growth target (rooms +3 %, rate +4 %). */

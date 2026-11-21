@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import PageHeader from '../Components/PageHeader.vue';
+import SubscribeButton from '../Components/Subscriptions/SubscribeButton.vue';
 import ViewToggle from '../Components/ViewToggle.vue';
 import KpiCard from '../Components/KpiCard.vue';
 import ReportToolbar from '../Components/Report/ReportToolbar.vue';
@@ -198,6 +199,7 @@ const flashCols = computed(() => [['day', t('Day')], ['mtd', t('MTD')], ['ytd', 
                         :aria-selected="cmpPeriod === p[0]" @click="navigate({ period: p[0] })">{{ p[1] }}</button>
             </div>
             <ViewToggle v-if="mode !== 'focus'" />
+            <SubscribeButton :hotels="mode === 'compare' && selection?.length ? selection : null" />
         </template>
     </PageHeader>
 

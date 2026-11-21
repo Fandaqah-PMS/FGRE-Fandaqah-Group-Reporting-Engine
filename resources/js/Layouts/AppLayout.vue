@@ -20,6 +20,7 @@ const currentGroup = computed(() => auth.value?.groups?.find((g) => g.id === aut
 const sections = computed(() => [
     { label: t('Overview'), items: [
         { href: '/', icon: 'grid', label: t('Dashboard'), show: can.value['view dashboard'], active: path.value === '/' },
+        { href: '/subscriptions', icon: 'mail', label: t('Email subscriptions'), show: can.value['view reports'] },
     ] },
     { label: t('Reports'), items: [
         { href: '/manager-flash', icon: 'flash', label: t('Manager Flash'), show: can.value['view reports'] },

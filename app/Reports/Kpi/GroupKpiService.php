@@ -75,6 +75,57 @@ class GroupKpiService
     }
 
     /**
+     * KPIs over a date range (a week, a month), per hotel and for the group, this year and
+     * the same days last year: daily parts summed, then ratios recomputed (never averaged).
+     *
+     * @param  Collection<int, int>|array<int>  $propertyIds
+     * @return array{hotels: list<array{ty: array<string, mixed>, ly: ?array<string, mixed>}>, group: array{ty: array<string, mixed>, ly: ?array<string, mixed>}, missing: list<array<string, mixed>>, currency: string}
+     */
+    public function forRange(int $groupId, string $from, string $to, Collection|array $propertyIds): array
+    {
+        $propertyIds = collect($propertyIds)->values();
+        $properties = Property::forGroup($groupId)->whereIn('id', $propertyIds)->orderBy('name')->get();
+
+        $rows = DailyPropertyStat::forGroup($groupId)
+            ->whereIn('property_id', $propertyIds)
+            ->whereDate('business_date', '>=', $from)
+            ->whereDate('business_date', '<=', $to)
+            ->whereIn('period', [StatPeriod::Day->value, StatPeriod::DayLastYear->value])
+            ->get();
+
+        $kpis = function (Collection $stats, array $extra) {
+            $parts = KpiCalculator::sumParts($stats->values());
+
+            return [...$extra, 'days' => $stats->map(fn ($s) => $s->business_date->toDateString())->unique()->count(), ...$parts, ...KpiCalculator::compute($parts)];
+        };
+
+        $hotels = [];
+        $missing = [];
+        foreach ($properties as $property) {
+            [$ty, $ly] = $rows->where('property_id', $property->id)->partition(fn ($s) => $s->period === StatPeriod::Day);
+            $ref = ['property_id' => $property->id, 'name' => $property->name, 'name_ar' => $property->name_ar];
+            if ($ty->isEmpty()) {
+                $missing[] = ['id' => $property->id, 'name' => $property->name, 'name_ar' => $property->name_ar];
+
+                continue;
+            }
+            $hotels[] = [
+                'ty' => $kpis($ty, [...$ref, 'is_provisional' => $ty->contains('is_provisional', true)]),
+                'ly' => $ly->isEmpty() ? null : $kpis($ly, $ref),
+            ];
+        }
+
+        [$ty, $ly] = $rows->partition(fn ($s) => $s->period === StatPeriod::Day);
+
+        return [
+            'hotels' => $hotels,
+            'group' => ['ty' => $kpis($ty, ['hotel_count' => count($hotels)]), 'ly' => $ly->isEmpty() ? null : $kpis($ly, [])],
+            'missing' => $missing,
+            'currency' => $properties->first()?->currency ?? 'SAR',
+        ];
+    }
+
+    /**
      * Daily KPIs over a date range, this year and the same days last year, for the given
      * hotels summed together (one hotel = that hotel's trend).
      *

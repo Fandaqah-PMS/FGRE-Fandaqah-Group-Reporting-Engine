@@ -46,6 +46,7 @@ class ExtractionValidator
             'manager_flash' => $this->validateFlash($output['manager_flash'] ?? null),
             'trial_balance' => $this->validateTrialBalance($output['trial_balance'] ?? null),
             'front_office_trial_balance' => $this->validateFrontOffice($output['front_office_trial_balance'] ?? null),
+            'guest_trial_balance' => $this->validateGuestTrialBalance($output['guest_trial_balance'] ?? null),
             default => ["Unsupported report type [{$type}]."],
         }];
     }
@@ -245,6 +246,42 @@ class ExtractionValidator
             $main = ($closings['guest'] ?? 0) + ($closings['ar'] ?? 0) + ($closings['deposit'] ?? 0);
             if (! $this->matchesAny($hotel, [$main, $main + ($closings['package'] ?? 0)], $this->moneyTolerance)) {
                 $errors[] = sprintf('Hotel balance %.2f does not equal guest + AR + deposit ledger balances (%.2f).', $hotel, $main);
+            }
+        }
+
+        return $errors;
+    }
+
+    /**
+     * Guest trial balance: each folio rolls forward (opening + debits − credits = closing),
+     * and the lines add up to the printed total line.
+     *
+     * @param  array<string, mixed>|null  $g
+     * @return list<string>
+     */
+    private function validateGuestTrialBalance(?array $g): array
+    {
+        if ($g === null || empty($g['lines'])) {
+            return ['Guest trial balance has no folio lines.'];
+        }
+
+        $errors = [];
+        $fields = ['opening_balance', 'debit', 'transfer_debit', 'credit', 'transfer_credit', 'closing_balance'];
+        $sums = array_fill_keys($fields, 0.0);
+
+        foreach ($g['lines'] as $i => $l) {
+            foreach ($fields as $f) {
+                $sums[$f] += (float) $l[$f];
+            }
+            $expected = (float) $l['opening_balance'] + (float) $l['debit'] + (float) $l['transfer_debit'] - (float) $l['credit'] - (float) $l['transfer_credit'];
+            if (! $this->isClose($expected, (float) $l['closing_balance'], $this->moneyTolerance)) {
+                $errors[] = sprintf('Folio %s (line %d): opening + debits − credits = %.2f, but closing is %.2f.', $l['room'] ?? '?', $i + 1, $expected, $l['closing_balance']);
+            }
+        }
+
+        foreach ($g['printed_totals'] ?? [] as $f => $printed) {
+            if (isset($sums[$f]) && ! $this->isClose($sums[$f], (float) $printed, max($this->moneyTolerance, 0.01 * count($g['lines'])))) {
+                $errors[] = sprintf('Sum of %s over all folios is %.2f but the printed total is %.2f.', str_replace('_', ' ', $f), $sums[$f], $printed);
             }
         }
 

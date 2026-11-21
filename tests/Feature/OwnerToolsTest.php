@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Enums\InboundSource;
-use App\Mail\MorningFlashMail;
 use App\Models\BudgetMonth;
 use App\Models\InboundMessage;
 use App\Reports\AttentionService;
@@ -12,7 +11,6 @@ use App\Reports\IngestReportFile;
 use App\Reports\Kpi\BudgetService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -92,25 +90,6 @@ class OwnerToolsTest extends TestCase
         // MTD 900,000 vs budget 3,000,000 × 20/30 = 2,000,000 → −55 %
         $this->assertTrue($items->contains(fn ($i) => $i['type'] === 'below_budget' && $i['hotel']['id'] === $riyadh->id && $i['level'] === 'critical'));
         $this->assertSame('critical', $items->first()['level'], 'most serious first');
-    }
-
-    public function test_morning_email_goes_to_owners_once_per_business_date(): void
-    {
-        Mail::fake();
-        $group = $this->group();
-        $this->property($group);
-        $this->ingestFlash(FakeReportExtractor::flash());
-        $owner = $this->member($group, 'owner');
-        $viewer = $this->member($group, 'viewer');
-        $optedOut = $this->member($group, 'finance');
-        $optedOut->forceFill(['morning_email' => false])->save();
-
-        $this->artisan('fgre:send-morning-flash')->assertSuccessful();
-        $this->artisan('fgre:send-morning-flash')->assertSuccessful();
-
-        Mail::assertSent(MorningFlashMail::class, 1);
-        Mail::assertSent(MorningFlashMail::class, fn ($m) => $m->hasTo($owner->email) && $m->report['date'] === '2026-11-20');
-        Mail::assertNotSent(MorningFlashMail::class, fn ($m) => $m->hasTo($viewer->email) || $m->hasTo($optedOut->email));
     }
 
     public function test_group_budget_only_counts_hotels_that_reported(): void

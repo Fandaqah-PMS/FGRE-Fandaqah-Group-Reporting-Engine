@@ -73,7 +73,7 @@ return [
         'model' => env('FGRE_AI_MODEL', 'claude-opus-5-5'),
         'effort' => env('FGRE_AI_EFFORT', 'high'),
         'max_tokens' => (int) env('FGRE_AI_MAX_TOKENS', 64000),
-        'prompt_version' => '2026-11-21.1',
+        'prompt_version' => '2026-11-22.1',
     ],
 
     /*
@@ -98,17 +98,21 @@ return [
         'revpar_index_gap' => 15,      // RevPAR index below 100 − this (vs group)
         'budget_gap_pct' => 5,         // MTD revenue below budget by this % (2× = critical)
         'ar_growth_pct' => 15,         // AR (city ledger) balance up this % in a day
+        'guest_balance_large' => 50000, // one guest folio owing at least this much (report currency)
     ],
 
     /*
     |--------------------------------------------------------------------------
-    | Morning email (group Manager Flash, side by side)
+    | Email subscriptions (users choose daily / weekly / monthly, charts / tables)
     |--------------------------------------------------------------------------
+    |
+    | The scheduler checks every 15 minutes which subscriptions are due, in the
+    | group's timezone. Each period is sent once (report_subscriptions.last_period_key).
+    |
     */
 
-    'morning_email' => [
-        'enabled' => (bool) env('FGRE_MORNING_EMAIL', true),
-        'time' => env('FGRE_MORNING_EMAIL_TIME', '08:00'),   // Asia/Riyadh unless the group says otherwise
+    'subscriptions' => [
+        'enabled' => (bool) env('FGRE_SUBSCRIPTIONS', true),
     ],
 
     'validation' => [

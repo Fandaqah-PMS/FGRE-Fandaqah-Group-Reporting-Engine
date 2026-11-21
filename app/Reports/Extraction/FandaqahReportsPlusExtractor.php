@@ -85,6 +85,7 @@ class FandaqahReportsPlusExtractor implements ReportExtractor
             'manager_flash' => null,
             'trial_balance' => null,
             'front_office_trial_balance' => null,
+            'guest_trial_balance' => null,
         ];
 
         $rows = collect($data['sections'] ?? [])->flatMap(fn (array $s) => $s['rows'] ?? [])->all();

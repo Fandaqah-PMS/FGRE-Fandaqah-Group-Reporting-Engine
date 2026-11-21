@@ -37,6 +37,7 @@ class FakeReportExtractor implements ReportExtractor
             'manager_flash' => null,
             'trial_balance' => null,
             'front_office_trial_balance' => null,
+            'guest_trial_balance' => null,
         ], $overrides);
     }
 
@@ -83,6 +84,28 @@ class FakeReportExtractor implements ReportExtractor
                 ],
                 'printed_total_debit' => 1500.0,
                 'printed_total_credit' => $credit,
+            ],
+        ]);
+    }
+
+    /** A guest trial balance (Golden Tulip style): in house, checked out with balance, a credit folio. */
+    public static function guestTrialBalance(float $closingTotal = 7900.0): array
+    {
+        $line = fn (string $room, string $status, float $open, float $debit, float $credit) => [
+            'room' => $room, 'name' => "Guest {$room}", 'arrival' => '2026-11-18', 'departure' => '2026-11-22',
+            'opening_balance' => $open, 'debit' => $debit, 'transfer_debit' => 0.0, 'credit' => $credit, 'transfer_credit' => 0.0,
+            'closing_balance' => round($open + $debit - $credit, 2), 'status' => $status,
+        ];
+
+        return self::header('guest_trial_balance', [
+            'guest_trial_balance' => [
+                'lines' => [
+                    $line('102', 'in_house', 7575.20, 0.0, 0.0),
+                    $line('107', 'checked_out', 998.26, 0.0, 0.0),
+                    $line('230', 'in_house', 0.0, 0.0, 1434.09),
+                    $line('9003', 'in_house', 760.63, 0.0, 0.0),
+                ],
+                'printed_totals' => ['opening_balance' => 9334.09, 'debit' => 0.0, 'transfer_debit' => 0.0, 'credit' => 1434.09, 'transfer_credit' => 0.0, 'closing_balance' => $closingTotal],
             ],
         ]);
     }

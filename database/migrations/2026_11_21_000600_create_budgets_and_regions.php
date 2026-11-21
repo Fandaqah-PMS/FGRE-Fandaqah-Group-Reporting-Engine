@@ -6,8 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 /**
  * Owner tools: hotel sets (a region or cluster per hotel, for subtotals), monthly
- * budgets per hotel (USALI rooms statistics + departmental revenue), and the
- * morning email preference.
+ * budgets per hotel (USALI rooms statistics + departmental revenue).
  */
 return new class extends Migration
 {
@@ -32,15 +31,10 @@ return new class extends Migration
 
             $table->unique(['property_id', 'month']);
         });
-
-        Schema::table('users', function (Blueprint $table) {
-            $table->boolean('morning_email')->default(true)->after('locale');
-        });
     }
 
     public function down(): void
     {
-        Schema::table('users', fn (Blueprint $table) => $table->dropColumn('morning_email'));
         Schema::dropIfExists('budget_months');
         Schema::table('properties', fn (Blueprint $table) => $table->dropColumn('region'));
     }

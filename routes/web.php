@@ -8,6 +8,7 @@ use App\Http\Controllers\LedgersController;
 use App\Http\Controllers\ManagerFlashController;
 use App\Http\Controllers\PreferencesController;
 use App\Http\Controllers\ScopeController;
+use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\TrialBalanceController;
 use Illuminate\Support\Facades\Route;
 
@@ -29,6 +30,12 @@ Route::middleware(['auth', 'group'])->group(function () {
     Route::get('/budgets/template', [BudgetController::class, 'template']);
     Route::post('/budgets/import', [BudgetController::class, 'import']);
     Route::post('/documents/{document}/reprocess', [DocumentsController::class, 'reprocess']);
+    Route::get('/subscriptions', [SubscriptionController::class, 'index'])->name('subscriptions');
+    Route::post('/subscriptions', [SubscriptionController::class, 'store']);
+    Route::put('/subscriptions/{subscription}', [SubscriptionController::class, 'update']);
+    Route::delete('/subscriptions/{subscription}', [SubscriptionController::class, 'destroy']);
+    Route::post('/subscriptions/{subscription}/send', [SubscriptionController::class, 'send'])->middleware('throttle:6,1');
+    Route::get('/subscriptions/{subscription}/preview', [SubscriptionController::class, 'preview']);
 
     // Hotel switch: all hotels (consolidated) or one hotel; applies to every page.
     Route::post('/scope', [ScopeController::class, 'update']);
