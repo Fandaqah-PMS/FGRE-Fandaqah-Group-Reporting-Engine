@@ -37,6 +37,10 @@ class DashboardController extends Controller
         $ly = $kpis->forDate($groupId, $date, self::LAST_YEAR[$period], $propertyIds);
         $lyByHotel = collect($ly['hotels'])->keyBy('property_id');
 
+        // Month to date (for the cumulative chart and month cards), whatever period is selected.
+        $mtd = $period === 'mtd' ? $ty : $kpis->forDate($groupId, $date, StatPeriod::MonthToDate, $propertyIds);
+        $mtdLy = $period === 'mtd' ? $ly : $kpis->forDate($groupId, $date, StatPeriod::MonthToDateLastYear, $propertyIds);
+
         return Inertia::render('Dashboard', [
             'empty' => false,
             'filters' => ['date' => $date, 'period' => $period, 'latest' => $latest],
@@ -48,6 +52,9 @@ class DashboardController extends Controller
             'hotelCount' => $propertyIds->count(),
             'trend' => $kpis->trend($groupId, CarbonImmutable::parse($date)->subDays(29)->toDateString(), $date, $propertyIds),
             'monthly' => $kpis->monthly($groupId, $date, $propertyIds),
+            'month' => $kpis->trend($groupId, CarbonImmutable::parse($date)->startOfMonth()->toDateString(), $date, $propertyIds),
+            'mtd' => $mtd['group'],
+            'mtdLy' => $mtdLy['group'],
             'heatmap' => $propertyIds->count() > 1 ? $kpis->occupancyHeatmap($groupId, $date, $propertyIds) : null,
         ]);
     }

@@ -1,13 +1,17 @@
 <script setup>
-import Icon from './Icon.vue';
 import Delta from './Delta.vue';
 import Sparkline from './Charts/Sparkline.vue';
+import { BRAND } from '../lib/palette';
 import { useI18n } from '../lib/i18n';
 
-// KPI card from the web identity: label + coral-tint icon tile, big value, change vs last year, sparkline.
+/**
+ * KPI card (PMS dashboard style): coloured dot + label, big value with a change pill,
+ * a sub-line, and a sparkline. `highlight` = soft coral card with a progress bar.
+ */
 defineProps({
     label: String,
-    icon: String,
+    dot: { type: String, default: BRAND.coral },
+    icon: String,   // kept for callers; the PMS style uses the dot
     value: String,
     unit: { type: String, default: '' },
     current: { default: null },
@@ -16,28 +20,35 @@ defineProps({
     kind: { type: String, default: 'pct' },
     spark: { type: Array, default: null },
     note: { type: String, default: '' },
+    highlight: { type: Boolean, default: false },
+    progress: { type: Number, default: null },
 });
 
 const { t } = useI18n();
 </script>
 
 <template>
-    <div class="card rise flex flex-col p-5">
-        <div class="flex items-start justify-between gap-3">
-            <span class="text-[13px] font-semibold text-ink-2">{{ label }}</span>
-            <span class="grid size-10 place-items-center rounded-xl bg-coral-tint text-coral"><Icon :name="icon" :size="19" /></span>
+    <div class="card rise flex flex-col p-5"
+         :class="highlight && '!border-coral/30 bg-[linear-gradient(160deg,#FDEBE9_0%,#FFFFFF_65%)]'">
+        <div class="flex items-center gap-2 text-[13px] font-semibold text-ink-2">
+            <span class="size-2 shrink-0 rounded-full" :style="{ background: dot }" />{{ label }}
         </div>
-        <div class="mt-2 flex">
-            <span dir="ltr" class="flex items-baseline gap-1.5">
-                <span class="font-sans text-[1.9rem] leading-none font-extrabold tracking-tight text-navy tabular">{{ value }}</span>
-                <span v-if="unit" class="text-xs font-bold text-navy/70">{{ unit }}</span>
+        <div class="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span dir="ltr" class="flex items-baseline gap-1">
+                <span class="text-[1.85rem] leading-none font-extrabold tracking-tight text-navy tabular">{{ value }}</span>
+                <span v-if="unit" class="text-xs font-bold text-navy/60">{{ unit }}</span>
             </span>
-        </div>
-        <div v-if="previous !== null || previousLabel || note" class="mt-2 flex flex-wrap items-center gap-x-2 text-xs text-muted">
             <Delta v-if="previous !== null" :current="current" :previous="previous" :kind="kind" />
-            <span v-if="previousLabel">{{ t('LY') }} <bdi class="tabular">{{ previousLabel }}</bdi></span>
-            <span v-if="note">{{ note }}</span>
+        </div>
+        <div v-if="previousLabel || note" class="mt-1.5 text-xs text-muted">
+            <template v-if="previousLabel">{{ t('Last year') }} <bdi class="tabular">{{ previousLabel }}</bdi></template>
+            <template v-else>{{ note }}</template>
         </div>
         <div v-if="spark" class="mt-auto pt-3"><Sparkline :values="spark" /></div>
+        <div v-else-if="progress !== null" class="mt-auto pt-4">
+            <div class="h-2 overflow-hidden rounded-full bg-coral-tint">
+                <div class="h-full rounded-full bg-coral transition-all" :style="{ width: `${Math.max(0, Math.min(100, progress))}%` }" />
+            </div>
+        </div>
     </div>
 </template>

@@ -4,9 +4,10 @@ import { smoothPath, runs } from '../../lib/chart';
 import { THIS_YEAR, SURFACE } from '../../lib/palette';
 import { isNum } from '../../lib/format';
 
-// Small trend line under a KPI: last N days, current day marked.
-const props = defineProps({ values: { type: Array, default: () => [] }, height: { type: Number, default: 36 } });
+// Small trend under a KPI (PMS style): navy line over a soft grey wash, last day marked.
+const props = defineProps({ values: { type: Array, default: () => [] }, height: { type: Number, default: 40 } });
 const W = 160;
+const gid = `spark-${Math.random().toString(36).slice(2, 8)}`;
 
 const geo = computed(() => {
     const nums = props.values.filter(isNum).map(Number);
@@ -23,19 +24,18 @@ const geo = computed(() => {
         last: pt(props.values[lastIdx], lastIdx),
     };
 });
-const gid = `spark-${Math.random().toString(36).slice(2, 8)}`;
 </script>
 
 <template>
-    <svg v-if="geo" :viewBox="`0 0 ${W} ${height}`" preserveAspectRatio="none" class="block h-9 w-full overflow-visible" aria-hidden="true" dir="ltr">
+    <svg v-if="geo" :viewBox="`0 0 ${W} ${height}`" preserveAspectRatio="none" class="block h-10 w-full overflow-visible" aria-hidden="true" dir="ltr">
         <defs>
             <linearGradient :id="gid" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" :stop-color="THIS_YEAR" stop-opacity="0.18" />
-                <stop offset="1" :stop-color="THIS_YEAR" stop-opacity="0" />
+                <stop offset="0" stop-color="#889594" stop-opacity="0.28" />
+                <stop offset="1" stop-color="#889594" stop-opacity="0" />
             </linearGradient>
         </defs>
         <path :d="geo.area" :fill="`url(#${gid})`" />
         <path v-for="(d, i) in geo.lines" :key="i" :d="d" fill="none" :stroke="THIS_YEAR" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round" />
-        <circle :cx="geo.last[0]" :cy="geo.last[1]" r="3.5" :fill="THIS_YEAR" :stroke="SURFACE" stroke-width="2" vector-effect="non-scaling-stroke" />
+        <circle :cx="geo.last[0]" :cy="geo.last[1]" r="3.5" fill="#F15F5A" :stroke="SURFACE" stroke-width="2" vector-effect="non-scaling-stroke" />
     </svg>
 </template>

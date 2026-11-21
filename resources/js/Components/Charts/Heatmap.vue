@@ -31,7 +31,7 @@ const scale = (v) => (max.value - min.value > 0 ? (Number(v) - min.value) / (max
                 </thead>
                 <tbody>
                     <tr v-for="h in data.hotels" :key="h.id">
-                        <th class="w-44 pe-2 text-start text-xs leading-tight font-semibold text-navy" :dir="locale === 'ar' ? 'rtl' : 'ltr'">
+                        <th class="min-w-[10.5rem] pe-2 text-start text-xs leading-tight font-semibold text-navy" :dir="locale === 'ar' ? 'rtl' : 'ltr'">
                             <Link :href="`/hotels/${h.id}`" class="hover:text-coral">{{ name(h) }}</Link>
                         </th>
                         <td v-for="d in data.dates" :key="d" class="relative h-8 min-w-7 rounded-md outline-none" tabindex="0"

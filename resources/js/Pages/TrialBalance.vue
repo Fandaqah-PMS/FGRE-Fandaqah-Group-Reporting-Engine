@@ -51,7 +51,7 @@ const top = (cls, sign, colors) => {
     if (rest > 0) out.push({ key: 'rest', label: t('Other'), value: rest, color: colors[colors.length - 1] });
     return out;
 };
-const revenueMix = computed(() => top('revenue', -1, [BRAND.navy, BRAND.coral, BRAND.peach, BRAND.muted]));
+const revenueMix = computed(() => top('revenue', -1, [BRAND.navy, BRAND.coral, BRAND.muted, BRAND.peach, BRAND.green]));
 const expenseRows = computed(() => props.accounts.filter((a) => a.class === 'expenses')
     .map((a) => ({ id: a.code, name: a.name, name_ar: a.name, ty: Number(a.total) })));
 const marginRows = computed(() => props.summary.byHotel.map((h) => ({ id: h.id, name: h.name, name_ar: h.name_ar, ty: h.revenue > 0 ? ((h.revenue - h.expenses) / h.revenue) * 100 : null })));
@@ -79,9 +79,9 @@ const marginRows = computed(() => props.summary.byHotel.map((h) => ({ id: h.id, 
 
     <div v-else class="mt-6 space-y-6">
         <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <KpiCard icon="wallet" :label="t('Revenue')" :value="compact(summary.revenue)" :unit="currency" />
-            <KpiCard icon="coins" :label="t('Expenses')" :value="compact(summary.expenses)" :unit="currency" />
-            <KpiCard icon="trend" :label="t('Result before other items')" :value="compact(net)" :unit="currency" :note="margin === null ? '' : `${t('Margin')} ${margin.toFixed(1)}%`" />
+            <KpiCard :dot="BRAND.coral" :label="t('Revenue')" :value="compact(summary.revenue)" :unit="currency" />
+            <KpiCard :dot="BRAND.navy" :label="t('Expenses')" :value="compact(summary.expenses)" :unit="currency" />
+            <KpiCard :dot="BRAND.green" :label="t('Result before other items')" :value="compact(net)" :unit="currency" :note="margin === null ? '' : `${t('Margin')} ${margin.toFixed(1)}%`" />
             <div class="card rise flex flex-col justify-between p-5">
                 <div class="flex items-start justify-between gap-3">
                     <span class="text-[13px] font-semibold text-ink-2">{{ t('Debits = credits') }}</span>
@@ -102,7 +102,7 @@ const marginRows = computed(() => props.summary.byHotel.map((h) => ({ id: h.id, 
                 <div class="card rise p-6" :class="!multi && 'xl:col-span-1'">
                     <h3 class="card-title">{{ t('Revenue by account') }}</h3>
                     <p class="mb-5 text-xs text-muted">{{ t('Largest revenue accounts') }}</p>
-                    <Donut :segments="revenueMix" :format="(v) => compact(v)" :center-label="t('Revenue')" :size="170" />
+                    <Donut :segments="revenueMix" :format="(v) => compact(v)" :center-label="t('Revenue')" />
                 </div>
                 <div v-if="!multi" class="card rise p-6 xl:col-span-2">
                     <h3 class="card-title">{{ t('Expenses by account') }}</h3>

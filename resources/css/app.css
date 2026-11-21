@@ -58,7 +58,11 @@ body {
     }
 
     .card-title {
-        @apply font-display text-[1.15rem] font-semibold text-navy;
+        @apply text-[15.5px] font-bold text-navy;
+    }
+
+    .card-sub {
+        @apply text-xs font-medium text-muted;
     }
 
     .eyebrow {

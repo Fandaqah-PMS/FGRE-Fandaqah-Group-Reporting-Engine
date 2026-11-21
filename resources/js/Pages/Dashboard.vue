@@ -14,14 +14,14 @@ import Gauge from '../Components/Charts/Gauge.vue';
 import Heatmap from '../Components/Charts/Heatmap.vue';
 import HotelBars from '../Components/Charts/HotelBars.vue';
 import SegmentBar from '../Components/Charts/SegmentBar.vue';
-import { compact, int, isNum, longDate, money, monthLabel, pct, shortDate } from '../lib/format';
-import { BRAND, LAST_YEAR, MIX, THIS_YEAR } from '../lib/palette';
+import { compact, dayNum, int, isNum, longDate, money, monthLabel, pct, shortDate, weekday } from '../lib/format';
+import { BRAND, LAST_YEAR_BAR, MIX, SERIES, THIS_YEAR } from '../lib/palette';
 import { useViewMode } from '../lib/view';
 import { useI18n } from '../lib/i18n';
 
 const props = defineProps({
-    empty: Boolean, filters: Object, currency: String, group: Object, groupLy: Object,
-    hotels: Array, missing: Array, hotelCount: Number, trend: Array, monthly: Array, heatmap: Object,
+    empty: Boolean, filters: Object, currency: String, group: Object, groupLy: Object, hotels: Array, missing: Array,
+    hotelCount: Number, trend: Array, monthly: Array, heatmap: Object, month: Array, mtd: Object, mtdLy: Object,
 });
 
 const { t, name, locale } = useI18n();
@@ -31,7 +31,7 @@ const view = useViewMode();
 const scope = computed(() => page.props.scope ?? { current: null, hotels: [] });
 const scopeHotel = computed(() => scope.value.hotels.find((h) => h.id === scope.value.current) ?? null);
 const groupName = computed(() => name(page.props.auth?.groups?.find((g) => g.id === page.props.auth.currentGroupId)));
-const multi = computed(() => (props.hotels?.length ?? 0) > 1 || (!scopeHotel.value && props.hotelCount > 1));
+const multi = computed(() => !scopeHotel.value && props.hotelCount > 1);
 
 const periods = computed(() => [{ key: 'day', label: t('Day') }, { key: 'mtd', label: t('Month to date') }, { key: 'ytd', label: t('Year to date') }]);
 const periodLabel = computed(() => periods.value.find((p) => p.key === props.filters?.period)?.label);
@@ -42,41 +42,69 @@ function apply(changes) {
     });
 }
 
+const fmtPct = (v, axis) => (axis ? `${compact(v)}%` : pct(v));
+const fmtMoney = (v, axis) => (axis ? compact(v) : money(v));
+const fmtMoney0 = (v, axis) => (axis ? compact(v) : money(v, 0));
 const metrics = computed(() => ({
-    total_revenue: { label: t('Total revenue'), format: (v, axis) => (axis ? compact(v) : money(v, 0)), kind: 'pct' },
-    occupancy_pct: { label: t('Occupancy'), format: (v, axis) => (axis ? `${compact(v)}%` : pct(v)), kind: 'pp' },
-    adr: { label: t('ADR'), format: (v, axis) => (axis ? compact(v) : money(v)), kind: 'pct' },
-    revpar: { label: t('RevPAR'), format: (v, axis) => (axis ? compact(v) : money(v)), kind: 'pct' },
+    occupancy_pct: { label: t('Occupancy'), format: fmtPct, kind: 'pp' },
+    adr: { label: t('ADR'), format: fmtMoney, kind: 'pct' },
+    revpar: { label: t('RevPAR'), format: fmtMoney, kind: 'pct' },
+    total_revenue: { label: t('Total revenue'), format: fmtMoney0, kind: 'pct' },
 }));
-const trendMetric = ref('total_revenue');
+const trendMetric = ref('occupancy_pct');
 const barMetric = ref('revpar');
 const monthMetric = ref('total_revenue');
 
 const spark = (key) => (props.trend ?? []).map((p) => p[key]);
 const trendPoints = computed(() => (props.trend ?? []).map((p) => ({ date: p.date, ty: p[trendMetric.value], ly: p[`ly_${trendMetric.value}`] })));
 
-const months = computed(() => (props.monthly ?? []).map((m) => ({ key: m.month, label: monthLabel(m.month, locale.value), tooltip: monthLabel(m.month, locale.value, true) })));
-const monthValues = computed(() => Object.fromEntries((props.monthly ?? []).map((m) => [m.month, { ty: m[monthMetric.value], ly: m[`ly_${monthMetric.value}`] }])));
-const yearSeries = computed(() => [{ key: 'ty', label: t('This year'), color: THIS_YEAR }, { key: 'ly', label: t('Last year'), color: LAST_YEAR }]);
+// Last 14 days: occupancy columns with labels, and arrivals / departures.
+const last14 = computed(() => (props.trend ?? []).slice(-14));
+const dayCats = computed(() => last14.value.map((p) => ({ key: p.date, label: weekday(p.date, locale.value), sub: dayNum(p.date), tooltip: longDate(p.date, locale.value) })));
+const occValues = computed(() => Object.fromEntries(last14.value.map((p) => [p.date, { occ: p.occupancy_pct }])));
+const moveValues = computed(() => Object.fromEntries(last14.value.map((p) => [p.date, { arr: p.arrival_rooms, dep: p.departure_rooms }])));
 
+// Status of rooms for the selected period (room nights).
+const roomStatus = computed(() => {
+    const g = props.group ?? {};
+    const ooo = Number(g.ooo_rooms ?? 0);
+    return [
+        { key: 'sold', label: t('Sold'), value: Number(g.paid_occupied ?? 0), color: BRAND.navy },
+        { key: 'comp', label: t('Comp & house use'), value: Number(g.comp_rooms ?? 0) + Number(g.house_use_rooms ?? 0), color: BRAND.coral },
+        { key: 'vacant', label: t('Vacant'), value: Math.max(0, Number(g.total_rooms ?? 0) - ooo - Number(g.rooms_occupied ?? 0)), color: BRAND.lightGrey },
+        { key: 'ooo', label: t('Out of order'), value: ooo, color: BRAND.green },
+    ];
+});
 const mix = computed(() => [
     { key: 'rooms', label: t('Rooms'), value: props.group?.room_revenue, color: MIX.rooms },
     { key: 'fnb', label: t('Food & beverage'), value: props.group?.fnb_revenue, color: MIX.fnb },
     { key: 'other', label: t('Other'), value: props.group?.other_revenue, color: MIX.other },
 ]);
-const roomParts = computed(() => {
-    const g = props.group ?? {};
-    const sold = Number(g.paid_occupied ?? 0);
-    const comp = Number(g.comp_rooms ?? 0) + Number(g.house_use_rooms ?? 0);
-    const ooo = Number(g.ooo_rooms ?? 0);
-    const vacant = Math.max(0, Number(g.total_rooms ?? 0) - ooo - Number(g.rooms_occupied ?? 0));
-    return [
-        { key: 'sold', label: t('Sold'), value: sold, color: BRAND.navy },
-        { key: 'comp', label: t('Comp & house use'), value: comp, color: BRAND.peach },
-        { key: 'vacant', label: t('Vacant'), value: vacant, color: BRAND.neutral },
-        { key: 'ooo', label: t('Out of order'), value: ooo, color: BRAND.muted },
-    ];
+const share = computed(() => {
+    const list = [...(props.hotels ?? [])].sort((a, b) => Number(b.total_revenue ?? 0) - Number(a.total_revenue ?? 0));
+    const head = list.slice(0, 4).map((h, i) => ({ key: h.property_id, label: name(h), value: Number(h.total_revenue ?? 0), color: SERIES[i] }));
+    const rest = list.slice(4).reduce((s, h) => s + Number(h.total_revenue ?? 0), 0);
+    return rest > 0 ? [...head, { key: 'other', label: t('Other hotels'), value: rest, color: SERIES[4] }] : head;
 });
+
+// This month vs the same month last year, cumulative room revenue by day.
+const monthKey = computed(() => props.filters?.date?.slice(0, 7));
+const daysInMonth = computed(() => (monthKey.value ? new Date(Number(monthKey.value.slice(0, 4)), Number(monthKey.value.slice(5, 7)), 0).getDate() : 30));
+const cumulative = computed(() => {
+    const byDay = Object.fromEntries((props.month ?? []).map((p) => [Number(p.date.slice(8, 10)), p]));
+    let ty = 0, ly = 0;
+    const last = Math.max(0, ...Object.keys(byDay).map(Number));
+    return Array.from({ length: daysInMonth.value }, (_, i) => {
+        const d = i + 1, p = byDay[d];
+        if (p) { ty += Number(p.room_revenue ?? 0); ly += Number(p.ly_room_revenue ?? 0); }
+        return { key: String(d), day: d, ty: d <= last ? ty : null, ly: d <= last ? ly : null };
+    });
+});
+const lyYear = computed(() => (monthKey.value ? `${Number(monthKey.value.slice(0, 4)) - 1}${monthKey.value.slice(4)}` : null));
+
+const months = computed(() => (props.monthly ?? []).map((m) => ({ key: m.month, label: monthLabel(m.month, locale.value), tooltip: monthLabel(m.month, locale.value, true) })));
+const monthValues = computed(() => Object.fromEntries((props.monthly ?? []).map((m) => [m.month, { ty: m[monthMetric.value], ly: m[`ly_${monthMetric.value}`] }])));
+const yearSeries = computed(() => [{ key: 'ty', label: t('This year'), color: THIS_YEAR }, { key: 'ly', label: t('Last year'), color: LAST_YEAR_BAR }]);
 const barRows = computed(() => (props.hotels ?? []).map((h) => ({ id: h.property_id, name: h.name, name_ar: h.name_ar, ty: h[barMetric.value], ly: h.ly?.[barMetric.value] ?? null })));
 
 const sort = ref({ key: 'revpar', dir: -1 });
@@ -115,67 +143,114 @@ const sortBy = (key) => (sort.value = { key, dir: sort.value.key === key ? -sort
                   :title="scopeHotel ? name(scopeHotel) : groupName"
                   :text="scopeHotel ? `${scopeHotel.pms} · ${t(':n rooms', { n: scopeHotel.rooms ?? '–' })}` : t('Every hotel in your group, consolidated, whichever PMS it runs.')">
                 <span class="chip bg-white/10 text-white"><Icon name="calendar" :size="14" />{{ periodLabel }} · {{ longDate(filters.date, locale) }}</span>
-                <span v-if="!scopeHotel" class="chip bg-white/10 text-white"><Icon name="building" :size="14" />{{ t(':n of :total hotels reported', { n: group.hotel_count, total: hotelCount }) }}</span>
                 <span v-if="group.is_provisional" class="chip bg-coral text-white">{{ t('Includes provisional figures') }}</span>
             </Hero>
 
-            <div v-if="missing.length" class="flex items-center gap-3 rounded-2xl border border-coral/25 bg-coral-tint px-4 py-3 text-sm text-coral-dark">
-                <Icon name="alert" :size="18" />
-                <span>{{ t('No report received yet for this date from:') }} <b>{{ missing.map((m) => name(m)).join('، ') }}</b></span>
-            </div>
-
             <!-- KPI cards -->
-            <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                <KpiCard icon="bed" :label="t('Occupancy')" :value="isNum(group.occupancy_pct) ? Number(group.occupancy_pct).toFixed(1) : '–'" unit="%"
-                         :current="group.occupancy_pct" :previous="groupLy.occupancy_pct" kind="pp" :previous-label="pct(groupLy.occupancy_pct)" :spark="spark('occupancy_pct')" />
-                <KpiCard icon="tag" :label="t('ADR')" :value="money(group.adr)" :unit="currency"
+            <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+                <KpiCard :dot="BRAND.coral" :label="t('Occupancy')" :value="isNum(group.occupancy_pct) ? Number(group.occupancy_pct).toFixed(1) : '–'" unit="%"
+                         :current="group.occupancy_pct" :previous="groupLy.occupancy_pct" kind="pp" :note="t(':sold of :total rooms sold', { sold: int(group.paid_occupied), total: int(group.sellable_rooms) })" :spark="spark('occupancy_pct')" />
+                <KpiCard :dot="BRAND.navy" :label="t('ADR')" :value="money(group.adr)" :unit="currency"
                          :current="group.adr" :previous="groupLy.adr" :previous-label="money(groupLy.adr)" :spark="spark('adr')" />
-                <KpiCard icon="trend" :label="t('RevPAR')" :value="money(group.revpar)" :unit="currency"
+                <KpiCard :dot="BRAND.green" :label="t('RevPAR')" :value="money(group.revpar)" :unit="currency"
                          :current="group.revpar" :previous="groupLy.revpar" :previous-label="money(groupLy.revpar)" :spark="spark('revpar')" />
-                <KpiCard icon="wallet" :label="t('Total revenue')" :value="compact(group.total_revenue)" :unit="currency"
+                <KpiCard :dot="BRAND.peach" :label="t('Total revenue')" :value="compact(group.total_revenue)" :unit="currency"
                          :current="group.total_revenue" :previous="groupLy.total_revenue" :previous-label="compact(groupLy.total_revenue)" :spark="spark('total_revenue')" />
+                <KpiCard v-if="!scopeHotel" :dot="BRAND.coral" :label="t('Hotels reported')" :value="`${group.hotel_count} / ${hotelCount}`" :highlight="missing.length > 0"
+                         :note="missing.length ? `${t('Waiting for')}: ${missing.map((m) => name(m)).join('، ')}` : t('All hotels reported')"
+                         :progress="hotelCount ? (group.hotel_count / hotelCount) * 100 : 0" />
+                <KpiCard v-else :dot="BRAND.coral" :label="t('Room nights sold')" :value="int(group.paid_occupied)" :highlight="true"
+                         :note="t(':sold of :total rooms sold', { sold: int(group.paid_occupied), total: int(group.sellable_rooms) })"
+                         :progress="Number(group.occupancy_pct ?? 0)" />
             </section>
-            <p class="-mt-2 text-xs text-muted">{{ t('Occupancy, ADR and RevPAR exclude complimentary and house-use rooms and out-of-order inventory, the same way for every PMS.') }}</p>
 
             <!-- CHARTS -->
             <template v-if="view === 'charts'">
                 <section class="grid gap-6 xl:grid-cols-3">
+                    <div class="card rise p-6">
+                        <div class="flex items-start justify-between gap-2">
+                            <h3 class="card-title">{{ t('Status of rooms') }}</h3>
+                            <span class="card-sub"><bdi>{{ periodLabel }} · {{ int(group.total_rooms) }} {{ t('room nights') }}</bdi></span>
+                        </div>
+                        <div class="mt-5"><Donut :segments="roomStatus" :format="int" :center-value="pct(group.occupancy_pct)" :center-label="t('Occupancy')" /></div>
+                    </div>
                     <div class="card rise p-6 xl:col-span-2">
-                        <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
+                        <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
                             <h3 class="card-title">{{ t(':metric, last 30 days', { metric: metrics[trendMetric].label }) }}</h3>
                             <div class="seg">
                                 <button v-for="(m, key) in metrics" :key="key" type="button" :aria-pressed="trendMetric === key" @click="trendMetric = key">{{ m.label }}</button>
                             </div>
                         </div>
-                        <AreaTrend :points="trendPoints" :format="metrics[trendMetric].format" />
+                        <AreaTrend :points="trendPoints" :format="metrics[trendMetric].format" :average="true" :height="330" />
                     </div>
+                </section>
+
+                <section class="grid gap-6 xl:grid-cols-2">
+                    <div class="card rise p-6">
+                        <h3 class="card-title mb-4">{{ t('Occupancy, last 14 days') }}</h3>
+                        <ColumnChart :categories="dayCats" :series="[{ key: 'occ', label: t('Occupancy'), color: BRAND.navy }]" :values="occValues"
+                                     :format="(v, axis) => (axis ? `${Number(v).toFixed(0)}%` : pct(v))" :value-labels="true" :average="true" :show-legend="false" :height="250" />
+                    </div>
+                    <div class="card rise p-6">
+                        <h3 class="card-title mb-4">{{ t('Arrivals and departures, last 14 days') }}</h3>
+                        <ColumnChart :categories="dayCats" :series="[{ key: 'arr', label: t('Arrivals'), color: BRAND.coral }, { key: 'dep', label: t('Departures'), color: BRAND.navy }]"
+                                     :values="moveValues" :format="(v) => int(v)" :height="250" />
+                    </div>
+                </section>
+
+                <section class="grid gap-6" :class="multi ? 'xl:grid-cols-3' : 'xl:grid-cols-2'">
                     <div class="card rise flex flex-col p-6">
-                        <h3 class="card-title">{{ t('Occupancy') }}</h3>
-                        <p class="text-xs text-muted">{{ periodLabel }}</p>
-                        <div class="mt-4"><Gauge :value="group.occupancy_pct" :previous="groupLy.occupancy_pct" :label="t(':sold of :total rooms sold', { sold: int(group.paid_occupied), total: int(group.sellable_rooms) })" /></div>
-                        <div class="mt-auto border-t border-line pt-5">
-                            <div class="mb-3 text-xs font-bold tracking-wider text-ink-2 uppercase">{{ t('Room nights') }}</div>
-                            <SegmentBar :parts="roomParts" />
+                        <div class="flex items-start justify-between gap-2">
+                            <h3 class="card-title">{{ t('Room nights') }}</h3>
+                            <span class="card-sub">{{ periodLabel }}</span>
                         </div>
+                        <div class="mt-5"><SegmentBar :parts="roomStatus" /></div>
+                        <div class="mt-auto pt-6"><Gauge :value="group.occupancy_pct" :previous="groupLy.occupancy_pct" :label="t('Occupancy')" /></div>
+                    </div>
+                    <div class="card rise p-6">
+                        <div class="flex items-start justify-between gap-2">
+                            <h3 class="card-title">{{ t('Revenue mix') }}</h3>
+                            <span class="card-sub">{{ periodLabel }} · {{ currency }}</span>
+                        </div>
+                        <div class="mt-5"><Donut :segments="mix" :format="(v) => compact(v)" :center-label="t('Total revenue')" /></div>
+                    </div>
+                    <div v-if="multi" class="card rise p-6">
+                        <div class="flex items-start justify-between gap-2">
+                            <h3 class="card-title">{{ t('Revenue by hotel') }}</h3>
+                            <span class="card-sub">{{ periodLabel }} · {{ currency }}</span>
+                        </div>
+                        <div class="mt-5"><Donut :segments="share" :format="(v) => compact(v)" :center-value="String(group.hotel_count)" :center-label="t('Hotels')" /></div>
                     </div>
                 </section>
 
                 <section class="grid gap-6 xl:grid-cols-3">
                     <div class="card rise p-6 xl:col-span-2">
-                        <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
-                            <h3 class="card-title">{{ t(':metric by month', { metric: metrics[monthMetric].label }) }}</h3>
-                            <div class="seg">
-                                <button v-for="(m, key) in metrics" :key="key" type="button" :aria-pressed="monthMetric === key" @click="monthMetric = key">{{ m.label }}</button>
-                            </div>
+                        <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+                            <h3 class="card-title">{{ t('Room revenue, this month vs last year') }}</h3>
+                            <span class="card-sub">{{ t('Cumulative') }} · {{ currency }}</span>
                         </div>
-                        <ColumnChart :categories="months" :series="yearSeries" :values="monthValues" :format="metrics[monthMetric].format" :highlight="months.at(-1)?.key" />
-                        <p class="mt-1 text-xs text-muted">{{ t('Current month to date, compared with the same days last year.') }}</p>
+                        <AreaTrend :points="cumulative" :format="fmtMoney0" :x-label="(p) => p.day" :tooltip-label="(p) => `${p.day} ${monthLabel(monthKey, locale)}`"
+                                   :label-width="26" :ty-label="monthLabel(monthKey, locale, true)" :ly-label="monthLabel(lyYear, locale, true)" :height="300" />
                     </div>
-                    <div class="card rise p-6">
-                        <h3 class="card-title">{{ t('Revenue mix') }}</h3>
-                        <p class="mb-5 text-xs text-muted">{{ periodLabel }} · {{ currency }}</p>
-                        <Donut :segments="mix" :format="(v) => compact(v)" :center-label="t('Total revenue')" />
+                    <div class="grid gap-4">
+                        <KpiCard :dot="BRAND.navy" :label="t('Room revenue this month')" :value="money(mtd.room_revenue, 0)" :unit="currency"
+                                 :current="mtd.room_revenue" :previous="mtdLy.room_revenue" :note="t('vs the same days last year')" />
+                        <KpiCard :dot="BRAND.coral" :label="t('ADR (average daily rate)')" :value="money(mtd.adr)" :unit="currency"
+                                 :current="mtd.adr" :previous="mtdLy.adr" :note="t('vs the same days last year')" />
+                        <KpiCard :dot="BRAND.peach" :label="t('RevPAR (revenue per available room)')" :value="money(mtd.revpar)" :unit="currency"
+                                 :current="mtd.revpar" :previous="mtdLy.revpar" :note="t('vs the same days last year')" />
                     </div>
+                </section>
+
+                <section class="card rise p-6">
+                    <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+                        <h3 class="card-title">{{ t(':metric by month', { metric: metrics[monthMetric].label }) }}</h3>
+                        <div class="seg">
+                            <button v-for="(m, key) in metrics" :key="key" type="button" :aria-pressed="monthMetric === key" @click="monthMetric = key">{{ m.label }}</button>
+                        </div>
+                    </div>
+                    <ColumnChart :categories="months" :series="yearSeries" :values="monthValues" :format="metrics[monthMetric].format" :height="280" />
+                    <p class="mt-2 text-xs text-muted">{{ t('Current month to date, compared with the same days last year.') }}</p>
                 </section>
 
                 <section v-if="multi" class="grid gap-6 xl:grid-cols-2">
@@ -189,8 +264,8 @@ const sortBy = (key) => (sort.value = { key, dir: sort.value.key === key ? -sort
                         <HotelBars :rows="barRows" :format="(v) => metrics[barMetric].format(v)" :delta-kind="metrics[barMetric].kind" />
                     </div>
                     <div v-if="heatmap" class="card rise p-6">
-                        <h3 class="card-title">{{ t('Occupancy, last 14 days') }}</h3>
-                        <p class="mb-4 text-xs text-muted">{{ t('Each square is one hotel on one day. Hover for the figure.') }}</p>
+                        <h3 class="card-title">{{ t('Occupancy by hotel, last 14 days') }}</h3>
+                        <p class="mb-4 card-sub">{{ t('Each square is one hotel on one day. Hover for the figure.') }}</p>
                         <Heatmap :data="heatmap" />
                     </div>
                 </section>
@@ -201,7 +276,7 @@ const sortBy = (key) => (sort.value = { key, dir: sort.value.key === key ? -sort
                 <section v-if="multi" class="card overflow-hidden">
                     <div class="flex items-center justify-between px-6 pt-6 pb-4">
                         <h3 class="card-title">{{ t('Hotel comparison') }}</h3>
-                        <span class="text-xs text-muted">{{ periodLabel }} · {{ t('Change vs same period last year') }}</span>
+                        <span class="card-sub">{{ periodLabel }} · {{ t('Change vs same period last year') }}</span>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="tbl min-w-[58rem] tabular">
@@ -242,13 +317,14 @@ const sortBy = (key) => (sort.value = { key, dir: sort.value.key === key ? -sort
                         <h3 class="card-title px-6 pt-6 pb-4">{{ t('Daily figures, last 30 days') }}</h3>
                         <div class="max-h-[28rem] overflow-auto">
                             <table class="tbl tabular">
-                                <thead class="sticky top-0"><tr><th>{{ t('Date') }}</th><th class="!text-end">{{ t('Occupancy') }}</th><th class="!text-end">{{ t('ADR') }}</th><th class="!text-end">{{ t('RevPAR') }}</th><th class="!text-end">{{ t('Total revenue') }}</th></tr></thead>
+                                <thead class="sticky top-0"><tr><th>{{ t('Date') }}</th><th class="!text-end">{{ t('Occupancy') }}</th><th class="!text-end">{{ t('ADR') }}</th><th class="!text-end">{{ t('RevPAR') }}</th><th class="!text-end">{{ t('Arrivals') }}</th><th class="!text-end">{{ t('Total revenue') }}</th></tr></thead>
                                 <tbody>
                                     <tr v-for="p in [...trend].reverse()" :key="p.date">
                                         <td>{{ shortDate(p.date, locale) }}</td>
                                         <td class="text-end"><bdi>{{ pct(p.occupancy_pct) }}</bdi> <span class="text-xs text-muted"><bdi>{{ pct(p.ly_occupancy_pct) }}</bdi></span></td>
                                         <td class="text-end"><bdi>{{ money(p.adr) }}</bdi></td>
                                         <td class="text-end"><bdi>{{ money(p.revpar) }}</bdi></td>
+                                        <td class="text-end"><bdi>{{ int(p.arrival_rooms) }}</bdi></td>
                                         <td class="text-end font-semibold"><bdi>{{ money(p.total_revenue, 0) }}</bdi></td>
                                     </tr>
                                 </tbody>

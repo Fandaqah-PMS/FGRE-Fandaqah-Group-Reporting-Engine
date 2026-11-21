@@ -50,8 +50,8 @@ const hotelBalance = computed(() => ['guest', 'ar', 'deposit'].reduce((s, k) => 
 
     <div v-else class="mt-6 space-y-6">
         <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <KpiCard v-for="l in ledgers" :key="l.key" :icon="l.icon" :label="l.label" :value="bal(totals[l.key])" unit="SAR" />
-            <KpiCard icon="scale" :label="t('Hotel balance')" :value="bal(hotelBalance)" unit="SAR" />
+            <KpiCard v-for="l in ledgers" :key="l.key" :dot="l.color" :label="l.label" :value="bal(totals[l.key])" unit="SAR" />
+            <KpiCard :dot="BRAND.peach" :label="t('Hotel balance')" :value="bal(hotelBalance)" unit="SAR" />
         </section>
 
         <section v-if="view === 'charts'" class="grid gap-6 xl:grid-cols-3">

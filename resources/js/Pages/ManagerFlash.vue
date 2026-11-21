@@ -12,7 +12,7 @@ import HotelBars from '../Components/Charts/HotelBars.vue';
 import SegmentBar from '../Components/Charts/SegmentBar.vue';
 import Gauge from '../Components/Charts/Gauge.vue';
 import { compact, int, isNum, longDate, money, pct } from '../lib/format';
-import { BRAND, LAST_YEAR, MIX, THIS_YEAR } from '../lib/palette';
+import { BRAND, LAST_YEAR_BAR, MIX, THIS_YEAR } from '../lib/palette';
 import { useViewMode } from '../lib/view';
 import { useI18n } from '../lib/i18n';
 
@@ -33,7 +33,7 @@ const go = (date) => router.get('/manager-flash', { date }, { preserveScroll: tr
 
 // Day / MTD / YTD × this year / last year for one KPI.
 const periodCats = computed(() => [{ key: 'day', label: t('Day') }, { key: 'mtd', label: t('MTD') }, { key: 'ytd', label: t('YTD') }]);
-const yearSeries = computed(() => [{ key: 'ty', label: t('This year'), color: THIS_YEAR }, { key: 'ly', label: t('Last year'), color: LAST_YEAR }]);
+const yearSeries = computed(() => [{ key: 'ty', label: t('This year'), color: THIS_YEAR }, { key: 'ly', label: t('Last year'), color: LAST_YEAR_BAR }]);
 const byPeriod = (metric) => Object.fromEntries(['day', 'mtd', 'ytd'].map((p) => [p, { ty: col(p)[metric], ly: col(`${p}_ly`)[metric] }]));
 const kpiCharts = computed(() => [
     { metric: 'occupancy_pct', label: t('Occupancy'), format: (v, axis) => (axis ? `${compact(v)}%` : pct(v)) },
@@ -53,9 +53,9 @@ const roomParts = computed(() => {
     const ooo = Number(g.ooo_rooms ?? 0);
     return [
         { key: 'sold', label: t('Sold'), value: g.paid_occupied, color: BRAND.navy },
-        { key: 'comp', label: t('Comp & house use'), value: Number(g.comp_rooms ?? 0) + Number(g.house_use_rooms ?? 0), color: BRAND.peach },
-        { key: 'vacant', label: t('Vacant'), value: Math.max(0, Number(g.total_rooms ?? 0) - ooo - Number(g.rooms_occupied ?? 0)), color: BRAND.neutral },
-        { key: 'ooo', label: t('Out of order'), value: ooo, color: BRAND.muted },
+        { key: 'comp', label: t('Comp & house use'), value: Number(g.comp_rooms ?? 0) + Number(g.house_use_rooms ?? 0), color: BRAND.coral },
+        { key: 'vacant', label: t('Vacant'), value: Math.max(0, Number(g.total_rooms ?? 0) - ooo - Number(g.rooms_occupied ?? 0)), color: BRAND.lightGrey },
+        { key: 'ooo', label: t('Out of order'), value: ooo, color: BRAND.green },
     ];
 });
 
@@ -129,11 +129,11 @@ const flashCols = computed(() => [['day', t('Day')], ['mtd', t('MTD')], ['ytd', 
         </div>
 
         <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <KpiCard icon="bed" :label="t('Occupancy · day')" :value="isNum(day.occupancy_pct) ? Number(day.occupancy_pct).toFixed(1) : '–'" unit="%"
+            <KpiCard :dot="BRAND.coral" :label="t('Occupancy · day')" :value="isNum(day.occupancy_pct) ? Number(day.occupancy_pct).toFixed(1) : '–'" unit="%"
                      :current="day.occupancy_pct" :previous="dayLy.occupancy_pct" kind="pp" :previous-label="pct(dayLy.occupancy_pct)" />
-            <KpiCard icon="tag" :label="t('ADR · day')" :value="money(day.adr)" :unit="currency" :current="day.adr" :previous="dayLy.adr" :previous-label="money(dayLy.adr)" />
-            <KpiCard icon="trend" :label="t('RevPAR · day')" :value="money(day.revpar)" :unit="currency" :current="day.revpar" :previous="dayLy.revpar" :previous-label="money(dayLy.revpar)" />
-            <KpiCard icon="wallet" :label="t('Total revenue · day')" :value="compact(day.total_revenue)" :unit="currency" :current="day.total_revenue" :previous="dayLy.total_revenue" :previous-label="compact(dayLy.total_revenue)" />
+            <KpiCard :dot="BRAND.navy" :label="t('ADR · day')" :value="money(day.adr)" :unit="currency" :current="day.adr" :previous="dayLy.adr" :previous-label="money(dayLy.adr)" />
+            <KpiCard :dot="BRAND.green" :label="t('RevPAR · day')" :value="money(day.revpar)" :unit="currency" :current="day.revpar" :previous="dayLy.revpar" :previous-label="money(dayLy.revpar)" />
+            <KpiCard :dot="BRAND.peach" :label="t('Total revenue · day')" :value="compact(day.total_revenue)" :unit="currency" :current="day.total_revenue" :previous="dayLy.total_revenue" :previous-label="compact(dayLy.total_revenue)" />
         </section>
 
         <template v-if="view === 'charts'">
@@ -141,7 +141,7 @@ const flashCols = computed(() => [['day', t('Day')], ['mtd', t('MTD')], ['ytd', 
                 <div v-for="k in kpiCharts" :key="k.metric" class="card rise p-6">
                     <h3 class="card-title">{{ k.label }}</h3>
                     <p class="mb-3 text-xs text-muted">{{ t('Day, month and year to date vs last year') }}</p>
-                    <ColumnChart :categories="periodCats" :series="yearSeries" :values="byPeriod(k.metric)" :format="k.format" :height="220" />
+                    <ColumnChart :categories="periodCats" :series="yearSeries" :values="byPeriod(k.metric)" :format="k.format" :height="230" />
                 </div>
             </section>
 
@@ -153,13 +153,13 @@ const flashCols = computed(() => [['day', t('Day')], ['mtd', t('MTD')], ['ytd', 
                             <button v-for="p in periodCats" :key="p.key" type="button" :aria-pressed="mixPeriod === p.key" @click="mixPeriod = p.key">{{ p.label }}</button>
                         </div>
                     </div>
-                    <Donut :segments="mix" :format="(v) => compact(v)" :center-label="t('Total revenue')" :size="170" />
+                    <Donut :segments="mix" :format="(v) => compact(v)" :center-label="t('Total revenue')" />
                 </div>
                 <div class="card rise p-6">
                     <h3 class="card-title">{{ t('Room nights today') }}</h3>
                     <p class="text-xs text-muted">{{ t('Day') }}</p>
-                    <div class="my-4"><Gauge :value="day.occupancy_pct" :previous="dayLy.occupancy_pct" :label="t(':sold of :total rooms sold', { sold: int(day.paid_occupied), total: int(day.sellable_rooms) })" /></div>
-                    <SegmentBar :parts="roomParts" />
+                    <div class="mt-4"><SegmentBar :parts="roomParts" /></div>
+                    <div class="mt-6"><Gauge :value="day.occupancy_pct" :previous="dayLy.occupancy_pct" :label="t(':sold of :total rooms sold', { sold: int(day.paid_occupied), total: int(day.sellable_rooms) })" /></div>
                 </div>
                 <div class="card rise p-6">
                     <h3 class="card-title">{{ t('Guests and activity') }}</h3>

@@ -45,6 +45,14 @@ export function shortDate(iso, locale = 'en') {
     return new Intl.DateTimeFormat(locale === 'ar' ? 'ar-SA-u-ca-gregory-nu-latn' : 'en-GB', { day: 'numeric', month: 'short' }).format(d);
 }
 
+/** '2026-11-21' → 'Sa' / 'سبت' (short weekday) and '21'. */
+export function weekday(iso, locale = 'en') {
+    const d = new Date(`${iso}T00:00:00`);
+    const w = new Intl.DateTimeFormat(locale === 'ar' ? 'ar-SA-u-ca-gregory-nu-latn' : 'en-GB', { weekday: 'short' }).format(d);
+    return locale === 'ar' ? w : w.slice(0, 2);
+}
+export const dayNum = (iso) => String(Number(iso.slice(8, 10))).padStart(2, '0');
+
 /** '2026-11' → 'Nov' (or 'November 2026' when long). */
 export function monthLabel(ym, locale = 'en', long = false) {
     if (!ym) return '–';
