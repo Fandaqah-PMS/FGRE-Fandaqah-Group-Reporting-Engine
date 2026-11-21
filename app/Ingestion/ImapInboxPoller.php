@@ -3,26 +3,27 @@
 namespace App\Ingestion;
 
 use App\Enums\InboundSource;
+use App\Ingestion\Mailbox\MailboxConnector;
 use App\Models\InboundMessage;
 use App\Reports\IngestReportFile;
 use App\Reports\PropertyMatcher;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Throwable;
-use Webklex\IMAP\Facades\Client as ImapClient;
 use Webklex\PHPIMAP\Attachment;
 use Webklex\PHPIMAP\Message;
 
 /**
- * Reads the reporting mailbox and ingests PDF attachments.
+ * Reads the reporting mailbox and ingests report attachments (PDF or JSON).
  *
  * Every message left in the inbox folder is handled once and then moved to the
- * processed folder; the Message-ID is also recorded, so a message is never
- * ingested twice even if the move fails.
+ * processed folder. The Message-ID is also recorded, so a message is never
+ * ingested twice even if the move fails or someone opens the mailbox by hand.
  */
 class ImapInboxPoller
 {
     public function __construct(
+        private readonly MailboxConnector $mailbox,
         private readonly IngestReportFile $ingest,
         private readonly PropertyMatcher $matcher,
     ) {}
@@ -34,8 +35,7 @@ class ImapInboxPoller
     {
         $stats = ['messages' => 0, 'documents' => 0, 'ignored' => 0];
 
-        $client = ImapClient::account(config('fgre.inbox.account'));
-        $client->connect();
+        $client = $this->mailbox->connect();
 
         $folder = $client->getFolderByPath(config('fgre.inbox.folder'));
         $processedFolder = config('fgre.inbox.processed_folder');
@@ -97,18 +97,18 @@ class ImapInboxPoller
             return 0;
         }
 
-        $pdfs = $message->getAttachments()->filter(fn (Attachment $a) => $this->isPdf($a));
-        $inbound->update(['attachment_count' => $pdfs->count()]);
+        $files = $message->getAttachments()->filter(fn (Attachment $a) => $this->isReportFile($a));
+        $inbound->update(['attachment_count' => $files->count()]);
 
-        if ($pdfs->isEmpty()) {
-            $inbound->update(['status' => 'ignored', 'status_reason' => 'No PDF attachment.']);
+        if ($files->isEmpty()) {
+            $inbound->update(['status' => 'ignored', 'status_reason' => 'No PDF or JSON attachment.']);
 
             return 0;
         }
 
         $created = 0;
         $problems = [];
-        foreach ($pdfs as $attachment) {
+        foreach ($files as $attachment) {
             try {
                 if (($this->ingest)($attachment->getContent(), $attachment->getName(), $inbound) !== null) {
                     $created++;
@@ -126,9 +126,12 @@ class ImapInboxPoller
         return $created;
     }
 
-    private function isPdf(Attachment $attachment): bool
+    private function isReportFile(Attachment $attachment): bool
     {
+        $name = strtolower((string) $attachment->getName());
+
         return in_array(strtolower((string) $attachment->getMimeType()), config('fgre.inbox.accepted_mime_types'), true)
-            || str_ends_with(strtolower((string) $attachment->getName()), '.pdf');
+            || str_ends_with($name, '.pdf')
+            || str_ends_with($name, '.json');
     }
 }

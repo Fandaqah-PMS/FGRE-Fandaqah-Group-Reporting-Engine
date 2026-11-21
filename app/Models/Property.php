@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Tenancy\BelongsToCurrentGroup;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,10 +10,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Property extends Model
 {
-    use SoftDeletes;
+    use BelongsToCurrentGroup, SoftDeletes;
 
     protected $fillable = [
-        'tenant_id', 'pms_provider_id', 'name', 'code', 'pms_property_ref', 'timezone',
+        'group_id', 'pms_provider_id', 'name', 'name_ar', 'code', 'pms_property_ref', 'timezone',
         'currency', 'total_rooms', 'allowed_sender_emails', 'aliases', 'is_active',
     ];
 
@@ -34,6 +35,12 @@ class Property extends Model
     public function reportDocuments(): HasMany
     {
         return $this->hasMany(ReportDocument::class);
+    }
+
+    /** @return list<string> every name this hotel may appear under in a report or subject */
+    public function knownNames(): array
+    {
+        return array_values(array_filter([$this->name, $this->name_ar, ...($this->aliases ?? [])]));
     }
 
     public function acceptsSender(?string $email): bool

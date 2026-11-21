@@ -7,4 +7,5 @@ enum InboundSource: string
     case Email = 'email';
     case Mcp = 'mcp';
     case Upload = 'upload';
+    case Api = 'api';
 }

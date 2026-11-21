@@ -3,19 +3,25 @@
 namespace App\Reports;
 
 use App\Models\Property;
+use App\Tenancy\GroupScope;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 
 /**
  * Decides which hotel a report belongs to.
  *
  * Only properties that allow-list the sender are candidates. Among those, the
- * property code or name printed on the report picks the match. Anything
- * ambiguous returns null with a reason, and the document goes to review:
- * a report is never guessed onto a hotel.
+ * code or name printed on the report and the hotel name in the email subject
+ * pick the match. Anything ambiguous or contradictory returns null with a
+ * reason and the document goes to review: a report is never guessed onto a hotel.
+ *
+ * Looks across all groups on purpose (GroupScope bypass): a document arrives
+ * before anyone knows which group it belongs to.
  */
 class PropertyMatcher
 {
+    /** Names shorter than this are not searched for inside subjects. */
+    private const MIN_SUBJECT_NAME_LENGTH = 4;
+
     /** @return Collection<int, Property> */
     public function candidatesForSender(?string $fromEmail): Collection
     {
@@ -23,7 +29,7 @@ class PropertyMatcher
             return collect();
         }
 
-        return Property::query()
+        return Property::withoutGlobalScope(GroupScope::class)
             ->where('is_active', true)
             ->get()
             ->filter(fn (Property $p) => $p->acceptsSender($fromEmail))
@@ -33,53 +39,68 @@ class PropertyMatcher
     /**
      * @return array{0: ?Property, 1: ?string} [property, reason when no match]
      */
-    public function match(?string $fromEmail, ?string $printedCode, ?string $printedName): array
+    public function match(DocumentHints $hints, ?string $printedCode, ?string $printedName): array
     {
-        $candidates = $this->candidatesForSender($fromEmail);
+        $candidates = $this->candidatesForSender($hints->fromEmail);
 
         if ($candidates->isEmpty()) {
-            return [null, "Sender [{$fromEmail}] is not allow-listed for any active property."];
+            return [null, "Sender [{$hints->fromEmail}] is not allow-listed for any active hotel."];
         }
 
         $byCode = $printedCode === null ? collect() : $candidates->filter(
             fn (Property $p) => $this->same($p->code, $printedCode) || $this->same($p->pms_property_ref, $printedCode)
         );
-
         $byName = $printedName === null ? collect() : $candidates->filter(
-            fn (Property $p) => collect([$p->name, ...($p->aliases ?? [])])
-                ->contains(fn (?string $n) => $this->nameMatches($n, $printedName))
+            fn (Property $p) => collect($p->knownNames())->contains(fn (string $n) => $this->nameMatches($n, $printedName))
+        );
+        $bySubject = $hints->subject === null ? collect() : $candidates->filter(
+            fn (Property $p) => collect($p->knownNames())->contains(fn (string $n) => $this->subjectMentions($hints->subject, $n))
         );
 
-        if ($byCode->count() === 1) {
-            $property = $byCode->first();
-            // A printed name that clearly points at a *different* candidate is a conflict.
-            if ($byName->isNotEmpty() && ! $byName->contains('id', $property->id)) {
-                return [null, "Printed code [{$printedCode}] and name [{$printedName}] point to different hotels."];
+        $pick = function (Collection $found) use ($byName, $bySubject): array {
+            $property = $found->first();
+            foreach (['printed name' => $byName, 'email subject' => $bySubject] as $source => $other) {
+                if ($other->isNotEmpty() && ! $other->contains('id', $property->id)) {
+                    return [null, "The {$source} points to a different hotel than [{$property->name}]."];
+                }
             }
 
             return [$property, null];
+        };
+
+        if ($byCode->count() === 1) {
+            return $pick($byCode);
         }
 
         if ($byName->count() === 1) {
-            return [$byName->first(), null];
+            return $pick($byName);
         }
 
-        if ($candidates->count() === 1 && $printedCode === null && $printedName === null) {
-            return [$candidates->first(), null];
+        if ($byName->count() > 1 && ($narrowed = $byName->intersectByKeys($bySubject))->count() === 1) {
+            return [$narrowed->first(), null];
         }
 
-        if ($candidates->count() === 1) {
+        if ($printedName === null && $printedCode === null) {
+            if ($bySubject->count() === 1) {
+                return [$bySubject->first(), null];
+            }
+            if ($candidates->count() === 1) {
+                return [$candidates->first(), null];
+            }
+        }
+
+        if ($printedName !== null && $byName->isEmpty()) {
             return [null, sprintf(
-                'Report shows hotel [%s] but its sender belongs to [%s].',
-                $printedName ?? $printedCode,
-                $candidates->first()->name,
+                'Report is for hotel [%s], which is not a known name of any hotel allowed for sender [%s]. Add it as an alias if correct.',
+                $printedName,
+                $hints->fromEmail,
             )];
         }
 
         return [null, sprintf(
             'Could not tell which of %d hotels sharing sender [%s] this report is for (printed: %s).',
             $candidates->count(),
-            $fromEmail,
+            $hints->fromEmail,
             $printedName ?? $printedCode ?? 'no hotel name',
         )];
     }
@@ -89,20 +110,27 @@ class PropertyMatcher
         return $a !== null && $b !== null && $this->normalize($a) === $this->normalize($b);
     }
 
-    private function nameMatches(?string $known, string $printed): bool
+    private function nameMatches(string $known, string $printed): bool
     {
-        if ($known === null) {
-            return false;
-        }
-
         $k = $this->normalize($known);
         $p = $this->normalize($printed);
 
-        return $k !== '' && $p !== '' && ($k === $p || Str::contains($p, $k) || Str::contains($k, $p));
+        return $k !== '' && $p !== '' && ($k === $p || str_contains($p, $k) || str_contains($k, $p));
     }
 
+    private function subjectMentions(string $subject, string $name): bool
+    {
+        $n = $this->normalize($name);
+
+        return mb_strlen($n) >= self::MIN_SUBJECT_NAME_LENGTH && str_contains($this->normalize($subject), $n);
+    }
+
+    /** Lowercase, letters and digits only; Arabic letter variants folded (أإآ→ا, ة→ه, ى→ي). */
     private function normalize(string $value): string
     {
-        return preg_replace('/[^\p{L}\p{N}]+/u', '', mb_strtolower($value)) ?? '';
+        $value = mb_strtolower($value);
+        $value = strtr($value, ['أ' => 'ا', 'إ' => 'ا', 'آ' => 'ا', 'ة' => 'ه', 'ى' => 'ي', 'ـ' => '']);
+
+        return preg_replace('/[^\p{L}\p{N}]+/u', '', $value) ?? '';
     }
 }

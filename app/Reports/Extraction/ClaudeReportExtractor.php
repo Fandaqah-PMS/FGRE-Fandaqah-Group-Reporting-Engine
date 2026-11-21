@@ -95,6 +95,7 @@ class ClaudeReportExtractor implements ReportExtractor
 
         return new ExtractionResult(
             output: $output,
+            extractor: 'claude',
             model: $message->model,
             stopReason: $stopReason,
             inputTokens: $message->usage->inputTokens,

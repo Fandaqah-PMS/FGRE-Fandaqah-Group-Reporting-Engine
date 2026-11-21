@@ -1,125 +1,83 @@
 # FGRE Architecture
 
-Status: draft v0.1 (2026-11-21). Multi-tenancy, auth and UI conventions are **pending** the Fandaqah PMS
-reference document (see [prompts/fandaqah-pms-discovery-prompt.md](prompts/fandaqah-pms-discovery-prompt.md)).
+Status: v0.2 (2026-11-21). Built on the Fandaqah PMS reference ([fandaqah-pms-reference.md](fandaqah-pms-reference.md)).
 
 ## 1. Goal
 
-A hotel group owner (2+ hotels) sees all hotels in one place — daily KPIs, consolidated P&L style
-views, trial balance roll-ups — regardless of whether each hotel runs Fandaqah PMS, Nazeel, Opera or
-another PMS.
+A hotel group owner (2+ hotels) sees all hotels in one place (daily KPIs, last-year comparison,
+trial balances), whichever PMS each hotel runs: Fandaqah, Nazeel, Opera or another.
 
 ## 2. Pipeline
 
 ```
- PMS (any)                 FGRE
- ─────────                 ──────────────────────────────────────────────────────────────────────
- scheduled email ──PDF──▶  [1] Inbox poller ─┐
-                                             ├─▶ [2] report_documents (PDF stored, sha256 dedup)
- MCP (if PMS has one) ──▶  [1] MCP poller ───┘            │
-                                                          ▼
-                                             [3] Classify + match property
-                                                 (sender, subject, filename, PDF header)
+ PMS email (PDF)  ─┐                          ┌─ PDF  → ClaudeReportExtractor (AI)
+ PMS API / MCP (JSON) ─┼─▶ report_documents ──▶ ExtractorResolver ─┤
+ Manual upload ───┘   (stored, sha256 dedup)  └─ JSON → FandaqahReportsPlusExtractor (no AI)
                                                           │
-                                                          ▼
-                                             [4] AI extraction (Claude, PDF in → JSON out,
-                                                 one JSON schema per report type)
+                                       canonical extraction shape (ExtractionSchema)
                                                           │
-                                                          ▼
-                                             [5] Validation (arithmetic + cross checks)
-                                                    │                     │
-                                                 passes                 fails / low confidence
-                                                    ▼                     ▼
-                                             [6] Normalized tables   Review queue (human
-                                                    │                 corrects → re-validate)
-                                                    ▼
-                                             [7] Group reports + dashboard
+                         PropertyMatcher (sender allow-list + printed name/code + subject)
+                         ExtractionValidator (arithmetic checks, subject/file-name date)
+                                     │ pass                     │ fail
+                                     ▼                          ▼
+                     canonical tables (ReportDataWriter)    review queue
+                                     │
+                     KpiCalculator / GroupKpiService → dashboards
 ```
 
-Every stage is a queued job, so one bad PDF never blocks the others, and each stage can be retried
-on its own.
+Every source produces the same canonical shape, so matching, checks and storage are shared. A
+new source (Nazeel API, Opera export, Fandaqah MCP) only needs a new extractor.
 
-### [1] Polling frequency
+## 3. Decisions
 
-**Recommendation: check the mailbox every 5 minutes.**
+| # | Decision | Why |
+|---|---|---|
+| D1 | **Poll the mailbox every 5 minutes** over IMAP. | Polling is free; AI runs only for new files. Fandaqah emails the flash right after Night Audit, so 5 minutes is near real time. |
+| D2 | **Any mailbox**: `password` (any IMAP), `microsoft` (Microsoft 365 OAuth), `google` (OAuth). | Microsoft and Google no longer allow password IMAP. See [MAILBOX.md](MAILBOX.md). |
+| D3 | **Structured data skips the AI.** Fandaqah Reports Plus JSON is mapped directly. | Exact, free, instant. The AI is for PMSs that only send PDFs. |
+| D4 | **AI output is never trusted directly.** Printed ratios must match one of the standard definitions; trial balances must balance; the date must match the email subject / file name. Failures go to review. | Financial data: a misread digit must not reach an owner's dashboard. |
+| D5 | **KPIs are computed by FGRE from parts**, with the Fandaqah X-D13 definitions, for every PMS. Group and multi-day ratios are recomputed from summed parts, never averaged. Printed KPIs are kept for reference only. | Hotels on different PMSs compare like for like. |
+| D6 | **Tenancy: hotel group → properties.** `group_id` on every business table, enforced by `BelongsToCurrentGroup` + `GroupScope` (the PMS's `BelongsToCurrentTeam` pattern, one level up). Jobs pass the group explicitly. | The PMS has no group entity (a Team is one hotel); FGRE's customer is the group. |
+| D7 | **Permissions:** lowercase slugs with spaces in one config file, one Gate per permission (PMS convention). Fixed roles: owner, finance, operations, viewer. Unlike the PMS, a role only counts in its own group. Users can be limited to some hotels. | Groups are separate customers; no cross-group leakage. |
+| D8 | **FGRE has its own login.** "Sign in with Fandaqah" (Passport OAuth, already in the PMS) can be added later. | Nazeel / Opera hotels' users are not PMS users. |
+| D9 | **Provisional days are stored and flagged**, then replaced by the final report. | Fandaqah marks open days; dashboards show them as provisional. |
+| D10 | Money: `numeric(18,2)` + currency; KPI math in bcmath, rounded half away from zero once. | Same rule as the PMS (X-D08). |
 
-- Checking a mailbox over IMAP costs nothing and takes under a second. AI runs only when a new PDF
-  is found, so polling more often adds no AI cost.
-- PMS reports come once a day after night audit. Polling every 5 minutes puts a report on the
-  dashboard within about 5 minutes of arriving. Every 10 minutes would also work, but buys nothing.
-- **Later:** switch to an inbound-email webhook (Postmark, Mailgun or Amazon SES inbound). The provider
-  pushes each email to FGRE instantly, so there's no polling. Ingestion sits behind an
-  `InboundSource` interface, so this is a drop-in change.
+## 4. Report types
 
-**MCP:** for PMSs with an MCP server (Fandaqah), FGRE *pulls*. Each property gets a schedule after its
-night-audit time, plus a retry every 15 minutes until that day's data is available. If the MCP
-returns structured data, the AI step is skipped: structured data is more accurate and costs nothing.
+| Type | Examples | Stored in |
+|---|---|---|
+| `manager_flash` | Fandaqah EOD-016, Opera Manager Report | `daily_property_stats` (Day / MTD / YTD × this year / last year), `revenue_lines` |
+| `trial_balance` (general ledger) | Fandaqah FST-001 / FAC-001 | `trial_balance_lines` (standard + local account no., signed balances; may cover a period) |
+| `front_office_trial_balance` | Opera trial_balance, Fandaqah FIN-040 | `ledger_balances` (guest / AR / deposit / package), `transaction_code_lines` |
 
-### [2] Storage and dedup
+Fandaqah hotels share the NTMP chart of accounts, so their general-ledger trial balances
+consolidate by account number directly. Other PMSs will need an account mapping table
+(`group_accounts` + `account_mappings`, not built yet).
 
-- Raw email (`.eml`) and PDFs go to object storage (local disk in dev, S3-compatible in prod).
-- `sha256` of each PDF is unique per tenant, so a re-sent report is not processed twice.
-- Only PDFs from **allow-listed sender addresses** (configured per property) are processed. Anything
-  else is quarantined.
+## 5. Fandaqah specifics
 
-### [3] Property matching
+- Only hotels on **Night Audit v2** with the flash mail switched on receive the scheduled
+  **Manager Flash** email (subject `Manager Flash – {hotel} – {Y-m-d}`, file
+  `manager_flash_{Ymd}.pdf`). Emailed days are always closed.
+- **Trial balances are not emailed** by the PMS. Options in §7.
+- No property code is printed. FGRE matches by the hotel name (English or Arabic) and stores the PMS
+  `teams.id` as `pms_property_ref`.
+- No MCP server exists in the PMS repository. A token-protected Reports Plus endpoint in the PMS
+  would feed FGRE JSON with no AI (the extractor already exists).
 
-In this order: sender address → subject/filename pattern → property name/code printed in the PDF
-header (read by AI). If nothing matches, or two signals disagree, the document goes to the review
-queue and is never guessed.
+## 6. Testing with samples
 
-### [4] AI extraction
+- `php artisan test`: includes the real Fandaqah JSON samples (mapping, checks, KPI maths).
+- `php artisan fgre:eval-samples`: sends the sample PDFs to Claude and compares the result with
+  the JSON ground truth. Needs `ANTHROPIC_API_KEY`; costs a few cents per PDF.
 
-- Claude (`claude-opus-5-5`) via the official Anthropic PHP SDK. The PDF is sent as a `document`
-  block, and the output is constrained to a JSON schema per report type (structured outputs).
-- The prompt treats the PDF as **data only**. Any instructions printed inside a PDF are ignored.
-- The model returns the values *as printed*. FGRE computes derived values (occupancy, ADR, RevPAR)
-  itself and compares them with the printed ones.
-- Raw JSON is stored on the extraction run (`jsonb`) for audit and re-processing. Model, tokens and
-  cost are logged per run.
+## 7. Open questions
 
-### [5] Validation rules (examples)
-
-| Report | Check |
-|---|---|
-| Trial Balance | Σ debit = Σ credit (to the cent); opening + movement = closing per account |
-| Manager Flash | rooms sold ≤ rooms available; occupancy ≈ sold ÷ available; ADR ≈ room revenue ÷ rooms sold; RevPAR ≈ ADR × occupancy; section totals = sum of lines; MTD ≥ Day |
-| All | business date is not in the future; property matches; currency present |
-
-A failed check sends the document to the review queue with the reason. It is never silently accepted.
-
-### [6] Canonical data model (draft)
-
-PMS-specific shapes are mapped into one canonical model, so dashboards never care which PMS a hotel
-uses.
-
-- `pms_providers`: fandaqah, nazeel, opera, …
-- `properties`: hotel, group/tenant, PMS provider, timezone, currency, room count, allowed senders
-- `inbound_messages`: one row per email or MCP pull (source, message-id, sender, subject, status)
-- `report_documents`: one row per PDF (property, report type, business date, sha256, status)
-- `extraction_runs`: AI attempts (model, prompt version, raw JSON, tokens, cost, validation result)
-- `daily_property_stats`: canonical daily KPIs per property and business date (Day / MTD / YTD)
-- `revenue_lines`: revenue by department (rooms, F&B, other) per property and business date
-- `trial_balance_lines`: account code, name, opening, debit, credit, closing per property and date
-- `group_accounts` + `account_mappings`: group chart of accounts, and the mapping from each property's
-  PMS account codes to it, used for consolidated financials
-
-Money is stored as `numeric(18,2)` together with a currency code.
-
-## 7. Multi-tenancy (pending)
-
-FGRE follows Fandaqah PMS's model exactly. Until the PMS reference arrives, every business table
-carries a tenant (group) key and a `property_id` where relevant, so the code can adapt to either a
-shared-database or a database-per-tenant model.
-
-## 8. Brand
-
-See [BRAND.md](BRAND.md).
-
-## 9. Open questions
-
-1. Sample PDFs of the **Manager Flash Report** and **Trial Balance** from **Nazeel** and **Opera** (and
-   Fandaqah), with demo data. The extraction schemas will be built and tested against these.
-2. The reporting mailbox address and provider (Microsoft 365, Google Workspace, other).
-3. Which reports are in scope for v1 beyond Manager Flash and Trial Balance.
-4. Hosting target for FGRE (same infrastructure as the PMS?).
+1. How should Fandaqah trial balances reach FGRE? (a) the PMS emails FST-001 / FIN-040 after Night
+   Audit, like the flash; (b) a token-protected JSON endpoint (recommended: no AI, exact);
+   (c) manual upload in FGRE.
+2. Could the PMS add the hotel id (`teams.id`) to the flash subject and file name? It would make
+   matching exact.
+3. Frontend stack for the dashboard (to be decided).
+4. Nazeel and Opera sample PDFs (pending).

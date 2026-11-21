@@ -7,12 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PmsProvider extends Model
 {
-    protected $fillable = ['code', 'name', 'supports_mcp'];
-
-    protected function casts(): array
-    {
-        return ['supports_mcp' => 'boolean'];
-    }
+    protected $fillable = ['code', 'name'];
 
     public function properties(): HasMany
     {

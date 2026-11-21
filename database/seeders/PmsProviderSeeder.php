@@ -10,9 +10,9 @@ class PmsProviderSeeder extends Seeder
     public function run(): void
     {
         $providers = [
-            ['code' => 'fandaqah', 'name' => 'Fandaqah PMS', 'supports_mcp' => true],
-            ['code' => 'nazeel', 'name' => 'Nazeel', 'supports_mcp' => false],
-            ['code' => 'opera', 'name' => 'Oracle Opera', 'supports_mcp' => false],
+            ['code' => 'fandaqah', 'name' => 'Fandaqah PMS'],
+            ['code' => 'nazeel', 'name' => 'Nazeel'],
+            ['code' => 'opera', 'name' => 'Oracle Opera'],
         ];
 
         foreach ($providers as $provider) {

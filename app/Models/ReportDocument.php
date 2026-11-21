@@ -4,16 +4,23 @@ namespace App\Models;
 
 use App\Enums\DocumentStatus;
 use App\Enums\ReportType;
+use App\Tenancy\BelongsToCurrentGroup;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * One received report file. group_id stays null until the document is matched
+ * to a hotel, so unmatched documents are visible only to platform admins.
+ */
 class ReportDocument extends Model
 {
+    use BelongsToCurrentGroup;
+
     protected $fillable = [
-        'inbound_message_id', 'tenant_id', 'property_id', 'report_type', 'business_date',
-        'original_filename', 'storage_disk', 'storage_path', 'mime_type', 'size_bytes',
+        'inbound_message_id', 'group_id', 'property_id', 'report_type', 'period_start', 'business_date',
+        'is_provisional', 'original_filename', 'storage_disk', 'storage_path', 'mime_type', 'size_bytes',
         'sha256', 'status', 'status_reason', 'processed_at',
     ];
 
@@ -22,7 +29,9 @@ class ReportDocument extends Model
         return [
             'report_type' => ReportType::class,
             'status' => DocumentStatus::class,
+            'period_start' => 'date',
             'business_date' => 'date',
+            'is_provisional' => 'boolean',
             'processed_at' => 'datetime',
         ];
     }
