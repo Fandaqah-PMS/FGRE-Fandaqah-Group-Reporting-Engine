@@ -193,16 +193,6 @@ body {
     mask-image: linear-gradient(to left, #000 15%, transparent 85%);
 }
 
-/* Always opaque on the physical right, fading to the left (same in Arabic and English). */
-.art-right {
-    background-image: url('../../public/brand/pattern.png');
-    background-repeat: repeat;
-    background-size: 260px auto;
-    pointer-events: none;
-    -webkit-mask-image: linear-gradient(to left, #000 15%, transparent 85%);
-    mask-image: linear-gradient(to left, #000 15%, transparent 85%);
-}
-
 .art-center {
     -webkit-mask-image: radial-gradient(ellipse 50% 60% at 50% 50%, #000 15%, transparent 100%);
     mask-image: radial-gradient(ellipse 50% 60% at 50% 50%, #000 15%, transparent 100%);
