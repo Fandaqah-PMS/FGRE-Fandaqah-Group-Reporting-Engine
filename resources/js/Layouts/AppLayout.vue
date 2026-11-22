@@ -86,8 +86,8 @@ const logout = () => router.post('/logout');
         <!-- Main -->
         <div class="lg:ps-[17rem] print:!ps-0">
             <header class="print:hidden sticky top-0 z-30 border-b border-line bg-white/90 backdrop-blur">
-                <!-- brand art: the half where reading starts (left in English, right in Arabic), fading toward the other half -->
-                <div class="art-start pointer-events-none absolute inset-y-0 start-0 w-1/2 opacity-60 [background-size:200px_auto]" aria-hidden="true" />
+                <!-- brand art: the right half of the header, fading from right to left (both languages) -->
+                <div class="art-right pointer-events-none absolute inset-y-0 right-0 w-1/2 opacity-60 [background-size:200px_auto]" aria-hidden="true" />
                 <div class="relative flex h-[4.5rem] items-center gap-3 px-4 sm:px-8">
                     <button type="button" class="rounded-xl border border-line bg-white p-2 text-navy shadow-sm lg:hidden" :aria-label="t('Open menu')" @click="drawer = true"><Icon name="menu" /></button>
                     <HotelSwitcher class="min-w-0 flex-1 sm:flex-none" />
