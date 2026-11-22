@@ -351,25 +351,32 @@ class DemoDataSeeder extends Seeder
         }
     }
 
+    /** Front-office ledger balances for the last 14 nights, rolling forward day to day. */
     private function writeLedgers(Property $property): void
     {
-        $date = '2026-11-19';
-        $documentId = $this->document($property, 'front_office_trial_balance', $date, null, false, 'nightaudit@'.Str::slug($property->code).'.example', 'trial_balance_20261119.pdf');
         $scale = $property->total_rooms * 100;
+        $balance = ['guest' => -0.9, 'ar' => 1.6, 'deposit' => -1.2, 'package' => 0.0];
+        $balance = array_map(fn ($f) => round($scale * $f * (1 + $this->noise(0.2)), 2), $balance);
 
-        foreach (['guest' => -0.9, 'ar' => 1.6, 'deposit' => -1.2, 'package' => 0.0] as $ledger => $factor) {
-            DB::table('ledger_balances')->insert([
-                'group_id' => $property->group_id,
-                'property_id' => $property->id,
-                'report_document_id' => $documentId,
-                'business_date' => $date,
-                'ledger' => $ledger,
-                'opening_balance' => round($scale * $factor * (1 + $this->noise(0.2)), 2),
-                'closing_balance' => round($scale * $factor * (1 + $this->noise(0.2)), 2),
-                'currency' => 'SAR',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+        for ($d = CarbonImmutable::parse('2026-11-06'); $d->lte(CarbonImmutable::parse('2026-11-19')); $d = $d->addDay()) {
+            $date = $d->toDateString();
+            $documentId = $this->document($property, 'front_office_trial_balance', $date, null, false, 'nightaudit@'.Str::slug($property->code).'.example', 'trial_balance_'.$d->format('Ymd').'.pdf');
+            foreach ($balance as $ledger => $open) {
+                $close = $ledger === 'package' ? 0.0 : round($open * (1 + $this->noise(0.06)) + $scale * $this->noise(0.04), 2);
+                DB::table('ledger_balances')->insert([
+                    'group_id' => $property->group_id,
+                    'property_id' => $property->id,
+                    'report_document_id' => $documentId,
+                    'business_date' => $date,
+                    'ledger' => $ledger,
+                    'opening_balance' => $open,
+                    'closing_balance' => $close,
+                    'currency' => 'SAR',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+                $balance[$ledger] = $close;
+            }
         }
     }
 

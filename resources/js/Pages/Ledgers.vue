@@ -14,7 +14,7 @@ import { useViewMode } from '../lib/view';
 import { useI18n } from '../lib/i18n';
 import EmptyState from '../Components/ui/EmptyState.vue';
 
-const props = defineProps({ dates: Array, date: String, rows: Array, totals: Object, folios: Object });
+const props = defineProps({ dates: Array, date: String, rows: Array, totals: Object, folios: Object, trend: Object });
 const { t, name } = useI18n();
 const page = usePage();
 const view = useViewMode();
@@ -44,6 +44,8 @@ function exportFolios() {
         ...props.folios.list.map((f) => [f.room, f.guest, name(f.hotel), f.arrival, f.departure, f.charges, f.payments, f.balance, f.status]),
     ]);
 }
+const opening = (key) => props.rows.reduce((s, r) => s + Number(r.opening?.[key] ?? 0), 0);
+const openingHotel = computed(() => ['guest', 'ar', 'deposit'].reduce((s, k) => s + opening(k), 0));
 const hotelBalance = computed(() => ['guest', 'ar', 'deposit'].reduce((s, k) => s + Number(props.totals?.[k] ?? 0), 0));
 </script>
 
@@ -71,8 +73,12 @@ const hotelBalance = computed(() => ['guest', 'ar', 'deposit'].reduce((s, k) => 
 
     <div v-else class="mt-6 space-y-6">
         <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <KpiCard v-for="l in ledgers" :key="l.key" :dot="l.color" :label="l.label" :value="bal(totals[l.key])" unit="SAR" />
-            <KpiCard :dot="BRAND.peach" :label="t('Hotel balance')" :value="bal(hotelBalance)" unit="SAR" />
+            <KpiCard v-for="l in ledgers" :key="l.key" :dot="l.color" :label="l.label" :value="bal(totals[l.key])" unit="SAR"
+                     :current="totals[l.key]" :previous="opening(l.key)" kind="amount" compare-to="yesterday" neutral-change
+                     :previous-label="bal(opening(l.key))" :spark="trend?.[l.key]" />
+            <KpiCard :dot="BRAND.peach" :label="t('Hotel balance')" :value="bal(hotelBalance)" unit="SAR"
+                     :current="hotelBalance" :previous="openingHotel" kind="amount" compare-to="yesterday" neutral-change
+                     :previous-label="bal(openingHotel)" :spark="trend?.hotel" />
         </section>
 
         <section v-if="view === 'charts'" class="grid gap-6 xl:grid-cols-3">

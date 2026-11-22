@@ -34,6 +34,7 @@ export function delta(current, previous, kind = 'pct') {
     const c = Number(current);
     const p = Number(previous);
     if (kind === 'pp') return { value: c - p, label: `${c - p >= 0 ? '+' : '−'}${nf(1).format(Math.abs(c - p))} pp` };
+    if (kind === 'amount') return { value: c - p, label: `${c - p >= 0 ? '+' : '−'}${compact(Math.abs(c - p))}` };
     if (p === 0) return null;
     const r = ((c - p) / Math.abs(p)) * 100;
     return { value: r, label: `${r >= 0 ? '+' : '−'}${nf(1).format(Math.abs(r))}%` };

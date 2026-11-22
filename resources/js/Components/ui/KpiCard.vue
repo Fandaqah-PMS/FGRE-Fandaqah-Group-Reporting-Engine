@@ -31,6 +31,8 @@ const props = defineProps({
     previous: { default: null },
     previousLabel: { type: String, default: '' },
     kind: { type: String, default: 'pct' },
+    compareTo: { type: String, default: 'last_year' },   // last_year · yesterday (what `previous` is)
+    neutralChange: Boolean,                              // balances: a change is neither good nor bad
     note: { type: String, default: '' },
     spark: { type: Array, default: null },
     progress: { type: Number, default: null },
@@ -46,12 +48,13 @@ defineEmits(['click']);
 const { t } = useI18n();
 const tag = computed(() => (props.href ? Link : props.selectable ? 'button' : 'div'));
 const dotColor = computed(() => props.dot ?? BRAND.coral);
+const compareCaption = computed(() => (props.compareTo === 'yesterday' ? t('vs yesterday') : t('vs last year')));
 const VALUE_TONE = { default: 'text-ink', success: 'text-success', danger: 'text-coral-dark' };
 </script>
 
 <template>
     <component :is="tag" :href="href ?? undefined" :type="selectable ? 'button' : undefined"
-               class="card rise flex flex-col px-4 py-3.5 text-start"
+               class="card rise flex min-h-[8.5rem] flex-col px-4 py-3.5 text-start"
                :class="[
                    highlight && '!border-coral/30 bg-[linear-gradient(160deg,var(--color-coral-tint)_0%,var(--color-surface)_65%)]',
                    (href || selectable) && 'transition hover:-translate-y-0.5 hover:shadow-md',
@@ -63,7 +66,7 @@ const VALUE_TONE = { default: 'text-ink', success: 'text-success', danger: 'text
                 <span v-if="!icon" class="size-2 shrink-0 rounded-full" :style="{ background: dotColor }" />
                 <span class="truncate">{{ label }}</span>
             </div>
-            <Delta v-if="previous !== null" :current="current" :previous="previous" :kind="kind" class="shrink-0" />
+            <Delta v-if="previous !== null" :current="current" :previous="previous" :kind="kind" :neutral="neutralChange" :caption="compareCaption" class="shrink-0" />
             <Badge v-else-if="badge" :tone="badge.tone" :icon="badge.icon" size="sm">{{ badge.label }}</Badge>
             <IconTile v-else-if="icon" :icon="icon" :tone="iconTone" size="sm" />
         </div>
@@ -72,7 +75,7 @@ const VALUE_TONE = { default: 'text-ink', success: 'text-success', danger: 'text
             <span v-if="unit" class="text-[11px] font-medium text-muted">{{ unit }}</span>
         </div>
         <div v-if="previousLabel || note" class="mt-1 w-full truncate text-xs text-muted">
-            <template v-if="previousLabel">{{ t('Last year') }} <bdi class="tabular">{{ previousLabel }}</bdi></template>
+            <template v-if="previousLabel">{{ compareTo === 'yesterday' ? t('Yesterday') : t('Last year') }} <bdi class="tabular">{{ previousLabel }}</bdi></template>
             <template v-else>{{ note }}</template>
         </div>
         <div v-if="spark" class="mt-auto pt-2"><Sparkline :values="spark" :height="28" /></div>

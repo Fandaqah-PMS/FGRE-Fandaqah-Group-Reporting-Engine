@@ -49,7 +49,37 @@ class LedgersController extends Controller
             'rows' => $rows,
             'totals' => collect(self::LEDGERS)->mapWithKeys(fn ($l) => [$l => round($rows->sum($l), 2)]),
             'folios' => $date === null ? null : $this->folios($propertyIds, $date),
+            'trend' => $this->trend($propertyIds, $dates->take(14)->reverse()->values()->all()),
         ]);
+    }
+
+    /**
+     * Group balance per ledger for each of the last business dates (oldest first), for the
+     * sparklines on the KPI cards.
+     *
+     * @param  list<string>  $dates
+     * @return array<string, list<float|null>>
+     */
+    private function trend($propertyIds, array $dates): array
+    {
+        if ($dates === []) {
+            return [];
+        }
+
+        $sums = LedgerBalance::whereIn('property_id', $propertyIds)->whereIn('ledger', self::LEDGERS)
+            ->whereDate('business_date', '>=', $dates[0])->whereDate('business_date', '<=', end($dates))
+            ->get(['business_date', 'ledger', 'closing_balance'])
+            ->groupBy(fn ($b) => substr((string) $b->business_date, 0, 10).'|'.$b->ledger)
+            ->map(fn ($rows) => round($rows->sum(fn ($b) => (float) $b->closing_balance), 2));
+
+        $out = [];
+        foreach ([...self::LEDGERS, 'hotel'] as $ledger) {
+            $out[$ledger] = array_map(fn ($d) => $ledger === 'hotel'
+                ? array_sum(array_map(fn ($l) => $sums[$d.'|'.$l] ?? 0, self::LEDGERS))
+                : ($sums[$d.'|'.$ledger] ?? null), $dates);
+        }
+
+        return $out;
     }
 
     /**
