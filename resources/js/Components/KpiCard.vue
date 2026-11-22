@@ -28,24 +28,25 @@ const { t } = useI18n();
 </script>
 
 <template>
-    <div class="card rise flex flex-col p-5"
+    <div class="card rise flex flex-col px-4 py-3.5"
          :class="highlight && '!border-coral/30 bg-[linear-gradient(160deg,var(--color-coral-tint)_0%,var(--color-surface)_65%)]'">
-        <div class="flex items-center gap-2 text-[13px] font-semibold text-ink-2">
-            <span class="size-2 shrink-0 rounded-full" :style="{ background: dot }" />{{ label }}
+        <!-- label, and the change vs last year on the same line (keeps the card short) -->
+        <div class="flex items-center justify-between gap-1.5">
+            <div class="flex min-w-0 items-center gap-1.5 text-[12.5px] font-semibold text-ink-2">
+                <span class="size-2 shrink-0 rounded-full" :style="{ background: dot }" /><span class="truncate">{{ label }}</span>
+            </div>
+            <Delta v-if="previous !== null" :current="current" :previous="previous" :kind="kind" class="shrink-0" />
         </div>
-        <div class="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-1">
-            <span dir="ltr" class="flex items-baseline gap-1">
-                <span class="text-[1.6rem] leading-none font-semibold tracking-tight text-ink tabular">{{ value }}</span>
-                <span v-if="unit" class="text-[11px] font-medium text-muted">{{ unit }}</span>
-            </span>
-            <Delta v-if="previous !== null" :current="current" :previous="previous" :kind="kind" />
+        <div dir="ltr" class="mt-2 flex items-baseline gap-1 rtl:justify-end">
+            <span class="text-[1.5rem] leading-none font-semibold tracking-tight text-ink tabular">{{ value }}</span>
+            <span v-if="unit" class="text-[11px] font-medium text-muted">{{ unit }}</span>
         </div>
-        <div v-if="previousLabel || note" class="mt-1.5 text-xs text-muted">
+        <div v-if="previousLabel || note" class="mt-1 truncate text-xs text-muted">
             <template v-if="previousLabel">{{ t('Last year') }} <bdi class="tabular">{{ previousLabel }}</bdi></template>
             <template v-else>{{ note }}</template>
         </div>
-        <div v-if="spark" class="mt-auto pt-3"><Sparkline :values="spark" /></div>
-        <div v-else-if="progress !== null" class="mt-auto pt-4">
+        <div v-if="spark" class="mt-auto pt-2"><Sparkline :values="spark" :height="28" /></div>
+        <div v-else-if="progress !== null" class="mt-auto pt-3">
             <div class="h-2 overflow-hidden rounded-full bg-coral-tint">
                 <div class="h-full rounded-full bg-coral transition-all" :style="{ width: `${Math.max(0, Math.min(100, progress))}%` }" />
             </div>

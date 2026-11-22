@@ -27,7 +27,7 @@ const geo = computed(() => {
 </script>
 
 <template>
-    <svg v-if="geo" :viewBox="`0 0 ${W} ${height}`" preserveAspectRatio="none" class="block h-10 w-full overflow-visible" aria-hidden="true" dir="ltr">
+    <svg v-if="geo" :viewBox="`0 0 ${W} ${height}`" preserveAspectRatio="none" class="block w-full overflow-visible" :style="{ height: `${height}px` }" aria-hidden="true" dir="ltr">
         <defs>
             <linearGradient :id="gid" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0" stop-color="#889594" stop-opacity="0.28" />

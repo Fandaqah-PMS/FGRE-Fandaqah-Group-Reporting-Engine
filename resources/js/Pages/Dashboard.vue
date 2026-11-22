@@ -72,10 +72,10 @@ const roomStatus = computed(() => {
     const g = props.group ?? {};
     const ooo = Number(g.ooo_rooms ?? 0);
     return [
-        { key: 'sold', label: t('Sold'), value: Number(g.paid_occupied ?? 0), color: BRAND.navy },
-        { key: 'comp', label: t('Comp & house use'), value: Number(g.comp_rooms ?? 0) + Number(g.house_use_rooms ?? 0), color: BRAND.coral },
+        { key: 'sold', label: t('Sold'), value: Number(g.paid_occupied ?? 0), color: BRAND.coral },
+        { key: 'comp', label: t('Comp & house use'), value: Number(g.comp_rooms ?? 0) + Number(g.house_use_rooms ?? 0), color: BRAND.peach },
         { key: 'vacant', label: t('Vacant'), value: Math.max(0, Number(g.total_rooms ?? 0) - ooo - Number(g.rooms_occupied ?? 0)), color: BRAND.lightGrey },
-        { key: 'ooo', label: t('Out of order'), value: ooo, color: BRAND.green },
+        { key: 'ooo', label: t('Out of order'), value: ooo, color: BRAND.muted },
     ];
 });
 const mix = computed(() => [
