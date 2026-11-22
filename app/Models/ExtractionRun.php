@@ -9,8 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ExtractionRun extends Model
 {
     protected $fillable = [
-        'report_document_id', 'extractor', 'model', 'prompt_version', 'status', 'output',
-        'validation_errors', 'error', 'stop_reason', 'input_tokens', 'output_tokens', 'duration_ms',
+        'report_document_id', 'extractor', 'status', 'output', 'validation_errors', 'error', 'duration_ms',
     ];
 
     protected function casts(): array

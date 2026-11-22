@@ -8,7 +8,7 @@ use Carbon\CarbonImmutable;
  * What the email around a report says about it: sender, subject, file name,
  * and the business date found in them (e.g. Fandaqah: subject
  * "Manager Flash – {hotel} – 2026-11-19", file "manager_flash_20261119.pdf").
- * Used to cross-check what the AI read from the PDF.
+ * Used to cross-check the business date read from the report.
  */
 final readonly class DocumentHints
 {

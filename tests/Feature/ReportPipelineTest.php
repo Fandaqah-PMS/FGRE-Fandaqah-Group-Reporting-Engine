@@ -226,9 +226,9 @@ class ReportPipelineTest extends TestCase
     {
         $this->property();
 
-        $document = $this->ingest(new ExtractionFailed('Claude declined to read this document.', 'refusal'));
+        $document = $this->ingest(new ExtractionFailed('This report layout is not supported yet.'));
 
         $this->assertSame(DocumentStatus::Failed, $document->status);
-        $this->assertSame('refusal', $document->extractionRuns()->sole()->stop_reason);
+        $this->assertStringContainsString('not supported yet', $document->extractionRuns()->sole()->error);
     }
 }

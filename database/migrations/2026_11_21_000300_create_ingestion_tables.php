@@ -50,16 +50,11 @@ return new class extends Migration
         Schema::create('extraction_runs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('report_document_id')->constrained()->cascadeOnDelete();
-            $table->string('extractor', 30)->comment('claude | fandaqah_json');
-            $table->string('model', 100)->nullable();
-            $table->string('prompt_version', 50)->nullable();
+            $table->string('extractor', 40)->comment('pdf:manager_flash | pdf:guest_trial_balance | fandaqah_json …');
             $table->string('status', 30)->comment('App\Enums\ExtractionStatus');
             $table->jsonb('output')->nullable()->comment('canonical extraction output');
             $table->jsonb('validation_errors')->nullable();
             $table->text('error')->nullable();
-            $table->string('stop_reason', 50)->nullable();
-            $table->unsignedInteger('input_tokens')->nullable();
-            $table->unsignedInteger('output_tokens')->nullable();
             $table->unsignedInteger('duration_ms')->nullable();
             $table->timestamps();
         });

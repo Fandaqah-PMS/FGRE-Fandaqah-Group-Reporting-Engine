@@ -68,7 +68,6 @@ class ProcessReportDocument implements ShouldBeUnique, ShouldQueue
             $run->update([
                 'status' => ExtractionStatus::Failed,
                 'error' => $e->getMessage(),
-                'stop_reason' => $e->stopReason,
                 'duration_ms' => $this->elapsedMs($started),
             ]);
 
@@ -84,12 +83,7 @@ class ProcessReportDocument implements ShouldBeUnique, ShouldQueue
         $output = $result->output;
         $run->update([
             'extractor' => $result->extractor,
-            'model' => $result->model,
-            'prompt_version' => $result->extractor === 'claude' ? config('fgre.ai.prompt_version') : null,
             'output' => $output,
-            'stop_reason' => $result->stopReason,
-            'input_tokens' => $result->inputTokens,
-            'output_tokens' => $result->outputTokens,
             'duration_ms' => $this->elapsedMs($started),
         ]);
 

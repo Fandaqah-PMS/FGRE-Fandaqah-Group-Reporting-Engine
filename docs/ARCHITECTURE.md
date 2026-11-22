@@ -1,6 +1,6 @@
 # FGRE Architecture
 
-Status: v0.2 (2026-11-21). Built on the Fandaqah PMS reference ([fandaqah-pms-reference.md](fandaqah-pms-reference.md)).
+Status: v0.3 (2026-11-22). No AI: PDFs are read by layout readers. Built on the Fandaqah PMS reference ([fandaqah-pms-reference.md](fandaqah-pms-reference.md)).
 
 ## 1. Goal
 
@@ -10,9 +10,9 @@ trial balances), whichever PMS each hotel runs: Fandaqah, Nazeel, Opera or anoth
 ## 2. Pipeline
 
 ```
- PMS email (PDF)  ─┐                          ┌─ PDF  → ClaudeReportExtractor (AI)
- PMS API / MCP (JSON) ─┼─▶ report_documents ──▶ ExtractorResolver ─┤
- Manual upload ───┘   (stored, sha256 dedup)  └─ JSON → FandaqahReportsPlusExtractor (no AI)
+ PMS email (PDF)  ─┐                          ┌─ PDF  → pdftotext (xpdf, on the server)
+ PMS API / MCP (JSON) ─┼─▶ report_documents ──▶ ExtractorResolver ─┤        → PdfReportExtractor → layout reader
+ Manual upload ───┘   (stored, sha256 dedup)  └─ JSON → FandaqahReportsPlusExtractor
                                                           │
                                        canonical extraction shape (ExtractionSchema)
                                                           │
@@ -26,16 +26,17 @@ trial balances), whichever PMS each hotel runs: Fandaqah, Nazeel, Opera or anoth
 ```
 
 Every source produces the same canonical shape, so matching, checks and storage are shared. A
-new source (Nazeel API, Opera export, Fandaqah MCP) only needs a new extractor.
+new source (Nazeel API, Opera export, Fandaqah MCP) only needs a new extractor, and a new PDF
+layout only needs a new reader in `app/Reports/Extraction/Pdf` (see §6).
 
 ## 3. Decisions
 
 | # | Decision | Why |
 |---|---|---|
-| D1 | **Poll the mailbox every 5 minutes** over IMAP. | Polling is free; AI runs only for new files. Fandaqah emails the flash right after Night Audit, so 5 minutes is near real time. |
+| D1 | **Poll the mailbox every 5 minutes** over IMAP. | Polling is free; only new files are read. Fandaqah emails the flash right after Night Audit, so 5 minutes is near real time. |
 | D2 | **Any mailbox**: `password` (any IMAP), `microsoft` (Microsoft 365 OAuth), `google` (OAuth). | Microsoft and Google no longer allow password IMAP. See [MAILBOX.md](MAILBOX.md). |
-| D3 | **Structured data skips the AI.** Fandaqah Reports Plus JSON is mapped directly. | Exact, free, instant. The AI is for PMSs that only send PDFs. |
-| D4 | **AI output is never trusted directly.** Printed ratios must match one of the standard definitions; trial balances must balance; the date must match the email subject / file name. Failures go to review. | Financial data: a misread digit must not reach an owner's dashboard. |
+| D3 | **No AI.** PDFs are turned into text on the server by the free xpdf `pdftotext` (its `-table` mode keeps rows aligned; `-layout` gives whole headers and footers), then a **reader per report layout** maps rows by their printed label (English and Arabic; Arabic pages are mirrored) and columns by their printed headers. Fandaqah Reports Plus JSON is mapped directly. A layout no reader knows, or a scanned PDF without text, fails with a clear reason; nothing is guessed. (Decided 2026-11-22; the earlier AI reader was removed.) | Exact, free, instant, testable against real samples; guest data never leaves the server. |
+| D4 | **Read data is never trusted directly.** Printed ratios must match one of the standard definitions; trial balances must balance; guest folios must roll forward and add up to the printed total; the date must match the email subject / file name. Failures go to review. | Financial data: a misread value must not reach an owner's dashboard. |
 | D5 | **KPIs follow USALI 11th edition**, computed by FGRE from parts for every PMS: rooms sold = occupied − complimentary − house use; out-of-order rooms stay in rooms available; Occupancy = rooms sold ÷ rooms available, ADR = room revenue ÷ rooms sold, RevPAR / TRevPAR = room / total revenue ÷ rooms available. Occupancy excluding out-of-order is a secondary figure. Group and multi-day ratios are recomputed from summed parts, never averaged. | Industry standard; hotels on different PMSs compare like for like. |
 | D6 | **Tenancy: hotel group → properties.** `group_id` on every business table, enforced by `BelongsToCurrentGroup` + `GroupScope` (the PMS's `BelongsToCurrentTeam` pattern, one level up). Jobs pass the group explicitly. | The PMS has no group entity (a Team is one hotel); FGRE's customer is the group. |
 | D7 | **Permissions:** lowercase slugs with spaces in one config file, one Gate per permission (PMS convention). Fixed roles: owner, finance, operations, viewer. Unlike the PMS, a role only counts in its own group. Users can be limited to some hotels. | Groups are separate customers; no cross-group leakage. |
@@ -57,10 +58,10 @@ new source (Nazeel API, Opera export, Fandaqah MCP) only needs a new extractor.
 
 | Type | Examples | Stored in |
 |---|---|---|
-| `manager_flash` | Fandaqah EOD-016, Opera Manager Report | `daily_property_stats` (Day / MTD / YTD × this year / last year), `revenue_lines` |
+| `manager_flash` | Fandaqah / Opera "Manager - Flash" (EOD-016, manager_report): daily (6 columns) or month (1 column) | `daily_property_stats` (Day / MTD / YTD × this year / last year), `revenue_lines` |
 | `trial_balance` (general ledger) | Fandaqah FST-001 / FAC-001 | `trial_balance_lines` (standard + local account no., signed balances; may cover a period) |
-| `front_office_trial_balance` | Opera trial_balance, Fandaqah FIN-040 | `ledger_balances` (guest / AR / deposit / package), `transaction_code_lines` |
-| `guest_trial_balance` | Fandaqah EOD-010 Guest Trial Balance | `guest_ledger_lines` (one folio per guest / company: room, stay, opening, debits, credits, closing, status), guest total in `ledger_balances` |
+| `front_office_trial_balance` | Opera / Fandaqah night-audit "Trial Balance" (trial_balance) | `ledger_balances` (guest / AR / deposit / package), `transaction_code_lines` |
+| `guest_trial_balance` | Opera / Fandaqah "Guest Trial Balance" (EOD-010, gl_trial_balance) | `guest_ledger_lines` (one folio per guest / company: room, stay, opening, debits, credits, closing, status), guest total in `ledger_balances` |
 
 Fandaqah hotels share the NTMP chart of accounts, so their general-ledger trial balances
 consolidate by account number directly. Other PMSs will need an account mapping table
@@ -75,13 +76,26 @@ consolidate by account number directly. Other PMSs will need an account mapping 
 - No property code is printed. FGRE matches by the hotel name (English or Arabic) and stores the PMS
   `teams.id` as `pms_property_ref`.
 - No MCP server exists in the PMS repository. A token-protected Reports Plus endpoint in the PMS
-  would feed FGRE JSON with no AI (the extractor already exists).
+  would feed FGRE JSON directly (the extractor already exists).
 
-## 6. Testing with samples
+## 6. PDF readers
 
-- `php artisan test`: includes the real Fandaqah JSON samples (mapping, checks, KPI maths).
-- `php artisan fgre:eval-samples`: sends the sample PDFs to Claude and compares the result with
-  the JSON ground truth. Needs `ANTHROPIC_API_KEY`; costs a few cents per PDF.
+| Reader | Layout | Recognised by |
+|---|---|---|
+| `ManagerFlashReader` | "Manager - Flash" / تقرير المدير السريع | title or program `manager_report` |
+| `GuestTrialBalanceReader` | "Guest Trial Balance" | title or program `gl_trial_balance` |
+| `LedgerTrialBalanceReader` | general-ledger "Trial Balance" (Account No. table) | title + account columns |
+| `FrontOfficeTrialBalanceReader` | night-audit "Trial Balance" (ledgers) | title + Balance Yesterday / Guest Ledger |
+
+Adding a layout (Nazeel, another Opera report): put a real sample through `pdftotext -table` and
+`-layout`, write a `PdfReportReader`, register it in `PdfReportExtractor::READERS` (most specific
+first) and add a test. Samples with guest data are not committed: test on synthetic text in the
+same layout (`tests/Fixtures/pdf-text`).
+
+Testing: `php artisan test` reads the committed Fandaqah PDFs (English and Arabic) and checks that
+they give exactly the numbers of the matching Reports Plus JSON. Server requirement: xpdf
+`pdftotext` (https://www.xpdfreader.com; the Poppler version has no `-table` mode), path in
+`FGRE_PDFTOTEXT`.
 
 ## 7. Open items
 
@@ -89,5 +103,7 @@ consolidate by account number directly. Other PMSs will need an account mapping 
    yet; hotels can schedule them once the PMS supports it, or send them by hand.
 2. Optional PMS improvement: the hotel id (`teams.id`) in the flash subject and file name would make
    matching exact.
-3. Nazeel and Opera sample PDFs (pending): run `fgre:eval-samples` on them when they arrive.
-4. Admin screens for hotels, users, senders and MCP connections (seeded / database for now).
+3. Nazeel sample PDFs (pending): add readers when they arrive. Opera Manager Flash and Guest
+   Trial Balance are read (same layouts as Fandaqah).
+4. MCP connections have no admin screen yet (database for now). CSV / Excel exports could be
+   added as another reader type.

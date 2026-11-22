@@ -39,7 +39,7 @@ class ExtractionValidator
         $errors = $this->validateDates($output['business_date'] ?? null, $output['period_start'] ?? null, $expectedDate);
 
         if (($output['confidence'] ?? 'low') === 'low') {
-            $errors[] = 'AI reported low confidence: '.implode('; ', $output['issues'] ?? []);
+            $errors[] = 'The reader could not read this report reliably: '.implode('; ', $output['issues'] ?? []);
         }
 
         return [...$errors, ...match ($type) {

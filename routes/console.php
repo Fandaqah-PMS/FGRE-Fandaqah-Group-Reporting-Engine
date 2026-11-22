@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schedule;
 | cron calling `schedule:run` every minute in production) and a queue worker.
 */
 
-// Mailbox: every 5 minutes by default. Polling is cheap; AI only runs for new files.
+// Mailbox: every 5 minutes by default. Polling is cheap; only new files are read.
 $every = max(1, (int) config('fgre.inbox.poll_minutes', 5));
 
 Schedule::command('fgre:poll-inbox')

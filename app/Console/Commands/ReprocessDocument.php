@@ -10,7 +10,7 @@ use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 
 #[Signature('fgre:reprocess {document : Report document id}')]
-#[Description('Run AI extraction again for a report document (e.g. after fixing a property alias)')]
+#[Description('Read a report document again (e.g. after fixing a hotel alias or adding a reader)')]
 class ReprocessDocument extends Command
 {
     public function handle(): int

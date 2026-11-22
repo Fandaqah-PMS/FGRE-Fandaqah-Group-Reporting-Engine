@@ -22,7 +22,7 @@ use Tests\TestCase;
 /**
  * Real Fandaqah PMS Reports Plus output (docs/samples/fandaqah-pms, demo hotel
  * "Address Hotel"). Proves the mapper, the checks and the KPI maths against
- * actual PMS numbers, without any AI.
+ * actual PMS numbers.
  */
 class FandaqahSamplesTest extends TestCase
 {

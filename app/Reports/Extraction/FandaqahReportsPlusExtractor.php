@@ -6,7 +6,7 @@ use App\Models\ReportDocument;
 
 /**
  * Maps Fandaqah PMS "Reports Plus" JSON (POST /nova-vendor/pms-reports/reports/{key}/run)
- * into the canonical extraction shape. No AI: the PMS already sends structured data.
+ * into the canonical extraction shape: the PMS already sends structured data.
  *
  * Rules from the Fandaqah reference (docs/fandaqah-pms-reference.md §5.5):
  * - key rows by `_code` / `account_number`, never by label (labels follow the locale);

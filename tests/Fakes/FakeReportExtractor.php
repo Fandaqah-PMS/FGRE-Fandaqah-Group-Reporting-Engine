@@ -18,7 +18,7 @@ class FakeReportExtractor implements ReportExtractor
             throw $this->response;
         }
 
-        return new ExtractionResult($this->response, 'claude', 'fake-model', 'end_turn', 1000, 500);
+        return new ExtractionResult($this->response, 'fake');
     }
 
     private static function header(string $type, array $overrides = []): array

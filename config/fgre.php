@@ -60,20 +60,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | AI extraction
+    | Reading report PDFs (no AI)
     |--------------------------------------------------------------------------
     |
-    | Bump `prompt_version` whenever the extraction prompt or a schema changes,
-    | so every extraction run records which version produced it.
+    | PDFs are turned into text on the server by the free xpdf `pdftotext` tool
+    | (https://www.xpdfreader.com, it needs its "-table" mode), then a reader for
+    | the report's layout maps the rows. Nothing is sent outside the server.
     |
     */
 
-    'ai' => [
-        'api_key' => env('ANTHROPIC_API_KEY'),
-        'model' => env('FGRE_AI_MODEL', 'claude-opus-5-5'),
-        'effort' => env('FGRE_AI_EFFORT', 'high'),
-        'max_tokens' => (int) env('FGRE_AI_MAX_TOKENS', 64000),
-        'prompt_version' => '2026-11-22.1',
+    'pdf' => [
+        'pdftotext' => env('FGRE_PDFTOTEXT', 'pdftotext'),
+        'timeout' => (int) env('FGRE_PDFTOTEXT_TIMEOUT', 60),
     ],
 
     /*

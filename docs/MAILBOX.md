@@ -5,7 +5,7 @@ how to log in in `.env`, then run `php artisan fgre:mailbox-test`.
 
 FGRE checks the mailbox every 5 minutes (`FGRE_INBOX_POLL_MINUTES`). Each handled email is moved
 to the `FGRE-Processed` folder (created automatically). Emails from senders that no hotel has
-allow-listed are ignored and never reach the AI.
+allow-listed are ignored and never processed.
 
 ## 1. Any IMAP mailbox (cPanel, Plesk, Zoho, Yahoo, GoDaddy, ...)
 

@@ -6,29 +6,22 @@ use App\Models\ReportDocument;
 use InvalidArgumentException;
 
 /**
- * Picks the extractor for a document. Structured data the system knows
- * (Fandaqah Reports Plus JSON) needs no AI; everything else is read by the AI.
+ * Picks the extractor for a document. No AI anywhere: PDFs (and plain text) are read by
+ * layout readers, Fandaqah Reports Plus JSON is mapped directly.
  */
 class ExtractorResolver
 {
     public function __construct(
-        private readonly ReportExtractor $aiExtractor,
+        private readonly ReportExtractor $pdfExtractor,
         private readonly FandaqahReportsPlusExtractor $fandaqahJson,
     ) {}
 
     public function for(ReportDocument $document): ReportExtractor
     {
         return match ($document->mime_type) {
-            'application/pdf', 'text/plain' => $this->aiExtractor,
-            'application/json' => $this->isReportsPlus($document) ? $this->fandaqahJson : $this->aiExtractor,
+            'application/pdf', 'text/plain' => $this->pdfExtractor,
+            'application/json' => $this->fandaqahJson,
             default => throw new InvalidArgumentException("No extractor for [{$document->mime_type}]."),
         };
-    }
-
-    private function isReportsPlus(ReportDocument $document): bool
-    {
-        $data = json_decode(ltrim($document->contents(), "\xEF\xBB\xBF"), true);
-
-        return is_array($data) && isset($data['meta']['key'], $data['sections']);
     }
 }

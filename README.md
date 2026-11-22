@@ -4,7 +4,7 @@ Centralized group reporting for hotel chains (2+ properties), whichever PMS each
 (Fandaqah, Nazeel, Opera, â€¦).
 
 PMS reports (Manager Flash, trial balances) arrive by **email** (any mailbox) or from a PMS
-**MCP server**. Structured data is imported directly; PDFs are read by AI. Every figure is
+**MCP server**. Structured data is imported directly; PDFs are read on the server by layout readers (no AI). Every figure is
 cross-checked before it is stored, and the group dashboard shows all hotels in one place, in
 Arabic and English.
 
@@ -40,15 +40,14 @@ Al Noor Hospitality Group is generated demo data (5 hotels on 3 PMSs, Jan 2025 â
 Hotel Group holds the real Fandaqah sample reports from `docs/samples/`.
 
 To process real reports, also run `php artisan queue:work` and `php artisan schedule:work`, and set
-`ANTHROPIC_API_KEY` plus the mailbox settings in `.env`.
+the xpdf `pdftotext` path (`FGRE_PDFTOTEXT`) plus the mailbox settings in `.env`.
 
 ## Useful commands
 
 | Command | What it does |
 |---|---|
-| `php artisan test` | Test suite (AI faked; Fandaqah JSON samples are real) |
+| `php artisan test` | Test suite (Fandaqah PDF and JSON samples are real) |
 | `php artisan fgre:ingest-file path.pdf\|.json --from=sender@pms` | Ingest a report file by hand |
 | `php artisan fgre:mailbox-test` | Check the mailbox settings |
 | `php artisan fgre:mcp-test {id}` | List a PMS MCP server's tools |
-| `php artisan fgre:eval-samples` | AI accuracy on the sample PDFs vs ground truth (calls the API) |
 | `php artisan fgre:reprocess {id}` | Run a document through the pipeline again |

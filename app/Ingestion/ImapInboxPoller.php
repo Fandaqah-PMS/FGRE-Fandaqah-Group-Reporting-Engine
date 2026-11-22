@@ -90,7 +90,7 @@ class ImapInboxPoller
             return 0;
         }
 
-        // Only allow-listed senders reach the AI step (cost control and spoofing protection).
+        // Only allow-listed senders are processed (spoofing protection).
         if ($this->matcher->candidatesForSender($from)->isEmpty()) {
             $inbound->update(['status' => 'ignored', 'status_reason' => "Sender [{$from}] is not allow-listed."]);
 

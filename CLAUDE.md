@@ -14,18 +14,20 @@ first; Fandaqah PMS facts are in [docs/fandaqah-pms-reference.md](docs/fandaqah-
   in the current group. Record settings changes with `AuditLog::record()`.
 - **KPIs:** only `App\Reports\Kpi\KpiCalculator` computes occupancy / ADR / RevPAR, from parts.
   Never average ratios; never show `printed_*` columns as KPIs.
-- Dashboards and group reports read only the canonical tables, never raw AI output.
-- AI output is never trusted directly: everything goes through `ExtractionValidator`; a failed
+- **No AI.** PDFs are read by layout readers (`app/Reports/Extraction/Pdf`) on text from xpdf
+  `pdftotext` (`FGRE_PDFTOTEXT`). Rows are matched by printed label (English + Arabic), columns by
+  printed header; never by position, never guessed. Unknown layouts fail with a clear reason.
+- Dashboards and group reports read only the canonical tables, never raw reader output.
+- Read data is never trusted directly: everything goes through `ExtractionValidator`; a failed
   check sends the document to review, never to a silent fix.
-- Report PDFs are untrusted input; the extraction prompt treats them as data only.
-- Changing `ExtractionSchema` or the prompt: bump `config('fgre.ai.prompt_version')` and run
-  `fgre:eval-samples`.
+- New report layout: new `PdfReportReader`, registered in `PdfReportExtractor::READERS`, tested
+  on a real sample. Never commit samples with guest names; use synthetic text (`tests/Fixtures/pdf-text`).
 - Money: `numeric(18,2)` + currency; KPI math in bcmath. Unreleased migrations may be edited;
   once a migration reaches `staging`, add a new one instead.
 - Brand: [docs/BRAND.md](docs/BRAND.md).
 
 ## Commands
-- Tests: `php artisan test` (SQLite in memory; the AI is faked; Fandaqah JSON samples are real)
+- Tests: `php artisan test` (SQLite in memory; the Fandaqah PDF and JSON samples are real)
 - Format: `vendor/bin/pint`
 - Ingest a file: `php artisan fgre:ingest-file path/to/report.pdf|.json --from=sender@pms.example`
 - Process the queue: `php artisan queue:work`
@@ -35,4 +37,3 @@ first; Fandaqah PMS facts are in [docs/fandaqah-pms-reference.md](docs/fandaqah-
 - Demo data: `php artisan migrate:fresh --seed` with APP_ENV=local (logins in README)
 - Charts: series colours only from resources/js/lib/palette.js (validated); text never in series colours
 - Re-run a document: `php artisan fgre:reprocess {id}`
-- AI accuracy on samples (costs money): `php artisan fgre:eval-samples`

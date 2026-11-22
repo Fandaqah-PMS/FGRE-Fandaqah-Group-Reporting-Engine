@@ -2,7 +2,7 @@
 
 Email works with every PMS and needs nothing from the PMS vendor. If a hotel's PMS also runs an
 MCP server, FGRE can read reports from it directly. That is faster, and with structured data it
-needs no AI.
+is imported directly.
 
 FGRE speaks standard MCP over Streamable HTTP (JSON-RPC: `initialize`, `tools/list`,
 `tools/call`). Nothing is PMS-specific: you tell FGRE which tool returns which report.
@@ -57,9 +57,9 @@ stored as final, calls the tool, and passes the result into the same pipeline as
 
 | Tool returns | Handled as |
 |---|---|
-| `structuredContent`, or text that is Fandaqah Reports Plus JSON | imported directly, no AI |
-| a PDF resource (`mimeType: application/pdf`, base64 `blob`) | read by AI, like an emailed PDF |
-| other text or JSON | read by AI as text |
+| `structuredContent`, or text that is Fandaqah Reports Plus JSON | imported directly |
+| a PDF resource (`mimeType: application/pdf`, base64 `blob`) | read by the PDF layout readers, like an emailed PDF |
+| other text | read by the PDF layout readers as text; other JSON is refused |
 
 The hotel is known from the settings, so no sender allow-list is needed. FGRE still checks that
 the hotel name printed in the result matches the hotel. Errors are saved on the connection
