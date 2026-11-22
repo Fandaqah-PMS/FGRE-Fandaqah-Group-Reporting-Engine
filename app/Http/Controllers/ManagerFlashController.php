@@ -7,6 +7,7 @@ use App\Models\Property;
 use App\Reports\Kpi\BudgetService;
 use App\Reports\Kpi\GroupKpiService;
 use App\Support\HotelScope;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
@@ -96,6 +97,8 @@ class ManagerFlashController extends Controller
             'budget' => $budget,
             'missing' => $missing,
             'hotelCount' => $propertyIds->count(),
+            // Daily figures for the KPI-card sparklines: the 30 days up to the report date.
+            'trend' => $kpis->trend($groupId, CarbonImmutable::parse($date)->subDays(29)->toDateString(), $date, $propertyIds),
             'selection' => $request->filled('hotels') ? $propertyIds->values() : null,
         ];
     }

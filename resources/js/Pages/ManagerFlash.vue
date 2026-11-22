@@ -25,7 +25,8 @@ import { useViewMode } from '../lib/view';
 import { useI18n } from '../lib/i18n';
 import EmptyState from '../Components/ui/EmptyState.vue';
 
-const props = defineProps({ empty: Boolean, date: String, latest: String, currency: String, columns: Object, hotels: Array, missing: Array, regions: Array, budget: Object, hotelCount: Number, selection: Array });
+const props = defineProps({ empty: Boolean, date: String, latest: String, currency: String, columns: Object, hotels: Array, missing: Array, regions: Array, budget: Object, hotelCount: Number, selection: Array, trend: Array });
+const spark = (key) => (props.trend ?? []).map((d) => (d[key] === null || d[key] === undefined ? null : Number(d[key])));
 const { t, name, locale } = useI18n();
 const page = usePage();
 const view = useViewMode();
@@ -227,11 +228,11 @@ const flashCols = computed(() => [['day', t('Day')], ['mtd', t('MTD')], ['ytd', 
         </div>
 
         <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <KpiCard :dot="BRAND.coral" :label="t('Occupancy · day')" :value="isNum(day.occupancy_pct) ? Number(day.occupancy_pct).toFixed(1) : '–'" unit="%"
+            <KpiCard :spark="spark('occupancy_pct')" :dot="BRAND.coral" :label="t('Occupancy · day')" :value="isNum(day.occupancy_pct) ? Number(day.occupancy_pct).toFixed(1) : '–'" unit="%"
                      :current="day.occupancy_pct" :previous="baseDay.occupancy_pct ?? null" kind="pp" :note="`${basisLabel} ${pct(baseDay.occupancy_pct)}`" />
-            <KpiCard :dot="BRAND.navy" :label="t('ADR · day')" :value="money(day.adr)" :unit="currency" :current="day.adr" :previous="baseDay.adr ?? null" :note="`${basisLabel} ${money(baseDay.adr)}`" />
-            <KpiCard :dot="BRAND.green" :label="t('RevPAR · day')" :value="money(day.revpar)" :unit="currency" :current="day.revpar" :previous="baseDay.revpar ?? null" :note="`${basisLabel} ${money(baseDay.revpar)}`" />
-            <KpiCard :dot="BRAND.peach" :label="t('Total revenue · day')" :value="compact(day.total_revenue)" :unit="currency" :current="day.total_revenue" :previous="baseDay.total_revenue ?? null" :note="`${basisLabel} ${compact(baseDay.total_revenue)}`" />
+            <KpiCard :spark="spark('adr')" :dot="BRAND.navy" :label="t('ADR · day')" :value="money(day.adr)" :unit="currency" :current="day.adr" :previous="baseDay.adr ?? null" :note="`${basisLabel} ${money(baseDay.adr)}`" />
+            <KpiCard :spark="spark('revpar')" :dot="BRAND.green" :label="t('RevPAR · day')" :value="money(day.revpar)" :unit="currency" :current="day.revpar" :previous="baseDay.revpar ?? null" :note="`${basisLabel} ${money(baseDay.revpar)}`" />
+            <KpiCard :spark="spark('total_revenue')" :dot="BRAND.peach" :label="t('Total revenue · day')" :value="compact(day.total_revenue)" :unit="currency" :current="day.total_revenue" :previous="baseDay.total_revenue ?? null" :note="`${basisLabel} ${compact(baseDay.total_revenue)}`" />
         </section>
 
         <template v-if="view === 'charts'">

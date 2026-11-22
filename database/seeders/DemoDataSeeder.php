@@ -301,7 +301,12 @@ class DemoDataSeeder extends Seeder
     private function writeTrialBalances(Property $property, array $days): void
     {
         $now = now();
-        $months = [['2026-08-01', '2026-08-31'], ['2026-09-01', '2026-09-30'], ['2026-10-01', '2026-10-31'], ['2026-11-01', '2026-11-19']];
+        // Twelve monthly trial balances: December 2025 … October 2026, then November to date.
+        $months = [];
+        for ($m = CarbonImmutable::parse('2025-12-01'); $m->lt(CarbonImmutable::parse('2026-11-01')); $m = $m->addMonth()) {
+            $months[] = [$m->toDateString(), $m->endOfMonth()->toDateString()];
+        }
+        $months[] = ['2026-11-01', '2026-11-19'];
 
         foreach ($months as [$from, $to]) {
             $sum = $this->sumDays($days, CarbonImmutable::parse($from), CarbonImmutable::parse($to));

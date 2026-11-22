@@ -48,7 +48,23 @@ class TrialBalanceController extends Controller
         $classTotal = fn (string $class, ?int $hotelId = null) => round($accounts->where('class', $class)
             ->sum(fn ($a) => $hotelId === null ? $a['total'] : (float) ($a['hotels'][$hotelId] ?? 0)), 2);
 
+        // Month-by-month trend for the KPI-card sparklines: every trial balance up to this one.
+        $trendDates = $dates->filter(fn ($d) => $date !== null && $d <= $date)->take(12)->reverse()->values();
+        $trendLines = $trendDates->isEmpty() ? collect() : TrialBalanceLine::whereIn('property_id', $propertyIds)
+            ->whereDate('business_date', '>=', $trendDates->first())->whereDate('business_date', '<=', $trendDates->last())
+            ->get(['business_date', 'account_code', 'closing_balance'])
+            ->groupBy(fn ($l) => substr((string) $l->business_date, 0, 10));
+        $trend = $trendDates->map(function ($d) use ($trendLines) {
+            $sum = fn (string $class) => round(($trendLines[$d] ?? collect())
+                ->filter(fn ($l) => $this->accountClass((string) $l->account_code) === $class)->sum(fn ($l) => (float) $l->closing_balance), 2);
+            $revenue = -$sum('revenue');
+            $expenses = $sum('expenses');
+
+            return ['date' => $d, 'revenue' => $revenue, 'expenses' => $expenses, 'result' => round($revenue - $expenses, 2)];
+        })->values();
+
         return Inertia::render('TrialBalance', [
+            'trend' => $trend,
             'dates' => $dates,
             'date' => $date,
             'periodStart' => $lines->first()?->period_start?->toDateString(),

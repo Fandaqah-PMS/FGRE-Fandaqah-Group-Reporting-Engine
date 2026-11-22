@@ -18,7 +18,7 @@ import { useViewMode } from '../lib/view';
 import { useI18n } from '../lib/i18n';
 import EmptyState from '../Components/ui/EmptyState.vue';
 
-const props = defineProps({ dates: Array, date: String, periodStart: String, hotels: Array, accounts: Array, summary: Object });
+const props = defineProps({ dates: Array, date: String, periodStart: String, hotels: Array, accounts: Array, summary: Object , trend: Array });
 const { t, name } = useI18n();
 const page = usePage();
 const view = useViewMode();
@@ -76,6 +76,7 @@ const bal = (v) => {
     return n < 0 ? `(${money(-n, 0)})` : money(n, 0);
 };
 const balanced = computed(() => Math.abs(Number(props.summary?.net ?? 0)) < 0.05);
+const spark = (key) => (props.trend ?? []).map((d) => Number(d[key]));
 const net = computed(() => Number(props.summary?.revenue ?? 0) - Number(props.summary?.expenses ?? 0));
 const margin = computed(() => (Number(props.summary?.revenue) > 0 ? (net.value / Number(props.summary.revenue)) * 100 : null));
 
@@ -137,9 +138,9 @@ const marginRows = computed(() => props.summary.byHotel.map((h) => ({ id: h.id, 
 
     <div v-else-if="mode === 'total'" class="mt-6 space-y-6">
         <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <KpiCard :dot="BRAND.coral" :label="t('Revenue')" :value="compact(summary.revenue)" :unit="currency" />
-            <KpiCard :dot="BRAND.navy" :label="t('Expenses')" :value="compact(summary.expenses)" :unit="currency" />
-            <KpiCard :dot="BRAND.green" :label="t('Result before other items')" :value="compact(net)" :unit="currency" :note="margin === null ? '' : `${t('Margin')} ${margin.toFixed(1)}%`" />
+            <KpiCard :spark="spark('revenue')" :dot="BRAND.coral" :label="t('Revenue')" :value="compact(summary.revenue)" :unit="currency" />
+            <KpiCard :spark="spark('expenses')" :dot="BRAND.navy" :label="t('Expenses')" :value="compact(summary.expenses)" :unit="currency" />
+            <KpiCard :spark="spark('result')" :dot="BRAND.green" :label="t('Result before other items')" :value="compact(net)" :unit="currency" :note="margin === null ? '' : `${t('Margin')} ${margin.toFixed(1)}%`" />
             <KpiCard :label="t('Debits = credits')" :value="balanced ? t('Balanced') : t('Not balanced')" :value-tone="balanced ? 'success' : 'danger'"
                      :icon="balanced ? 'check' : 'alert'" :icon-tone="balanced ? 'success' : 'coral'" :note="t(':n accounts · :h hotels', { n: accounts.length, h: hotels.length })" />
         </section>
