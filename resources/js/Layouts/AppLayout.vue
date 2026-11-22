@@ -45,15 +45,16 @@ const logout = () => router.post('/logout');
 <template>
     <div class="min-h-screen bg-paper">
         <!-- Sidebar -->
-        <aside class="print:hidden fixed inset-y-0 start-0 z-50 flex w-[17rem] flex-col border-e border-line bg-white transition-transform duration-300"
+        <aside class="print:hidden fixed inset-y-0 start-0 z-50 flex w-[17rem] flex-col overflow-hidden border-e border-line bg-white transition-transform duration-300"
                :class="drawer ? 'translate-x-0' : 'max-lg:ltr:-translate-x-full max-lg:rtl:translate-x-full'">
-            <div class="relative flex h-[5.5rem] items-center justify-between overflow-hidden border-b border-line px-6">
-                <div class="art-end absolute inset-y-0 end-0 w-28 opacity-80 [background-size:190px_auto]" aria-hidden="true" />
+            <!-- brand art: the half of the sidebar away from the menu text, top to bottom -->
+            <div class="art-end absolute inset-y-0 end-0 w-[42%] opacity-60 [background-size:200px_auto]" aria-hidden="true" />
+            <div class="relative flex h-[5.5rem] items-center justify-between border-b border-line px-6">
                 <Link href="/" aria-label="Fandaqah" class="relative"><img src="/brand/logo.png" alt="Fandaqah" class="h-[3.1rem] w-auto" /></Link>
                 <button type="button" class="relative rounded-lg bg-white p-1.5 text-ink-2 shadow-sm lg:hidden" :aria-label="t('Close menu')" @click="drawer = false"><Icon name="close" /></button>
             </div>
 
-            <nav class="flex-1 overflow-y-auto px-4 py-5">
+            <nav class="relative flex-1 overflow-y-auto px-4 py-5">
                 <div v-for="section in sections" :key="section.label" class="mb-6">
                     <div class="mb-2 px-3 text-[10px] font-bold tracking-[0.2em] text-muted uppercase">{{ section.label }}</div>
                     <Link v-for="item in section.items" :key="item.href" :href="item.href"
@@ -68,7 +69,7 @@ const logout = () => router.post('/logout');
                 </div>
             </nav>
 
-            <div class="p-4">
+            <div class="relative p-4">
                 <div class="relative overflow-hidden rounded-2xl bg-navy px-4 py-4 text-white">
                     <div class="art-end absolute inset-y-0 end-0 w-3/4 opacity-45 [background-size:170px_auto]" aria-hidden="true" />
                     <div class="absolute inset-0 bg-gradient-to-r from-navy via-navy/85 to-navy/10 rtl:bg-gradient-to-l" aria-hidden="true" />
@@ -89,25 +90,23 @@ const logout = () => router.post('/logout');
         <!-- Main -->
         <div class="lg:ps-[17rem] print:!ps-0">
             <header class="print:hidden sticky top-0 z-30 border-b border-line bg-white/90 backdrop-blur">
-                <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-                    <div class="art-center absolute inset-y-0 start-1/2 w-[30rem] -translate-x-1/2 opacity-50 max-xl:hidden rtl:translate-x-1/2 [background-size:210px_auto]" />
-                </div>
-                <div class="art-ribbon pointer-events-none absolute inset-x-0 -bottom-px h-[5px]" aria-hidden="true" />
+                <!-- brand art: across the whole header, left to right -->
+                <div class="brand-pattern-full pointer-events-none absolute inset-0 opacity-45 [background-size:200px_auto]" aria-hidden="true" />
                 <div class="relative flex h-[5.5rem] items-center gap-3 px-4 sm:px-8">
-                    <button type="button" class="rounded-xl border border-line p-2 text-navy lg:hidden" :aria-label="t('Open menu')" @click="drawer = true"><Icon name="menu" /></button>
+                    <button type="button" class="rounded-xl border border-line bg-white p-2 text-navy shadow-sm lg:hidden" :aria-label="t('Open menu')" @click="drawer = true"><Icon name="menu" /></button>
                     <HotelSwitcher class="min-w-0 flex-1 sm:flex-none" />
                     <div class="ms-auto flex items-center gap-2 sm:gap-3">
-                        <button type="button" class="grid h-11 min-w-11 place-items-center rounded-xl border border-line px-3 text-sm font-bold text-navy hover:border-coral/40" @click="toggleLocale">
+                        <button type="button" class="grid h-11 min-w-11 place-items-center rounded-xl border border-line bg-white px-3 text-sm font-bold text-navy shadow-sm hover:border-coral/40" @click="toggleLocale">
                             {{ locale === 'ar' ? 'EN' : 'العربية' }}
                         </button>
-                        <Link href="/settings/profile" class="hidden items-center gap-3 rounded-xl sm:flex hover:opacity-90" :title="t('Profile')">
-                            <span class="grid size-11 place-items-center rounded-xl bg-peach text-sm font-bold text-navy">{{ initials }}</span>
+                        <Link href="/settings/profile" class="hidden items-center gap-3 rounded-xl border border-line bg-white p-1 shadow-sm sm:flex xl:pe-4 hover:border-coral/40" :title="t('Profile')">
+                            <span class="grid size-9 place-items-center rounded-lg bg-peach text-sm font-bold text-navy">{{ initials }}</span>
                             <div class="hidden leading-tight xl:block">
                                 <div class="text-sm font-bold text-navy">{{ auth?.user?.name }}</div>
                                 <div class="text-xs text-muted">{{ t(`role_${auth?.role}`) }}</div>
                             </div>
                         </Link>
-                        <button type="button" class="grid size-11 place-items-center rounded-xl border border-line text-ink-2 hover:border-coral/40 hover:text-coral" :title="t('Sign out')" :aria-label="t('Sign out')" @click="logout">
+                        <button type="button" class="grid size-11 place-items-center rounded-xl border border-line bg-white text-ink-2 shadow-sm hover:border-coral/40 hover:text-coral" :title="t('Sign out')" :aria-label="t('Sign out')" @click="logout">
                             <Icon name="logout" />
                         </button>
                     </div>

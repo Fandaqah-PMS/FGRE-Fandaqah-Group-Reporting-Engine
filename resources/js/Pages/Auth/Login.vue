@@ -35,9 +35,9 @@ const features = [
     <div v-if="design === 'split'" class="grid min-h-screen bg-paper lg:grid-cols-[minmax(0,1fr)_minmax(0,1.08fr)]">
         <section class="relative flex flex-col overflow-hidden px-6 py-8 sm:px-12 lg:px-16">
             <!-- art cluster in the far corner of the form side, faded long before the form -->
-            <div class="art-corner absolute -end-10 -top-10 size-72 opacity-60 lg:hidden" aria-hidden="true" />
+            <div class="brand-pattern-full absolute inset-x-0 top-0 h-[7.5rem] opacity-45 [background-size:200px_auto]" aria-hidden="true" />
             <div class="relative flex items-center justify-between">
-                <img src="/brand/logo.png" alt="Fandaqah" class="h-14 w-auto" />
+                <span class="rounded-2xl border border-line bg-white px-4 py-2 shadow-sm"><img src="/brand/logo.png" alt="Fandaqah" class="h-11 w-auto" /></span>
                 <button type="button" class="flex items-center gap-2 rounded-xl border border-line bg-white px-3 py-2 text-sm font-bold text-navy hover:border-coral/40" @click="toggleLocale">
                     <Icon name="globe" :size="16" class="text-coral" />{{ locale === 'ar' ? 'English' : 'العربية' }}
                 </button>
@@ -56,8 +56,7 @@ const features = [
         <section class="relative hidden p-4 lg:block">
             <div class="relative flex h-full flex-col overflow-hidden rounded-[2rem] bg-navy text-white">
                 <!-- the art, large and rotated like the identity hero; a navy scrim keeps the copy readable -->
-                <div class="art-corner absolute -end-24 -top-24 size-[34rem] rotate-[-12deg] opacity-75 [background-size:300px_auto]" aria-hidden="true" />
-                <div class="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-navy via-navy/90 to-transparent" aria-hidden="true" />
+                <div class="art-end absolute inset-y-0 end-0 w-1/2 opacity-80 [background-size:260px_auto]" aria-hidden="true" />
 
                 <div class="relative flex flex-1 flex-col justify-between p-12 xl:p-14">
                     <img src="/brand/logo-inverse.png" alt="" class="h-12 w-auto self-start" />
@@ -85,9 +84,8 @@ const features = [
 
     <!-- ───────── Design 2: canvas ───────── -->
     <div v-else-if="design === 'canvas'" class="relative flex min-h-screen flex-col overflow-hidden bg-paper">
-        <div class="brand-pattern-full absolute inset-0 opacity-90 [background-size:360px_auto]" aria-hidden="true" />
+        <div class="art-end absolute inset-y-0 end-0 w-1/2 [background-size:300px_auto]" aria-hidden="true" />
         <!-- paper wash: strongest in the middle where the card sits -->
-        <div class="absolute inset-0 bg-[radial-gradient(ellipse_55%_70%_at_50%_50%,rgba(248,247,244,0.97)_35%,rgba(248,247,244,0.55)_75%,rgba(248,247,244,0.15)_100%)]" aria-hidden="true" />
 
         <header class="relative flex items-center justify-between px-6 py-6 sm:px-10">
             <span class="rounded-2xl bg-white px-4 py-2.5 shadow-sm"><img src="/brand/logo.png" alt="Fandaqah" class="h-10 w-auto" /></span>
@@ -120,8 +118,7 @@ const features = [
 
     <!-- ───────── Design 3: stage ───────── -->
     <div v-else class="relative flex min-h-screen flex-col overflow-hidden bg-navy text-white">
-        <div class="art-corner absolute -end-16 -top-16 size-[30rem] opacity-70 max-sm:opacity-30 [background-size:280px_auto]" aria-hidden="true" />
-        <div class="art-corner absolute -start-16 -bottom-16 size-[26rem] rotate-180 opacity-50 [background-size:260px_auto]" aria-hidden="true" />
+        <div class="art-end absolute inset-y-0 end-0 w-1/2 opacity-75 max-lg:w-full max-lg:opacity-25 [background-size:280px_auto]" aria-hidden="true" />
 
         <header class="relative flex items-center justify-between px-6 py-6 sm:px-10">
             <img src="/brand/logo-inverse.png" alt="Fandaqah" class="h-11 w-auto" />
