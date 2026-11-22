@@ -26,9 +26,9 @@ onBeforeUnmount(() => { document.removeEventListener('pointerdown', onDoc); docu
 
 <template>
     <div ref="root" class="relative">
-        <button type="button" class="flex w-full max-w-[22rem] items-center gap-3 rounded-2xl border border-line bg-white px-3 py-2 text-start shadow-[var(--shadow-card)] transition hover:border-coral/40"
+        <button type="button" class="flex w-full max-w-[22rem] items-center gap-3 rounded-2xl border border-line bg-white px-3 py-1.5 text-start shadow-[var(--shadow-card)] transition hover:border-coral/40"
                 :aria-expanded="open" aria-haspopup="listbox" @click="open = !open">
-            <span class="grid size-9 shrink-0 place-items-center rounded-xl" :class="current ? 'bg-coral-tint text-coral' : 'bg-navy text-white'">
+            <span class="grid size-8 shrink-0 place-items-center rounded-xl" :class="current ? 'bg-coral-tint text-coral' : 'bg-navy text-white'">
                 <Icon :name="current ? 'building' : 'layers'" :size="18" />
             </span>
             <span class="min-w-0 flex-1">

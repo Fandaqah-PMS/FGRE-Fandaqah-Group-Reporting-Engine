@@ -177,4 +177,18 @@ class SettingsTest extends TestCase
         $this->post('/reset-password', ['token' => $invite, 'email' => $user->email, 'password' => 'Other-Pass-2026', 'password_confirmation' => 'Other-Pass-2026'])
             ->assertSessionHasErrors('email');
     }
+
+    public function test_go_live_command_creates_a_group_and_invites_its_owner(): void
+    {
+        $this->artisan('fgre:create-group', [
+            'name' => 'Golden Hotels', '--name-ar' => 'فنادق الذهب', '--owner-email' => 'Owner@Golden.example', '--owner-name' => 'Group Owner',
+        ])->assertSuccessful();
+
+        $owner = User::where('email', 'owner@golden.example')->sole();
+        $this->assertSame('owner', $owner->roleIn($owner->current_group_id));
+        $this->assertSame('Asia/Riyadh', $owner->currentGroup->timezone);
+        Notification::assertSentTo($owner, SetPasswordNotification::class, fn ($n) => $n->invitedTo === 'فنادق الذهب');
+
+        $this->artisan('fgre:create-group', ['name' => 'Golden Hotels', '--owner-email' => 'x@golden.example', '--owner-name' => 'X'])->assertFailed();
+    }
 }

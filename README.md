@@ -42,6 +42,11 @@ Hotel Group holds the real Fandaqah sample reports from `docs/samples/`.
 To process real reports, also run `php artisan queue:work` and `php artisan schedule:work`, and set
 the xpdf `pdftotext` path (`FGRE_PDFTOTEXT`) plus the mailbox settings in `.env`.
 
+## Deploy
+
+Server setup, the production `.env` template and the release script are in [deploy/](deploy/README.md).
+First customer: `php artisan fgre:create-group "Group name" --owner-email=... --owner-name=...`.
+
 ## Useful commands
 
 | Command | What it does |

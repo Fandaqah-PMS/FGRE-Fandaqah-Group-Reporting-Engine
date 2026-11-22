@@ -1,0 +1,9 @@
+# FGRE cron (/etc/cron.d/fgre). server-setup.sh fills __APP_DIR__ / __APP_USER__.
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# Laravel scheduler: mailbox every 5 min, MCP every 15 min, email subscriptions every 15 min.
+* * * * * __APP_USER__ cd __APP_DIR__ && php artisan schedule:run >> /dev/null 2>&1
+
+# Nightly backup at 02:30: database dump + received report files, kept 14 days.
+30 2 * * * root sudo -u postgres pg_dump -Fc fgre > /var/backups/fgre/fgre-$(date +\%F).dump && tar -czf /var/backups/fgre/reports-$(date +\%F).tgz -C __APP_DIR__/storage/app/private reports 2>/dev/null; find /var/backups/fgre -type f -mtime +14 -delete

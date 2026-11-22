@@ -49,8 +49,8 @@ const logout = () => router.post('/logout');
                :class="drawer ? 'translate-x-0' : 'max-lg:ltr:-translate-x-full max-lg:rtl:translate-x-full'">
             <!-- brand art: the half of the sidebar away from the menu text, top to bottom -->
             <div class="art-end absolute inset-y-0 end-0 w-[42%] opacity-60 [background-size:200px_auto]" aria-hidden="true" />
-            <div class="relative flex h-[5.5rem] items-center justify-between border-b border-line px-6">
-                <Link href="/" aria-label="Fandaqah" class="relative"><img src="/brand/logo.png" alt="Fandaqah" class="h-[3.1rem] w-auto" /></Link>
+            <div class="relative flex h-[4.5rem] items-center justify-between border-b border-line px-6">
+                <Link href="/" aria-label="Fandaqah" class="relative"><img src="/brand/logo.png" alt="Fandaqah" class="h-[2.6rem] w-auto" /></Link>
                 <button type="button" class="relative rounded-lg bg-white p-1.5 text-ink-2 shadow-sm lg:hidden" :aria-label="t('Close menu')" @click="drawer = false"><Icon name="close" /></button>
             </div>
 
@@ -70,18 +70,14 @@ const logout = () => router.post('/logout');
             </nav>
 
             <div class="relative p-4">
-                <div class="relative overflow-hidden rounded-2xl bg-navy px-4 py-4 text-white">
-                    <div class="art-end absolute inset-y-0 end-0 w-3/4 opacity-45 [background-size:170px_auto]" aria-hidden="true" />
-                    <div class="absolute inset-0 bg-gradient-to-r from-navy via-navy/85 to-navy/10 rtl:bg-gradient-to-l" aria-hidden="true" />
-                    <div class="relative">
-                        <div class="eyebrow">{{ t('Hotel group') }}</div>
-                        <select v-if="auth?.groups?.length > 1" :value="auth.currentGroupId" class="mt-1.5 w-full max-w-[12rem] truncate rounded-lg border border-white/20 bg-navy/70 px-2 py-1.5 text-sm font-bold text-white outline-none backdrop-blur focus:ring-2 focus:ring-coral/40"
-                                :aria-label="t('Hotel group')" @change="switchGroup">
-                            <option v-for="g in auth.groups" :key="g.id" :value="g.id" class="text-navy">{{ name(g) }}</option>
-                        </select>
-                        <div v-else class="mt-1.5 text-sm font-bold text-white">{{ name(currentGroup) }}</div>
-                        <div class="mt-1 text-xs text-white/60">{{ t('Group Reporting Engine') }}</div>
-                    </div>
+                <div class="rounded-2xl border border-line bg-white px-4 py-3.5 shadow-sm">
+                    <div class="eyebrow">{{ t('Hotel group') }}</div>
+                    <select v-if="auth?.groups?.length > 1" :value="auth.currentGroupId" class="mt-1.5 w-full truncate rounded-lg border border-line bg-white px-2 py-1.5 text-sm font-bold text-navy outline-none focus:ring-2 focus:ring-coral/30"
+                            :aria-label="t('Hotel group')" @change="switchGroup">
+                        <option v-for="g in auth.groups" :key="g.id" :value="g.id">{{ name(g) }}</option>
+                    </select>
+                    <div v-else class="mt-1.5 text-sm font-bold text-navy">{{ name(currentGroup) }}</div>
+                    <div class="mt-1 text-xs text-muted">{{ t('Group Reporting Engine') }}</div>
                 </div>
             </div>
         </aside>
@@ -90,23 +86,23 @@ const logout = () => router.post('/logout');
         <!-- Main -->
         <div class="lg:ps-[17rem] print:!ps-0">
             <header class="print:hidden sticky top-0 z-30 border-b border-line bg-white/90 backdrop-blur">
-                <!-- brand art: across the whole header, left to right -->
-                <div class="brand-pattern-full pointer-events-none absolute inset-0 opacity-45 [background-size:200px_auto]" aria-hidden="true" />
-                <div class="relative flex h-[5.5rem] items-center gap-3 px-4 sm:px-8">
+                <!-- brand art: the half of the header next to the sidebar, fading toward the other half -->
+                <div class="art-start pointer-events-none absolute inset-y-0 start-0 w-1/2 opacity-60 [background-size:200px_auto]" aria-hidden="true" />
+                <div class="relative flex h-[4.5rem] items-center gap-3 px-4 sm:px-8">
                     <button type="button" class="rounded-xl border border-line bg-white p-2 text-navy shadow-sm lg:hidden" :aria-label="t('Open menu')" @click="drawer = true"><Icon name="menu" /></button>
                     <HotelSwitcher class="min-w-0 flex-1 sm:flex-none" />
                     <div class="ms-auto flex items-center gap-2 sm:gap-3">
-                        <button type="button" class="grid h-11 min-w-11 place-items-center rounded-xl border border-line bg-white px-3 text-sm font-bold text-navy shadow-sm hover:border-coral/40" @click="toggleLocale">
+                        <button type="button" class="grid h-10 min-w-10 place-items-center rounded-xl border border-line bg-white px-3 text-sm font-bold text-navy shadow-sm hover:border-coral/40" @click="toggleLocale">
                             {{ locale === 'ar' ? 'EN' : 'العربية' }}
                         </button>
                         <Link href="/settings/profile" class="hidden items-center gap-3 rounded-xl border border-line bg-white p-1 shadow-sm sm:flex xl:pe-4 hover:border-coral/40" :title="t('Profile')">
-                            <span class="grid size-9 place-items-center rounded-lg bg-peach text-sm font-bold text-navy">{{ initials }}</span>
+                            <span class="grid size-8 place-items-center rounded-lg bg-peach text-xs font-bold text-navy">{{ initials }}</span>
                             <div class="hidden leading-tight xl:block">
                                 <div class="text-sm font-bold text-navy">{{ auth?.user?.name }}</div>
                                 <div class="text-xs text-muted">{{ t(`role_${auth?.role}`) }}</div>
                             </div>
                         </Link>
-                        <button type="button" class="grid size-11 place-items-center rounded-xl border border-line bg-white text-ink-2 shadow-sm hover:border-coral/40 hover:text-coral" :title="t('Sign out')" :aria-label="t('Sign out')" @click="logout">
+                        <button type="button" class="grid size-10 place-items-center rounded-xl border border-line bg-white text-ink-2 shadow-sm hover:border-coral/40 hover:text-coral" :title="t('Sign out')" :aria-label="t('Sign out')" @click="logout">
                             <Icon name="logout" />
                         </button>
                     </div>
