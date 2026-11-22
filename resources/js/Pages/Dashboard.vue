@@ -4,7 +4,7 @@ import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import PageHeader from '../Components/PageHeader.vue';
 import ViewToggle from '../Components/ViewToggle.vue';
 import Hero from '../Components/Hero.vue';
-import KpiCard from '../Components/KpiCard.vue';
+import KpiCard from '../Components/ui/KpiCard.vue';
 import Delta from '../Components/Delta.vue';
 import Icon from '../Components/Icon.vue';
 import AreaTrend from '../Components/Charts/AreaTrend.vue';

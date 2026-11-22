@@ -24,6 +24,9 @@ const sections = computed(() => [
         { href: '/settings/group', icon: 'settings', label: t('Group'), text: t('Name, currency, timezone'), show: can.value['manage settings'] },
         { href: '/settings/activity', icon: 'history', label: t('Activity log'), text: t('Who changed what'), show: can.value['manage settings'] },
     ] },
+    { label: 'FGRE', items: [
+        { href: '/design-system', icon: 'layers', label: t('Design system'), text: t('Every building block'), show: !!page.props.auth?.designSystem },
+    ] },
 ].map((s) => ({ ...s, items: s.items.filter((i) => i.show) })).filter((s) => s.items.length));
 </script>
 

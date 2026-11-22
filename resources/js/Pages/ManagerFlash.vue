@@ -4,7 +4,7 @@ import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import PageHeader from '../Components/PageHeader.vue';
 import SubscribeButton from '../Components/Subscriptions/SubscribeButton.vue';
 import ViewToggle from '../Components/ViewToggle.vue';
-import KpiCard from '../Components/KpiCard.vue';
+import KpiCard from '../Components/ui/KpiCard.vue';
 import ReportToolbar from '../Components/Report/ReportToolbar.vue';
 import CompareMatrix from '../Components/Report/CompareMatrix.vue';
 import HotelFocus from '../Components/Report/HotelFocus.vue';
@@ -13,6 +13,7 @@ import { managerFlashSections } from '../lib/reports';
 import { downloadCsv, printPage } from '../lib/export';
 import Delta from '../Components/Delta.vue';
 import Icon from '../Components/Icon.vue';
+import StatTile from '../Components/ui/StatTile.vue';
 import ColumnChart from '../Components/Charts/ColumnChart.vue';
 import Donut from '../Components/Charts/Donut.vue';
 import HotelBars from '../Components/Charts/HotelBars.vue';
@@ -22,6 +23,7 @@ import { compact, int, isNum, longDate, money, pct } from '../lib/format';
 import { BRAND, MIX, CHART } from '../lib/palette';
 import { useViewMode } from '../lib/view';
 import { useI18n } from '../lib/i18n';
+import EmptyState from '../Components/ui/EmptyState.vue';
 
 const props = defineProps({ empty: Boolean, date: String, latest: String, currency: String, columns: Object, hotels: Array, missing: Array, regions: Array, budget: Object, hotelCount: Number, selection: Array });
 const { t, name, locale } = useI18n();
@@ -217,7 +219,7 @@ const flashCols = computed(() => [['day', t('Day')], ['mtd', t('MTD')], ['ytd', 
         <HotelFocus :sections="sections" :hotel-name="name(hotelById(focusId))" :get="focusGet" :basis-label="basisLabel" />
     </div>
 
-    <div v-if="empty || !columns?.day" class="card mt-6 p-10 text-center text-ink-2">{{ t('No Manager Flash for this date.') }}</div>
+    <EmptyState v-if="empty || !columns?.day" class="mt-6" icon="flash" :title="t('No Manager Flash for this date.')" />
 
     <div v-else-if="mode === 'total'" class="mt-6 space-y-6">
         <div v-if="multi && missing.length" class="flex items-center gap-3 rounded-2xl border border-coral/25 bg-coral-tint px-4 py-3 text-sm text-coral-dark">
@@ -261,12 +263,7 @@ const flashCols = computed(() => [['day', t('Day')], ['mtd', t('MTD')], ['ytd', 
                     <h3 class="card-title">{{ t('Guests and activity') }}</h3>
                     <p class="mb-4 text-xs text-muted">{{ t('Day') }} · {{ t('vs last year') }}</p>
                     <ul class="grid grid-cols-2 gap-3">
-                        <li v-for="a in activity" :key="a.label" class="rounded-2xl bg-paper p-4">
-                            <span class="grid size-8 place-items-center rounded-lg bg-surface text-coral shadow-sm"><Icon :name="a.icon" :size="16" /></span>
-                            <div class="mt-3 text-xl font-semibold text-ink tabular" dir="ltr">{{ int(a.value) }}</div>
-                            <div class="mt-0.5 text-xs font-semibold text-ink-2">{{ a.label }}</div>
-                            <div class="mt-1.5"><Delta :current="a.value" :previous="a.ly" /></div>
-                        </li>
+                        <li v-for="a in activity" :key="a.label"><StatTile :label="a.label" :value="int(a.value)" :icon="a.icon" :current="a.value" :previous="a.ly ?? null" /></li>
                     </ul>
                 </div>
             </section>

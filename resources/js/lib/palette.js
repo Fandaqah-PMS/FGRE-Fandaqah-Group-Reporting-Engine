@@ -23,7 +23,7 @@ const LIGHT = {
         lightGrey: '#C3CBCA', neutral: '#EDEBE6', paper: '#F8F7F4',
     },
     series: ['#262E43', '#F15F5A', '#889594', '#FCC5A9', '#4C6B67'],
-    chart: { grid: '#ECEAE5', axisText: '#6B7280', surface: '#FFFFFF', ink: '#262E43' },
+    chart: { grid: '#ECEAE5', axisText: '#6B7280', surface: '#FFFFFF', ink: '#262E43', shadow: '#262E43' },
     rampFrom: [253, 235, 233],
 };
 
@@ -33,7 +33,7 @@ const DARK = {
         lightGrey: '#4A5568', neutral: '#222A3B', paper: '#0E1320',
     },
     series: ['#6683C9', '#DF5E58', '#8E7CC3', '#BE8045', '#1E9E91'],
-    chart: { grid: '#263046', axisText: '#8F9AAD', surface: '#161C2B', ink: '#E8ECF3' },
+    chart: { grid: '#263046', axisText: '#8F9AAD', surface: '#161C2B', ink: '#E8ECF3', shadow: '#000000' },
     rampFrom: [58, 33, 39],
 };
 

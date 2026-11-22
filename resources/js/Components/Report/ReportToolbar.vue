@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import Icon from '../Icon.vue';
 import { useI18n } from '../../lib/i18n';
+import UiButton from '../ui/UiButton.vue';
 
 /**
  * One toolbar for every report:
@@ -89,7 +90,7 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', onDoc));
                 <label v-for="h in hotels" :key="h.id" class="flex cursor-pointer items-center gap-2.5 rounded-lg px-3 py-1.5 text-sm text-ink hover:bg-paper">
                     <input type="checkbox" class="size-4 accent-coral" :checked="chosen.has(h.id)" @change="toggle(h.id)" />{{ name(h) }}
                 </label>
-                <button type="button" class="btn-coral mt-2 w-full !py-2 text-sm" :disabled="chosen.size === 0" @click="applyHotels([...chosen])">{{ t('Apply') }}</button>
+                <UiButton block class="mt-2" :disabled="chosen.size === 0" @click="applyHotels([...chosen])">{{ t('Apply') }}</UiButton>
             </div>
         </div>
 

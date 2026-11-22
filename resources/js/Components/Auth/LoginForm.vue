@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import { Link, useForm, usePage } from '@inertiajs/vue3';
 import Icon from '../Icon.vue';
 import { useI18n } from '../../lib/i18n';
+import UiButton from '../ui/UiButton.vue';
 
 // The sign-in form, shared by every login design.
 const { t } = useI18n();
@@ -46,9 +47,9 @@ const submit = () => form.post('/login', { onFinish: () => form.reset('password'
             {{ t('Keep me signed in') }}
         </label>
 
-        <button type="submit" :disabled="form.processing" class="btn-coral h-[3.25rem] w-full text-[15px]">
+        <UiButton size="lg" block type="submit" :disabled="form.processing">
             {{ form.processing ? t('Signing in…') : t('Sign in') }}
             <Icon name="login" :size="18" class="rtl:rotate-180" />
-        </button>
+        </UiButton>
     </form>
 </template>

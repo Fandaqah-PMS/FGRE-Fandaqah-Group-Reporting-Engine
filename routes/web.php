@@ -16,7 +16,9 @@ use App\Http\Controllers\Settings\RolesController;
 use App\Http\Controllers\Settings\UsersController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\TrialBalanceController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [SessionController::class, 'create'])->name('login');
@@ -74,5 +76,12 @@ Route::middleware(['auth', 'group'])->group(function () {
 
     Route::post('/groups/{group}/switch', [PreferencesController::class, 'switchGroup']);
     Route::post('/preferences/theme', [PreferencesController::class, 'theme']);
+
+    // Living style guide (docs/DESIGN-SYSTEM.md): local development and Fandaqah platform admins.
+    Route::get('/design-system', function (Request $request) {
+        abort_unless(app()->isLocal() || $request->user()->is_platform_admin, 404);
+
+        return Inertia::render('DesignSystem');
+    })->name('design-system');
     Route::post('/logout', [SessionController::class, 'destroy'])->name('logout');
 });

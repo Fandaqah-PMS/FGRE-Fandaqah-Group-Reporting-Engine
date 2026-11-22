@@ -24,7 +24,10 @@ first; Fandaqah PMS facts are in [docs/fandaqah-pms-reference.md](docs/fandaqah-
   on a real sample. Never commit samples with guest names; use synthetic text (`tests/Fixtures/pdf-text`).
 - Money: `numeric(18,2)` + currency; KPI math in bcmath. Unreleased migrations may be edited;
   once a migration reaches `staging`, add a new one instead.
-- Brand: [docs/BRAND.md](docs/BRAND.md).
+- Brand: [docs/BRAND.md](docs/BRAND.md). **UI: [docs/DESIGN-SYSTEM.md](docs/DESIGN-SYSTEM.md)** — build screens only
+  from `resources/js/Components/ui` (one KpiCard, UiButton, Badge, IconTile, CardHeader, EmptyState, Field);
+  theme tokens only (`text-ink`, `bg-surface`, no hex / `bg-white` / `text-navy`). `DesignRulesTest` enforces it;
+  new patterns go into `Components/ui` and the `/design-system` page first.
 
 ## Commands
 - Tests: `php artisan test` (SQLite in memory; the Fandaqah PDF and JSON samples are real)

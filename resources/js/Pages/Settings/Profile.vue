@@ -5,6 +5,7 @@ import SettingsShell from '../../Components/Settings/SettingsShell.vue';
 import Icon from '../../Components/Icon.vue';
 import { useI18n } from '../../lib/i18n';
 import { setTheme, themePref } from '../../lib/theme';
+import UiButton from '../../Components/ui/UiButton.vue';
 
 const props = defineProps({ profile: Object, memberships: Array, subscriptionCount: Number });
 const { t, name, locale } = useI18n();
@@ -79,7 +80,7 @@ const lastLogin = computed(() => (props.profile.last_login_at
                 </div>
             </div>
             <div class="mt-6 flex justify-end">
-                <button type="submit" class="btn-coral !py-2.5 text-sm" :disabled="details.processing || !details.isDirty">{{ t('Save') }}</button>
+                <UiButton type="submit" :disabled="details.processing || !details.isDirty">{{ t('Save') }}</UiButton>
             </div>
         </form>
 
@@ -150,7 +151,7 @@ const lastLogin = computed(() => (props.profile.last_login_at
                 </li>
             </ul>
             <div class="mt-6 flex justify-end">
-                <button type="submit" class="btn-coral !py-2.5 text-sm" :disabled="pw.processing || !checks.every((c) => c.ok) || !pw.current_password">{{ t('Change password') }}</button>
+                <UiButton type="submit" :disabled="pw.processing || !checks.every((c) => c.ok) || !pw.current_password">{{ t('Change password') }}</UiButton>
             </div>
         </form>
 

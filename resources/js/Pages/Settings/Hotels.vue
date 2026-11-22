@@ -5,6 +5,7 @@ import SettingsShell from '../../Components/Settings/SettingsShell.vue';
 import Modal from '../../Components/Modal.vue';
 import Icon from '../../Components/Icon.vue';
 import { useI18n } from '../../lib/i18n';
+import UiButton from '../../Components/ui/UiButton.vue';
 
 const props = defineProps({ hotels: Array, providers: Array, regions: Array });
 const { t, name } = useI18n();
@@ -39,7 +40,7 @@ const errorFor = (prefix) => Object.entries(form.errors).find(([k]) => k === pre
 <template>
     <SettingsShell :title="t('Hotels')" :subtitle="t('Rooms feed occupancy and RevPAR; sender addresses decide which emailed reports are accepted.')">
         <template #actions>
-            <button type="button" class="btn-coral !py-2.5 text-sm" @click="open()"><Icon name="plus" :size="17" />{{ t('Add hotel') }}</button>
+            <UiButton icon="plus" @click="open()">{{ t('Add hotel') }}</UiButton>
         </template>
 
         <section class="grid gap-4 xl:grid-cols-2">
@@ -140,8 +141,8 @@ const errorFor = (prefix) => Object.entries(form.errors).find(([k]) => k === pre
                 </label>
             </form>
             <template #footer>
-                <button type="button" class="rounded-xl px-4 py-2.5 text-sm font-bold text-ink-2 hover:bg-paper" @click="dialog.open = false">{{ t('Cancel') }}</button>
-                <button type="submit" form="hotel-form" class="btn-coral !py-2.5 text-sm" :disabled="form.processing">{{ t('Save') }}</button>
+                <UiButton variant="ghost" @click="dialog.open = false">{{ t('Cancel') }}</UiButton>
+                <UiButton type="submit" form="hotel-form" :disabled="form.processing">{{ t('Save') }}</UiButton>
             </template>
         </Modal>
     </SettingsShell>

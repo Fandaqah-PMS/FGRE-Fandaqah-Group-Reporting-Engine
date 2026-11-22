@@ -30,12 +30,12 @@ const geo = computed(() => {
     <svg v-if="geo" :viewBox="`0 0 ${W} ${height}`" preserveAspectRatio="none" class="block w-full overflow-visible" :style="{ height: `${height}px` }" aria-hidden="true" dir="ltr">
         <defs>
             <linearGradient :id="gid" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stop-color="#889594" stop-opacity="0.28" />
-                <stop offset="1" stop-color="#889594" stop-opacity="0" />
+                <stop offset="0" :stop-color="CHART.lastYear" stop-opacity="0.28" />
+                <stop offset="1" :stop-color="CHART.lastYear" stop-opacity="0" />
             </linearGradient>
         </defs>
         <path :d="geo.area" :fill="`url(#${gid})`" />
         <path v-for="(d, i) in geo.lines" :key="i" :d="d" fill="none" :stroke="CHART.thisYear" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round" />
-        <circle :cx="geo.last[0]" :cy="geo.last[1]" r="3.5" fill="#F15F5A" :stroke="CHART.surface" stroke-width="2" vector-effect="non-scaling-stroke" />
+        <circle :cx="geo.last[0]" :cy="geo.last[1]" r="3.5" :fill="CHART.average" :stroke="CHART.surface" stroke-width="2" vector-effect="non-scaling-stroke" />
     </svg>
 </template>

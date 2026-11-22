@@ -5,6 +5,7 @@ import PageHeader from '../Components/PageHeader.vue';
 import Icon from '../Components/Icon.vue';
 import SubscribeDialog from '../Components/Subscriptions/SubscribeDialog.vue';
 import { useI18n } from '../lib/i18n';
+import UiButton from '../Components/ui/UiButton.vue';
 
 const props = defineProps({ subscriptions: Array });
 const { t, name, locale } = useI18n();
@@ -38,7 +39,7 @@ const remove = (s) => {
 
     <PageHeader :eyebrow="t('Fandaqah / Email')" :title="t('Email subscriptions')" :subtitle="t('Get the group report in your inbox: daily, weekly or monthly, as charts, tables or both.')">
         <template #actions>
-            <button type="button" class="btn-coral !py-2.5 text-sm" @click="edit()"><Icon name="mail" :size="16" />{{ t('New subscription') }}</button>
+            <UiButton icon="mail" @click="edit()">{{ t('New subscription') }}</UiButton>
         </template>
     </PageHeader>
 
@@ -56,7 +57,7 @@ const remove = (s) => {
                     <div class="mt-0.5 text-xs text-ink-2">{{ covers({ frequency: f }) }}</div>
                 </div>
             </div>
-            <button type="button" class="btn-coral mt-7" @click="edit()"><Icon name="mail" :size="17" />{{ t('Subscribe') }}</button>
+            <UiButton size="lg" class="mt-7" icon="mail" @click="edit()">{{ t('Subscribe') }}</UiButton>
         </div>
     </section>
 
@@ -91,9 +92,9 @@ const remove = (s) => {
                     <template v-else>{{ t('Not sent yet') }}</template>
                 </span>
                 <a :href="`/subscriptions/${s.id}/preview`" target="_blank" rel="noopener" class="rounded-lg px-2.5 py-1.5 text-xs font-bold text-ink-2 hover:bg-paper hover:text-ink">{{ t('Preview') }}</a>
-                <button type="button" class="rounded-lg px-2.5 py-1.5 text-xs font-bold text-ink-2 hover:bg-paper hover:text-ink" @click="sendNow(s)">{{ t('Send me one now') }}</button>
-                <button type="button" class="rounded-lg px-2.5 py-1.5 text-xs font-bold text-ink-2 hover:bg-paper hover:text-ink" @click="toggle(s)">{{ s.is_active ? t('Pause') : t('Resume') }}</button>
-                <button type="button" class="rounded-lg px-2.5 py-1.5 text-xs font-bold text-ink hover:bg-paper" @click="edit(s)">{{ t('Edit') }}</button>
+                <UiButton variant="ghost" size="sm" @click="sendNow(s)">{{ t('Send me one now') }}</UiButton>
+                <UiButton variant="ghost" size="sm" @click="toggle(s)">{{ s.is_active ? t('Pause') : t('Resume') }}</UiButton>
+                <UiButton variant="ghost" size="sm" @click="edit(s)">{{ t('Edit') }}</UiButton>
                 <button type="button" class="rounded-lg p-1.5 text-muted hover:bg-coral-tint hover:text-coral-dark" :aria-label="t('Remove')" @click="remove(s)"><Icon name="close" :size="16" /></button>
             </div>
         </article>

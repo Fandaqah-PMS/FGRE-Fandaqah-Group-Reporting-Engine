@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue';
-import { tint } from '../../lib/palette';
+import { CHART, tint } from '../../lib/palette';
 import { isNum } from '../../lib/format';
 import { useI18n } from '../../lib/i18n';
 
@@ -96,13 +96,13 @@ function shade(hex, amount = 0.14) {
                         <stop offset="1" :stop-color="shade(a.color)" />
                     </linearGradient>
                     <filter :id="`ds-${uid}`" x="-20%" y="-20%" width="140%" height="140%">
-                        <feDropShadow dx="0" dy="2" stdDeviation="1.6" flood-color="#262E43" flood-opacity="0.22" />
+                        <feDropShadow dx="0" dy="2" stdDeviation="1.6" :flood-color="CHART.shadow" flood-opacity="0.22" />
                     </filter>
                     <filter :id="`groove-${uid}`" x="-10%" y="-10%" width="120%" height="120%">
                         <feGaussianBlur in="SourceAlpha" stdDeviation="2.2" result="b" />
                         <feOffset dy="1.5" result="o" />
                         <feComposite in="o" in2="SourceAlpha" operator="out" result="inner" />
-                        <feFlood flood-color="#262E43" flood-opacity="0.18" />
+                        <feFlood :flood-color="CHART.shadow" flood-opacity="0.18" />
                         <feComposite in2="inner" operator="in" />
                         <feComposite in2="SourceGraphic" operator="over" />
                     </filter>

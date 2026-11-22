@@ -4,6 +4,7 @@ import { Link, useForm } from '@inertiajs/vue3';
 import AuthCard from '../../Components/AuthCard.vue';
 import Icon from '../../Components/Icon.vue';
 import { useI18n } from '../../lib/i18n';
+import UiButton from '../../Components/ui/UiButton.vue';
 
 const props = defineProps({ token: String, email: String, invite: Boolean });
 const { t } = useI18n();
@@ -40,9 +41,9 @@ const submit = () => form.post('/reset-password', { onFinish: () => form.reset('
                     <Icon :name="c.ok ? 'check' : 'close'" :size="12" />{{ c.label }}
                 </li>
             </ul>
-            <button type="submit" class="btn-coral h-12 w-full" :disabled="form.processing || !checks.every((c) => c.ok)">
+            <UiButton size="lg" block type="submit" :disabled="form.processing || !checks.every((c) => c.ok)">
                 {{ invite ? t('Set password and sign in') : t('Save password and sign in') }}
-            </button>
+            </UiButton>
         </form>
         <Link href="/login" class="mt-6 inline-flex items-center gap-1.5 text-sm font-bold text-coral hover:underline">
             <Icon name="chevron" :size="15" class="rotate-90 rtl:-rotate-90" />{{ t('Back to sign in') }}

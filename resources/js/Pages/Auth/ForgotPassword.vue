@@ -3,6 +3,7 @@ import { Link, useForm, usePage } from '@inertiajs/vue3';
 import AuthCard from '../../Components/AuthCard.vue';
 import Icon from '../../Components/Icon.vue';
 import { useI18n } from '../../lib/i18n';
+import UiButton from '../../Components/ui/UiButton.vue';
 
 const { t } = useI18n();
 const page = usePage();
@@ -21,7 +22,7 @@ const submit = () => form.post('/forgot-password', { preserveScroll: true });
                 <input v-model="form.email" type="email" class="field !h-12" required autofocus dir="ltr" autocomplete="username" placeholder="name@company.com" />
                 <span v-if="form.errors.email" class="mt-1 block text-xs font-semibold text-danger">{{ form.errors.email }}</span>
             </label>
-            <button type="submit" class="btn-coral h-12 w-full" :disabled="form.processing">{{ t('Send reset link') }}</button>
+            <UiButton size="lg" block type="submit" :disabled="form.processing">{{ t('Send reset link') }}</UiButton>
         </form>
         <Link href="/login" class="mt-6 inline-flex items-center gap-1.5 text-sm font-bold text-coral hover:underline">
             <Icon name="chevron" :size="15" class="rotate-90 rtl:-rotate-90" />{{ t('Back to sign in') }}

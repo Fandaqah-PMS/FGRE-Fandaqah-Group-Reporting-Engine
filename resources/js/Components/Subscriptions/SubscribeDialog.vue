@@ -4,6 +4,7 @@ import { useForm, usePage } from '@inertiajs/vue3';
 import Icon from '../Icon.vue';
 import EmailPreview from './EmailPreview.vue';
 import { useI18n } from '../../lib/i18n';
+import UiButton from '../ui/UiButton.vue';
 
 /**
  * Subscribe to the group report by email: how often, when, charts / tables / both,
@@ -186,10 +187,10 @@ function submit() {
 
                     <!-- Footer -->
                     <div class="flex flex-wrap items-center justify-end gap-2 border-t border-line bg-surface px-6 py-4">
-                        <button type="button" class="rounded-xl px-4 py-2.5 text-sm font-bold text-ink-2 hover:bg-paper" @click="emit('close')">{{ t('Cancel') }}</button>
-                        <button type="submit" class="btn-coral !py-2.5 text-sm" :disabled="form.processing || (hotels.length > 1 && !form.hotels.length)">
+                        <UiButton variant="ghost" @click="emit('close')">{{ t('Cancel') }}</UiButton>
+                        <UiButton type="submit" :disabled="form.processing || (hotels.length> 1 && !form.hotels.length)">
                             <Icon name="mail" :size="16" />{{ subscription ? t('Save') : t('Subscribe') }}
-                        </button>
+                        </UiButton>
                     </div>
                 </form>
             </div>

@@ -2,12 +2,14 @@
 import { computed, ref } from 'vue';
 import { Head, router, useForm, usePage } from '@inertiajs/vue3';
 import PageHeader from '../Components/PageHeader.vue';
-import KpiCard from '../Components/KpiCard.vue';
+import KpiCard from '../Components/ui/KpiCard.vue';
 import Icon from '../Components/Icon.vue';
 import ColumnChart from '../Components/Charts/ColumnChart.vue';
 import { compact, isNum, money, monthLabel, pct } from '../lib/format';
 import { BRAND } from '../lib/palette';
 import { useI18n } from '../lib/i18n';
+import UiButton from '../Components/ui/UiButton.vue';
+import EmptyState from '../Components/ui/EmptyState.vue';
 
 const props = defineProps({ year: Number, hotels: Array, cells: Array, canManage: Boolean, importErrors: Array });
 const { t, name, locale } = useI18n();
@@ -54,7 +56,7 @@ const upload = (e) => {
                 <a :href="`/budgets/template?year=${year}`" class="flex items-center gap-2 rounded-xl border border-line bg-surface px-3 py-2 text-[13px] font-semibold text-ink hover:border-coral/40">
                     <Icon name="table" :size="15" class="text-coral" />{{ t('Download template') }}
                 </a>
-                <button type="button" class="btn-coral !py-2 text-[13px]" :disabled="form.processing" @click="pick"><Icon name="inbox" :size="15" />{{ t('Upload budget') }}</button>
+                <UiButton icon="inbox" :disabled="form.processing" @click="pick">{{ t('Upload budget') }}</UiButton>
                 <input ref="fileInput" type="file" accept=".csv,text/csv" class="hidden" @change="upload" />
             </template>
         </template>
@@ -65,11 +67,8 @@ const upload = (e) => {
         <ul class="list-disc space-y-0.5 ps-5"><li v-for="(e, i) in importErrors.slice(0, 30)" :key="i">{{ e }}</li></ul>
     </div>
 
-    <div v-if="!cells.length" class="card mt-6 p-10 text-center">
-        <div class="brand-pattern-full mx-auto mb-5 h-20 w-40 rounded-2xl opacity-70" />
-        <h2 class="text-lg font-bold">{{ t('No budget for :year yet', { year }) }}</h2>
-        <p class="mt-1 text-sm text-ink-2">{{ t('Download the template, fill in rooms sold and revenue for each hotel and month, then upload it.') }}</p>
-    </div>
+    <EmptyState v-if="!cells.length" class="mt-6" icon="calendar" :title="t('No budget for :year yet', { year })"
+                :text="t('Download the template, fill in rooms sold and revenue for each hotel and month, then upload it.')" />
 
     <div v-else class="mt-6 space-y-6">
         <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">

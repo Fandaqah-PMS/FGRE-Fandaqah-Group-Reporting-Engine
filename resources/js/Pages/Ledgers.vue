@@ -3,7 +3,7 @@ import { computed, ref } from 'vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import PageHeader from '../Components/PageHeader.vue';
 import ViewToggle from '../Components/ViewToggle.vue';
-import KpiCard from '../Components/KpiCard.vue';
+import KpiCard from '../Components/ui/KpiCard.vue';
 import Icon from '../Components/Icon.vue';
 import DivergingBars from '../Components/Charts/DivergingBars.vue';
 import ReportToolbar from '../Components/Report/ReportToolbar.vue';
@@ -12,6 +12,7 @@ import { money } from '../lib/format';
 import { BRAND } from '../lib/palette';
 import { useViewMode } from '../lib/view';
 import { useI18n } from '../lib/i18n';
+import EmptyState from '../Components/ui/EmptyState.vue';
 
 const props = defineProps({ dates: Array, date: String, rows: Array, totals: Object, folios: Object });
 const { t, name } = useI18n();
@@ -66,7 +67,7 @@ const hotelBalance = computed(() => ['guest', 'ar', 'deposit'].reduce((s, k) => 
 
     <ReportToolbar v-if="rows.length" class="mt-5" :views="[]" :bases="[]" :can-export="!!page.props.auth?.can?.['export reports']" @export="exportCsv" @print="printPage" />
 
-    <div v-if="!rows.length" class="card mt-6 p-10 text-center text-ink-2">{{ t('No front-office trial balance received yet.') }}</div>
+    <EmptyState v-if="!rows.length" class="mt-6" icon="book" :title="t('No front-office trial balance received yet.')" />
 
     <div v-else class="mt-6 space-y-6">
         <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">

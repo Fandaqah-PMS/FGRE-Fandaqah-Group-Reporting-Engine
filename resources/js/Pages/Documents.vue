@@ -4,6 +4,7 @@ import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import PageHeader from '../Components/PageHeader.vue';
 import StatusBadge from '../Components/StatusBadge.vue';
 import Icon from '../Components/Icon.vue';
+import KpiCard from '../Components/ui/KpiCard.vue';
 import { int } from '../lib/format';
 import { useI18n } from '../lib/i18n';
 
@@ -15,10 +16,10 @@ const open = ref(null);
 
 const total = computed(() => Object.values(props.counts ?? {}).reduce((s, n) => s + Number(n), 0));
 const tiles = computed(() => [
-    { key: null, label: t('All reports'), icon: 'inbox', value: total.value, tone: 'bg-navy text-white' },
-    { key: 'processed', label: t('Processed'), icon: 'check', value: props.counts?.processed ?? 0, tone: 'bg-success-tint text-success' },
-    { key: 'needs_review', label: t('Needs review'), icon: 'alert', value: props.counts?.needs_review ?? 0, tone: 'bg-coral-tint text-coral' },
-    { key: 'failed', label: t('Failed'), icon: 'close', value: props.counts?.failed ?? 0, tone: 'bg-neutral text-ink-2' },
+    { key: null, label: t('All reports'), icon: 'inbox', value: total.value, tone: 'navy' },
+    { key: 'processed', label: t('Processed'), icon: 'check', value: props.counts?.processed ?? 0, tone: 'success' },
+    { key: 'needs_review', label: t('Needs review'), icon: 'alert', value: props.counts?.needs_review ?? 0, tone: 'coral' },
+    { key: 'failed', label: t('Failed'), icon: 'close', value: props.counts?.failed ?? 0, tone: 'neutral' },
 ]);
 const reprocess = (id) => router.post(`/documents/${id}/reprocess`, {}, { preserveScroll: true });
 const sourceIcon = (s) => ({ email: 'mail', mcp: 'layers', upload: 'inbox', api: 'globe' }[s] ?? 'inbox');
@@ -31,15 +32,8 @@ const sourceIcon = (s) => ({ email: 'mail', mcp: 'layers', upload: 'inbox', api:
                 :subtitle="t('Every report FGRE received by email, MCP or upload. Reports that failed a check wait here for review.')" />
 
     <section class="mt-6 grid grid-cols-2 gap-4 xl:grid-cols-4">
-        <Link v-for="tile in tiles" :key="tile.key ?? 'all'" :href="tile.key ? `/documents?status=${tile.key}` : '/documents'" preserve-scroll
-              class="card rise flex items-center gap-4 p-5 transition hover:-translate-y-0.5"
-              :class="(status ?? null) === tile.key && 'ring-2 ring-coral'">
-            <span class="grid size-12 place-items-center rounded-2xl" :class="tile.tone"><Icon :name="tile.icon" :size="22" /></span>
-            <span>
-                <span class="block text-xl font-semibold text-ink tabular" dir="ltr">{{ int(tile.value) }}</span>
-                <span class="block text-[13px] font-semibold text-ink-2">{{ tile.label }}</span>
-            </span>
-        </Link>
+        <KpiCard v-for="tile in tiles" :key="tile.key ?? 'all'" :href="tile.key ? `/documents?status=${tile.key}` : '/documents'"
+                 :active="(status ?? null) === tile.key" :label="tile.label" :value="int(tile.value)" :icon="tile.icon" :icon-tone="tile.tone" />
     </section>
 
     <section class="card mt-6 overflow-hidden">

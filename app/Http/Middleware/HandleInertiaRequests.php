@@ -29,6 +29,7 @@ class HandleInertiaRequests extends Middleware
                 'user' => ['name' => $user->name, 'email' => $user->email, 'theme' => $user->theme ?? 'system'],
                 'groups' => $user->groups->map(fn ($g) => ['id' => $g->id, 'name' => $g->name, 'name_ar' => $g->name_ar])->values(),
                 'currentGroupId' => $user->current_group_id,
+                'designSystem' => app()->isLocal() || $user->is_platform_admin,
                 'role' => $user->roleIn(),
                 'can' => collect(array_keys(config('fgre_permissions.permissions')))
                     ->mapWithKeys(fn (string $p) => [$p => $user->hasGroupPermission($p)]),

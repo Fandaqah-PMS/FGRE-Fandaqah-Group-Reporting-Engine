@@ -3,6 +3,8 @@ import { computed, reactive, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import SettingsShell from '../../Components/Settings/SettingsShell.vue';
 import Icon from '../../Components/Icon.vue';
+import KpiCard from '../../Components/ui/KpiCard.vue';
+import { BRAND } from '../../lib/palette';
 import { useI18n } from '../../lib/i18n';
 
 const props = defineProps({ roles: Array, categories: Array, canEdit: Boolean });
@@ -37,21 +39,10 @@ const ICON = { owner: 'shield', finance: 'scale', operations: 'flash', viewer: '
 
         <!-- Role cards -->
         <section class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <article v-for="r in roles" :key="r.key" class="card p-4">
-                <div class="flex items-center gap-3">
-                    <span class="grid size-10 place-items-center rounded-xl" :class="r.fixed ? 'bg-navy text-white' : 'bg-coral-tint text-coral'"><Icon :name="ICON[r.key] ?? 'user'" :size="18" /></span>
-                    <div class="min-w-0 flex-1">
-                        <div class="font-bold text-ink">{{ t(`role_${r.key}`) }}</div>
-                        <div class="text-xs whitespace-nowrap text-muted">{{ t(':n people', { n: r.members }) }}</div>
-                    </div>
-                    <span v-if="r.fixed" class="chip bg-paper !py-0.5 text-[10px] text-ink-2"><Icon name="lock" :size="10" />{{ t('Fixed') }}</span>
-                    <span v-else-if="r.customized" class="chip bg-peach-tint !py-0.5 text-[10px] text-peach-ink">{{ t('Customised') }}</span>
-                </div>
-                <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-paper">
-                    <div class="h-full rounded-full bg-coral transition-all" :style="{ width: `${(100 * (draft[r.key]?.length ?? 0)) / total}%` }" />
-                </div>
-                <div class="mt-1.5 text-[11px] text-muted tabular">{{ t(':n of :total permissions', { n: draft[r.key]?.length ?? 0, total }) }}</div>
-            </article>
+            <KpiCard v-for="r in roles" :key="r.key" :label="t(`role_${r.key}`)" :value="`${draft[r.key]?.length ?? 0} / ${total}`" :unit="t('permissions')"
+                     :dot="r.fixed ? BRAND.navy : BRAND.coral" :note="t(':n people', { n: r.members })"
+                     :badge="r.fixed ? { label: t('Fixed'), tone: 'neutral', icon: 'lock' } : r.customized ? { label: t('Customised'), tone: 'peach' } : null"
+                     :progress="(100 * (draft[r.key]?.length ?? 0)) / total" />
         </section>
 
         <!-- Matrix -->

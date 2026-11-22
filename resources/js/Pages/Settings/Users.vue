@@ -4,7 +4,10 @@ import { Link, router, useForm, usePage } from '@inertiajs/vue3';
 import SettingsShell from '../../Components/Settings/SettingsShell.vue';
 import Modal from '../../Components/Modal.vue';
 import Icon from '../../Components/Icon.vue';
+import KpiCard from '../../Components/ui/KpiCard.vue';
+import { toneClass } from '../../Components/ui/tones';
 import { useI18n } from '../../lib/i18n';
+import UiButton from '../../Components/ui/UiButton.vue';
 
 const props = defineProps({ members: Array, roles: Array, canAssignOwner: Boolean });
 const { t, name, locale } = useI18n();
@@ -12,10 +15,10 @@ const page = usePage();
 const hotels = computed(() => page.props.scope?.hotels ?? []);
 
 const ROLE = {
-    owner: { icon: 'shield', text: 'Everything, including users, roles and settings.', cls: 'bg-navy text-white' },
-    finance: { icon: 'scale', text: 'Reports and financials, budgets, review queue.', cls: 'bg-coral-tint text-coral-dark' },
-    operations: { icon: 'flash', text: 'Reports, exports and uploads.', cls: 'bg-peach-tint text-peach-ink' },
-    viewer: { icon: 'grid', text: 'Dashboard and reports, read only.', cls: 'bg-paper text-ink-2' },
+    owner: { icon: 'shield', text: 'Everything, including users, roles and settings.', tone: 'navy' },
+    finance: { icon: 'scale', text: 'Reports and financials, budgets, review queue.', tone: 'coral' },
+    operations: { icon: 'flash', text: 'Reports, exports and uploads.', tone: 'peach' },
+    viewer: { icon: 'grid', text: 'Dashboard and reports, read only.', tone: 'neutral' },
 };
 
 const search = ref('');
@@ -57,7 +60,7 @@ const remove = (m) => {
 <template>
     <SettingsShell :title="t('Users')" :subtitle="t('Who can open FGRE for this group, their role and their hotels.')">
         <template #actions>
-            <button type="button" class="btn-coral !py-2.5 text-sm" @click="openDialog()"><Icon name="userPlus" :size="17" />{{ t('Add user') }}</button>
+            <UiButton icon="userPlus" @click="openDialog()">{{ t('Add user') }}</UiButton>
         </template>
 
         <p v-if="page.props.errors?.role" class="flex items-center gap-2 rounded-xl bg-coral-tint px-4 py-3 text-sm font-semibold text-coral-dark">
@@ -66,14 +69,9 @@ const remove = (m) => {
 
         <!-- Role summary / filter -->
         <section class="grid grid-cols-2 gap-3 xl:grid-cols-4">
-            <button v-for="r in roles" :key="r" type="button" class="card flex items-center gap-3 p-4 text-start transition hover:shadow-md"
-                    :class="roleFilter === r && '!border-coral ring-2 ring-coral/15'" @click="roleFilter = roleFilter === r ? 'all' : r">
-                <span class="grid size-10 shrink-0 place-items-center rounded-xl" :class="ROLE[r]?.cls"><Icon :name="ROLE[r]?.icon ?? 'user'" :size="18" /></span>
-                <span class="min-w-0">
-                    <span class="block text-lg leading-tight font-semibold text-ink tabular">{{ count(r) }}</span>
-                    <span class="block truncate text-xs font-semibold text-ink-2">{{ t(`role_${r}`) }}</span>
-                </span>
-            </button>
+            <KpiCard v-for="r in roles" :key="r" selectable :active="roleFilter === r" :label="t(`role_${r}`)" :value="String(count(r))"
+                     :icon="ROLE[r]?.icon ?? 'user'" :icon-tone="ROLE[r]?.tone" :note="t(':n of :total people', { n: count(r), total: members.length })"
+                     @click="roleFilter = roleFilter === r ? 'all' : r" />
         </section>
 
         <section class="card overflow-hidden">
@@ -99,7 +97,7 @@ const remove = (m) => {
                                     </div>
                                 </div>
                             </td>
-                            <td><span class="chip whitespace-nowrap" :class="ROLE[m.role]?.cls"><Icon :name="ROLE[m.role]?.icon ?? 'user'" :size="12" />{{ t(`role_${m.role}`) }}</span></td>
+                            <td><span class="chip whitespace-nowrap" :class="toneClass(ROLE[m.role]?.tone)"><Icon :name="ROLE[m.role]?.icon ?? 'user'" :size="12" />{{ t(`role_${m.role}`) }}</span></td>
                             <td class="max-w-[16rem] text-sm text-ink-2"><span class="line-clamp-2">{{ hotelNames(m) }}</span></td>
                             <td class="text-sm whitespace-nowrap">
                                 <bdi v-if="m.last_login_at" class="text-ink-2">{{ fmt(m.last_login_at) }}</bdi>
@@ -142,7 +140,7 @@ const remove = (m) => {
                         <label v-for="r in roles" :key="r" class="relative flex cursor-pointer items-start gap-3 rounded-2xl border-2 p-3.5 transition"
                                :class="[form.role === r ? 'border-coral bg-coral-tint/50' : 'border-line hover:border-muted/60', roleLocked(r) && 'cursor-not-allowed opacity-50']">
                             <input v-model="form.role" type="radio" :value="r" class="sr-only" :disabled="roleLocked(r)" />
-                            <span class="grid size-9 shrink-0 place-items-center rounded-xl" :class="ROLE[r]?.cls"><Icon :name="ROLE[r]?.icon ?? 'user'" :size="17" /></span>
+                            <span class="grid size-9 shrink-0 place-items-center rounded-xl" :class="toneClass(ROLE[r]?.tone)"><Icon :name="ROLE[r]?.icon ?? 'user'" :size="17" /></span>
                             <span>
                                 <span class="block font-bold text-ink">{{ t(`role_${r}`) }}</span>
                                 <span class="mt-0.5 block text-xs text-ink-2">{{ t(ROLE[r]?.text ?? '') }}</span>
@@ -179,10 +177,10 @@ const remove = (m) => {
                 </div>
             </form>
             <template #footer>
-                <button type="button" class="rounded-xl px-4 py-2.5 text-sm font-bold text-ink-2 hover:bg-paper" @click="dialog.open = false">{{ t('Cancel') }}</button>
-                <button type="submit" form="user-form" class="btn-coral !py-2.5 text-sm" :disabled="form.processing || (!form.all_properties && !form.hotels.length)">
+                <UiButton variant="ghost" @click="dialog.open = false">{{ t('Cancel') }}</UiButton>
+                <UiButton type="submit" form="user-form" :disabled="form.processing || (!form.all_properties && !form.hotels.length)">
                     <Icon :name="dialog.member ? 'check' : 'mail'" :size="16" />{{ dialog.member ? t('Save') : t('Send invitation') }}
-                </button>
+                </UiButton>
             </template>
         </Modal>
     </SettingsShell>

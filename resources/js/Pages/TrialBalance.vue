@@ -3,7 +3,7 @@ import { computed } from 'vue';
 import { Head, router, usePage } from '@inertiajs/vue3';
 import PageHeader from '../Components/PageHeader.vue';
 import ViewToggle from '../Components/ViewToggle.vue';
-import KpiCard from '../Components/KpiCard.vue';
+import KpiCard from '../Components/ui/KpiCard.vue';
 import Icon from '../Components/Icon.vue';
 import ColumnChart from '../Components/Charts/ColumnChart.vue';
 import Donut from '../Components/Charts/Donut.vue';
@@ -16,6 +16,7 @@ import { compact, money } from '../lib/format';
 import { BRAND } from '../lib/palette';
 import { useViewMode } from '../lib/view';
 import { useI18n } from '../lib/i18n';
+import EmptyState from '../Components/ui/EmptyState.vue';
 
 const props = defineProps({ dates: Array, date: String, periodStart: String, hotels: Array, accounts: Array, summary: Object });
 const { t, name } = useI18n();
@@ -132,21 +133,15 @@ const marginRows = computed(() => props.summary.byHotel.map((h) => ({ id: h.id, 
         <HotelFocus :sections="tbSections" :hotel-name="name(hotels.find((h) => h.id === focusId))" :get="tbFocus" basis-label="" :show-base="false" />
     </div>
 
-    <div v-if="!accounts.length" class="card mt-6 p-10 text-center text-ink-2">{{ t('No trial balance received yet.') }}</div>
+    <EmptyState v-if="!accounts.length" class="mt-6" icon="scale" :title="t('No trial balance received yet.')" />
 
     <div v-else-if="mode === 'total'" class="mt-6 space-y-6">
         <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <KpiCard :dot="BRAND.coral" :label="t('Revenue')" :value="compact(summary.revenue)" :unit="currency" />
             <KpiCard :dot="BRAND.navy" :label="t('Expenses')" :value="compact(summary.expenses)" :unit="currency" />
             <KpiCard :dot="BRAND.green" :label="t('Result before other items')" :value="compact(net)" :unit="currency" :note="margin === null ? '' : `${t('Margin')} ${margin.toFixed(1)}%`" />
-            <div class="card rise flex flex-col justify-between p-5">
-                <div class="flex items-start justify-between gap-3">
-                    <span class="text-[13px] font-semibold text-ink-2">{{ t('Debits = credits') }}</span>
-                    <span class="grid size-10 place-items-center rounded-xl" :class="balanced ? 'bg-success-tint text-success' : 'bg-coral-tint text-coral'"><Icon :name="balanced ? 'check' : 'alert'" :size="19" /></span>
-                </div>
-                <div class="mt-2 text-[1.3rem] font-semibold" :class="balanced ? 'text-success' : 'text-coral-dark'">{{ balanced ? t('Balanced') : t('Not balanced') }}</div>
-                <div class="mt-1 text-xs text-muted">{{ t(':n accounts · :h hotels', { n: accounts.length, h: hotels.length }) }}</div>
-            </div>
+            <KpiCard :label="t('Debits = credits')" :value="balanced ? t('Balanced') : t('Not balanced')" :value-tone="balanced ? 'success' : 'danger'"
+                     :icon="balanced ? 'check' : 'alert'" :icon-tone="balanced ? 'success' : 'coral'" :note="t(':n accounts · :h hotels', { n: accounts.length, h: hotels.length })" />
         </section>
 
         <template v-if="view === 'charts'">
