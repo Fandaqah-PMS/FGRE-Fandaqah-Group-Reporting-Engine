@@ -18,7 +18,7 @@ import HealthBoard from '../Components/HealthBoard.vue';
 import SubscribeButton from '../Components/Subscriptions/SubscribeButton.vue';
 import RankingTable from '../Components/RankingTable.vue';
 import { compact, dayNum, int, isNum, longDate, money, monthLabel, pct, shortDate, weekday } from '../lib/format';
-import { BRAND, LAST_YEAR_BAR, MIX, SERIES, THIS_YEAR } from '../lib/palette';
+import { BRAND, MIX, SERIES, CHART } from '../lib/palette';
 import { useViewMode } from '../lib/view';
 import { useI18n } from '../lib/i18n';
 
@@ -107,7 +107,7 @@ const lyYear = computed(() => (monthKey.value ? `${Number(monthKey.value.slice(0
 
 const months = computed(() => (props.monthly ?? []).map((m) => ({ key: m.month, label: monthLabel(m.month, locale.value), tooltip: monthLabel(m.month, locale.value, true) })));
 const monthValues = computed(() => Object.fromEntries((props.monthly ?? []).map((m) => [m.month, { ty: m[monthMetric.value], ly: m[`ly_${monthMetric.value}`] }])));
-const yearSeries = computed(() => [{ key: 'ty', label: t('This year'), color: THIS_YEAR }, { key: 'ly', label: t('Last year'), color: LAST_YEAR_BAR }]);
+const yearSeries = computed(() => [{ key: 'ty', label: t('This year'), color: CHART.thisYear }, { key: 'ly', label: t('Last year'), color: CHART.lastYearBar }]);
 const barRows = computed(() => (props.hotels ?? []).map((h) => ({ id: h.property_id, name: h.name, name_ar: h.name_ar, ty: h[barMetric.value], ly: h.ly?.[barMetric.value] ?? null })));
 
 const sort = ref({ key: 'revpar', dir: -1 });
@@ -129,7 +129,7 @@ const sortBy = (key) => (sort.value = { key, dir: sort.value.key === key ? -sort
     <template v-else>
         <PageHeader :eyebrow="t('Fandaqah / Group overview')" :title="t('Dashboard')">
             <template #subtitle>
-                <Icon name="calendar" :size="15" class="text-coral" />{{ t('Business date') }}: <b class="text-navy">{{ longDate(filters.date, locale) }}</b>
+                <Icon name="calendar" :size="15" class="text-coral" />{{ t('Business date') }}: <b class="text-ink">{{ longDate(filters.date, locale) }}</b>
             </template>
             <template #actions>
                 <input type="date" :value="filters.date" :max="filters.latest" dir="ltr" class="field !w-auto !py-2 text-sm font-semibold"
@@ -291,13 +291,13 @@ const sortBy = (key) => (sort.value = { key, dir: sort.value.key === key ? -sort
                         <table class="tbl min-w-[58rem] tabular">
                             <thead><tr>
                                 <th>{{ t('Hotel') }}</th><th>{{ t('PMS') }}</th><th class="!text-end">{{ t('Rooms sold') }}</th>
-                                <th v-for="col in ['occupancy_pct', 'adr', 'revpar', 'total_revenue']" :key="col" class="cursor-pointer !text-end select-none hover:text-navy" @click="sortBy(col)">
+                                <th v-for="col in ['occupancy_pct', 'adr', 'revpar', 'total_revenue']" :key="col" class="cursor-pointer !text-end select-none hover:text-ink" @click="sortBy(col)">
                                     {{ metrics[col].label }} <span v-if="sort.key === col">{{ sort.dir < 0 ? '↓' : '↑' }}</span>
                                 </th>
                             </tr></thead>
                             <tbody>
                                 <tr v-for="h in sortedHotels" :key="h.property_id">
-                                    <td><Link :href="`/hotels/${h.property_id}?date=${filters.date}`" class="font-bold text-navy hover:text-coral">{{ name(h) }}</Link>
+                                    <td><Link :href="`/hotels/${h.property_id}?date=${filters.date}`" class="font-bold text-ink hover:text-coral">{{ name(h) }}</Link>
                                         <span v-if="h.is_provisional" class="chip ms-2 bg-coral-tint !px-2 !py-0 text-[10px] text-coral-dark">{{ t('Provisional') }}</span></td>
                                     <td class="text-ink-2">{{ h.pms }}</td>
                                     <td class="text-end"><bdi>{{ int(h.paid_occupied) }} <span class="text-muted">/ {{ int(h.sellable_rooms) }}</span></bdi></td>

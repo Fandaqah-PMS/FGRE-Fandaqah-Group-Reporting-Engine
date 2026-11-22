@@ -50,10 +50,10 @@ const roomValues = computed(() => Object.fromEntries(props.hotels.map((h) => [St
             <div class="mt-5 grid grid-cols-[repeat(auto-fill,minmax(12.5rem,1fr))] gap-4">
                 <div class="rounded-2xl bg-navy p-4 text-white">
                     <div class="mb-3 truncate text-sm font-bold">{{ t('Group') }}</div>
-                    <div class="rounded-xl bg-white px-2 pt-3 pb-2"><Gauge compact :value="group.occupancy_pct" :previous="groupBase?.occupancy_pct" /></div>
+                    <div class="rounded-xl bg-surface px-2 pt-3 pb-2"><Gauge compact :value="group.occupancy_pct" :previous="groupBase?.occupancy_pct" /></div>
                 </div>
-                <div v-for="h in hotels" :key="h.id" class="rounded-2xl border border-line bg-white p-4">
-                    <Link :href="`/hotels/${h.id}?date=${date}`" class="mb-3 block truncate text-sm font-bold text-navy hover:text-coral" :title="name(h)">{{ name(h) }}</Link>
+                <div v-for="h in hotels" :key="h.id" class="rounded-2xl border border-line bg-surface p-4">
+                    <Link :href="`/hotels/${h.id}?date=${date}`" class="mb-3 block truncate text-sm font-bold text-ink hover:text-coral" :title="name(h)">{{ name(h) }}</Link>
                     <div class="px-2 pt-3 pb-2"><Gauge compact :value="h.ty?.occupancy_pct" :previous="h.base?.occupancy_pct" /></div>
                 </div>
             </div>

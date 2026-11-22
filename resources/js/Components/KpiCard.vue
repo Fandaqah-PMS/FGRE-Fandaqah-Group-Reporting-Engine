@@ -29,13 +29,13 @@ const { t } = useI18n();
 
 <template>
     <div class="card rise flex flex-col p-5"
-         :class="highlight && '!border-coral/30 bg-[linear-gradient(160deg,#FDEBE9_0%,#FFFFFF_65%)]'">
+         :class="highlight && '!border-coral/30 bg-[linear-gradient(160deg,var(--color-coral-tint)_0%,var(--color-surface)_65%)]'">
         <div class="flex items-center gap-2 text-[13px] font-semibold text-ink-2">
             <span class="size-2 shrink-0 rounded-full" :style="{ background: dot }" />{{ label }}
         </div>
         <div class="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-1">
             <span dir="ltr" class="flex items-baseline gap-1">
-                <span class="text-[1.6rem] leading-none font-semibold tracking-tight text-navy tabular">{{ value }}</span>
+                <span class="text-[1.6rem] leading-none font-semibold tracking-tight text-ink tabular">{{ value }}</span>
                 <span v-if="unit" class="text-[11px] font-medium text-muted">{{ unit }}</span>
             </span>
             <Delta v-if="previous !== null" :current="current" :previous="previous" :kind="kind" />

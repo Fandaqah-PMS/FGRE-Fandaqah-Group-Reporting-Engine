@@ -42,3 +42,20 @@ table view (Charts / Tables switch).
 | Titles | **El Messiri** |
 | English body | **Montserrat** |
 | Arabic | **Almarai** |
+
+## Themes (Light / Dark / System)
+
+Users choose Light, Dark or System (follows the device) in the header, on the sign-in pages or
+in Settings → Profile; the choice is saved on the user (`users.theme`). The page template sets
+`<html data-theme>` before first paint, so there is no flash.
+
+- Use role tokens, never raw white or navy for text: `bg-surface` (cards, inputs), `text-ink`
+  (text), `bg-paper` (page), `border-line`, `text-ink-2` / `text-muted`. Navy (`bg-navy`) is a
+  brand surface (hero, selected states) in both themes. Pastel peach badges use `text-on-peach`.
+- Dark values live in `resources/css/app.css` (`:root[data-theme='dark']`): deep navy canvas
+  #0E1320, cards #161C2B, text #E8ECF3. The brand art is toned down there automatically.
+- Charts: `resources/js/lib/palette.js` swaps to a dark set validated for the dark card
+  (#6683C9 · #DF5E58 · #8E7CC3 · #BE8045 · #1E9E91). Read `BRAND`, `SERIES`, `MIX`, `CHART`
+  inside templates or `computed()` so charts redraw when the theme changes.
+- Logos: `<BrandLogo>` shows the original artwork in light and the inverse lockup in dark.
+- Emails stay light.

@@ -10,7 +10,7 @@ const { t, locale } = useI18n();
 const KIND = {
     user: { icon: 'users', cls: 'bg-navy text-white', label: 'Users' },
     role: { icon: 'shield', cls: 'bg-coral-tint text-coral', label: 'Roles' },
-    hotel: { icon: 'building', cls: 'bg-peach-tint text-[#a65b37]', label: 'Hotels' },
+    hotel: { icon: 'building', cls: 'bg-peach-tint text-peach-ink', label: 'Hotels' },
     group: { icon: 'settings', cls: 'bg-paper text-ink-2', label: 'Group' },
 };
 const kind = (l) => KIND[l.action.split('.')[0]] ?? KIND.group;
@@ -41,7 +41,7 @@ const setFilter = (f) => router.get('/settings/activity', f ? { action: f } : {}
                 <li v-for="l in logs.data" :key="l.id" class="relative flex gap-4 rounded-xl px-3 py-3 hover:bg-paper/60">
                     <span class="grid size-9 shrink-0 place-items-center rounded-xl" :class="kind(l).cls"><Icon :name="kind(l).icon" :size="16" /></span>
                     <div class="min-w-0 flex-1">
-                        <div class="text-sm text-navy">
+                        <div class="text-sm text-ink">
                             <b>{{ l.user ?? t('System') }}</b> · {{ t(`audit_${l.action}`) }}
                             <bdi v-if="l.subject" class="font-semibold">{{ l.action.startsWith('role.') ? t(`role_${l.subject}`) : l.subject }}</bdi>
                         </div>

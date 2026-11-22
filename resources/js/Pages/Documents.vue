@@ -36,7 +36,7 @@ const sourceIcon = (s) => ({ email: 'mail', mcp: 'layers', upload: 'inbox', api:
               :class="(status ?? null) === tile.key && 'ring-2 ring-coral'">
             <span class="grid size-12 place-items-center rounded-2xl" :class="tile.tone"><Icon :name="tile.icon" :size="22" /></span>
             <span>
-                <span class="block text-xl font-semibold text-navy tabular" dir="ltr">{{ int(tile.value) }}</span>
+                <span class="block text-xl font-semibold text-ink tabular" dir="ltr">{{ int(tile.value) }}</span>
                 <span class="block text-[13px] font-semibold text-ink-2">{{ tile.label }}</span>
             </span>
         </Link>
@@ -52,19 +52,19 @@ const sourceIcon = (s) => ({ email: 'mail', mcp: 'layers', upload: 'inbox', api:
                     <template v-for="d in documents.data" :key="d.id">
                         <tr :class="d.reason && 'cursor-pointer'" @click="d.reason && (open = open === d.id ? null : d.id)">
                             <td class="text-ink-2 tabular"><bdi>{{ d.received.slice(0, 16) }}</bdi></td>
-                            <td class="font-bold text-navy">{{ d.hotel ? name(d.hotel) : '–' }}</td>
+                            <td class="font-bold text-ink">{{ d.hotel ? name(d.hotel) : '–' }}</td>
                             <td>{{ t(d.type) }}<span v-if="d.provisional" class="chip ms-1 bg-coral-tint !px-2 !py-0 text-[10px] text-coral-dark">{{ t('Provisional') }}</span></td>
                             <td class="tabular"><bdi>{{ d.period_start ? `${d.period_start} → ` : '' }}{{ d.date ?? '–' }}</bdi></td>
                             <td class="text-ink-2"><span class="flex max-w-56 items-center gap-1.5 truncate" :title="d.from"><Icon :name="sourceIcon(d.source)" :size="15" class="text-coral" />{{ t(d.source ?? '') }}<template v-if="d.from"> · {{ d.from }}</template></span></td>
                             <td><StatusBadge :status="d.status" /></td>
                             <td class="text-end">
                                 <button v-if="canReview && ['needs_review', 'failed'].includes(d.status)" type="button"
-                                        class="inline-flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1.5 text-xs font-bold text-navy hover:border-coral hover:text-coral" @click.stop="reprocess(d.id)">
+                                        class="inline-flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1.5 text-xs font-bold text-ink hover:border-coral hover:text-coral" @click.stop="reprocess(d.id)">
                                     <Icon name="refresh" :size="14" />{{ t('Run again') }}
                                 </button>
                             </td>
                         </tr>
-                        <tr v-if="open === d.id"><td colspan="7" class="!bg-coral-tint/50 text-sm whitespace-pre-line text-navy"><Icon name="alert" :size="15" class="me-1 inline text-coral" />{{ d.reason }}</td></tr>
+                        <tr v-if="open === d.id"><td colspan="7" class="!bg-coral-tint/50 text-sm whitespace-pre-line text-ink"><Icon name="alert" :size="15" class="me-1 inline text-coral" />{{ d.reason }}</td></tr>
                     </template>
                     <tr v-if="!documents.data.length"><td colspan="7" class="py-12 text-center text-ink-2">{{ t('Nothing here.') }}</td></tr>
                 </tbody>

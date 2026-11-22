@@ -45,7 +45,7 @@ const colBg = (c) => (c.kind === 'group' ? 'bg-coral-tint/50' : c.kind === 'regi
 <template>
     <div>
         <div class="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-2">
-            <span class="flex items-center gap-1.5"><b class="text-navy">123</b>{{ t('Figure for the period') }}</span>
+            <span class="flex items-center gap-1.5"><b class="text-ink">123</b>{{ t('Figure for the period') }}</span>
             <span v-if="basisLabel" class="flex items-center gap-1.5"><span class="text-success">▲</span><span class="text-coral-dark">▼</span>{{ t('Change vs :basis', { basis: basisLabel }) }}</span>
             <span class="flex items-center gap-1.5"><span class="inline-block size-3 rounded bg-success-tint ring-1 ring-success/30" />{{ t('Best hotel') }}</span>
             <span class="flex items-center gap-1.5"><span class="inline-block size-3 rounded bg-coral-tint ring-1 ring-coral/30" />{{ t('Weakest hotel') }}</span>
@@ -67,14 +67,14 @@ const colBg = (c) => (c.kind === 'group' ? 'bg-coral-tint/50' : c.kind === 'regi
                     <tbody v-for="s in sections" :key="s.key">
                         <tr><td :colspan="columns.length + 1" class="bg-paper px-4 py-2 text-[11px] font-bold tracking-wider text-coral uppercase">{{ s.title }}</td></tr>
                         <tr v-for="r in s.rows" :key="r.key" class="border-t border-line">
-                            <td class="sticky start-0 z-[1] bg-white px-4 py-2.5">
+                            <td class="sticky start-0 z-[1] bg-surface px-4 py-2.5">
                                 <div class="flex items-baseline gap-2">
                                     <abbr :title="r.label" class="w-14 shrink-0 cursor-help text-[11px] font-bold text-muted no-underline" dir="ltr">{{ r.code }}</abbr>
-                                    <span class="font-semibold text-navy" :title="r.label">{{ r.name ?? r.label }}</span>
+                                    <span class="font-semibold text-ink" :title="r.label">{{ r.name ?? r.label }}</span>
                                 </div>
                             </td>
                             <td v-for="c in columns" :key="c.id" class="px-3 py-2 text-end" :class="[colBg(c), mark(r, c) === 'best' && '!bg-success-tint', mark(r, c) === 'worst' && '!bg-coral-tint/70']">
-                                <bdi class="block font-medium text-navy tabular" :class="c.kind === 'group' && '!font-semibold'">{{ r.f(value(r, c)) }}</bdi>
+                                <bdi class="block font-medium text-ink tabular" :class="c.kind === 'group' && '!font-semibold'">{{ r.f(value(r, c)) }}</bdi>
                                 <template v-for="ch in [change(r, value(r, c), base(r, c))]" :key="'c'">
                                     <bdi v-if="ch" class="block text-[11px] font-semibold"
                                          :class="tone(r, ch.d) === 'good' ? 'text-success' : tone(r, ch.d) === 'bad' ? 'text-coral-dark' : 'text-muted'">

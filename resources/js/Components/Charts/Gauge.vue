@@ -48,7 +48,7 @@ const fill = computed(() => (isNum(props.value) && share(props.value) > 0.004 ? 
                 <path v-if="fill" :d="fill" fill="none" :stroke="`url(#gg-${uid})`" :stroke-width="W" stroke-linecap="round" />
             </svg>
             <div class="absolute inset-x-0 bottom-[6%] text-center">
-                <div class="leading-none font-semibold text-navy tabular" :class="compact ? 'text-[1.35rem]' : 'text-[1.9rem]'" dir="ltr">
+                <div class="leading-none font-semibold text-ink tabular" :class="compact ? 'text-[1.35rem]' : 'text-[1.9rem]'" dir="ltr">
                     {{ isNum(value) ? Number(value).toFixed(digits) : '–' }}<span v-if="suffix" class="font-medium text-ink-2" :class="compact ? 'text-xs' : 'text-base'">{{ suffix }}</span>
                 </div>
                 <div v-if="label" class="mt-1.5 text-xs font-medium text-ink-2">{{ label }}</div>

@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import { smoothPath, runs } from '../../lib/chart';
-import { THIS_YEAR, SURFACE } from '../../lib/palette';
+import { CHART } from '../../lib/palette';
 import { isNum } from '../../lib/format';
 
 // Small trend under a KPI (PMS style): navy line over a soft grey wash, last day marked.
@@ -35,7 +35,7 @@ const geo = computed(() => {
             </linearGradient>
         </defs>
         <path :d="geo.area" :fill="`url(#${gid})`" />
-        <path v-for="(d, i) in geo.lines" :key="i" :d="d" fill="none" :stroke="THIS_YEAR" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round" />
-        <circle :cx="geo.last[0]" :cy="geo.last[1]" r="3.5" fill="#F15F5A" :stroke="SURFACE" stroke-width="2" vector-effect="non-scaling-stroke" />
+        <path v-for="(d, i) in geo.lines" :key="i" :d="d" fill="none" :stroke="CHART.thisYear" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round" />
+        <circle :cx="geo.last[0]" :cy="geo.last[1]" r="3.5" fill="#F15F5A" :stroke="CHART.surface" stroke-width="2" vector-effect="non-scaling-stroke" />
     </svg>
 </template>

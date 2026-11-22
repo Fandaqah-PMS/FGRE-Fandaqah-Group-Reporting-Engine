@@ -13,7 +13,7 @@ const { t } = useI18n();
         <Transition enter-from-class="opacity-0" leave-to-class="opacity-0" enter-active-class="transition duration-200" leave-active-class="transition duration-150">
             <div v-if="open" class="fixed inset-0 z-50 flex items-end justify-center bg-navy/45 backdrop-blur-[2px] sm:items-center sm:p-6"
                  @click.self="emit('close')" @keydown.esc="emit('close')">
-                <div class="flex max-h-[94vh] w-full flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:rounded-3xl" :class="width" role="dialog" aria-modal="true" :aria-label="title">
+                <div class="flex max-h-[94vh] w-full flex-col overflow-hidden rounded-t-3xl bg-surface shadow-2xl sm:rounded-3xl" :class="width" role="dialog" aria-modal="true" :aria-label="title">
                     <div class="relative flex items-start gap-4 overflow-hidden bg-navy px-6 py-5 text-white">
                         <div class="brand-pattern pointer-events-none absolute inset-y-0 end-0 w-1/2 opacity-[0.08]" />
                         <span class="relative grid size-11 shrink-0 place-items-center rounded-2xl bg-coral"><Icon :name="icon" :size="20" /></span>

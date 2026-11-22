@@ -22,17 +22,17 @@ const submit = () => form.post('/reset-password', { onFinish: () => form.reset('
               :text="invite ? t('Choose a password to finish setting up your account.') : t('Use at least 10 characters with letters and numbers.')" :icon="invite ? 'sparkles' : 'lock'">
         <form class="space-y-5" @submit.prevent="submit">
             <label class="block">
-                <span class="mb-2 block text-[13px] font-bold text-navy">{{ t('Email') }}</span>
+                <span class="mb-2 block text-[13px] font-bold text-ink">{{ t('Email') }}</span>
                 <input v-model="form.email" type="email" class="field !h-12" required dir="ltr" autocomplete="username" />
                 <span v-if="form.errors.email" class="mt-1 block text-xs font-semibold text-danger">{{ form.errors.email }}</span>
             </label>
             <label class="block">
-                <span class="mb-2 block text-[13px] font-bold text-navy">{{ t('New password') }}</span>
+                <span class="mb-2 block text-[13px] font-bold text-ink">{{ t('New password') }}</span>
                 <input v-model="form.password" type="password" class="field !h-12" required autofocus dir="ltr" autocomplete="new-password" />
                 <span v-if="form.errors.password" class="mt-1 block text-xs font-semibold text-danger">{{ form.errors.password }}</span>
             </label>
             <label class="block">
-                <span class="mb-2 block text-[13px] font-bold text-navy">{{ t('Confirm new password') }}</span>
+                <span class="mb-2 block text-[13px] font-bold text-ink">{{ t('Confirm new password') }}</span>
                 <input v-model="form.password_confirmation" type="password" class="field !h-12" required dir="ltr" autocomplete="new-password" />
             </label>
             <ul class="flex flex-wrap gap-2">

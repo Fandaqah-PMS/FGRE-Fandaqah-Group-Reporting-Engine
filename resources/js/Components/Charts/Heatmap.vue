@@ -31,11 +31,11 @@ const scale = (v) => (max.value - min.value > 0 ? (Number(v) - min.value) / (max
                 </thead>
                 <tbody>
                     <tr v-for="h in data.hotels" :key="h.id">
-                        <th class="min-w-[10.5rem] pe-2 text-start text-xs leading-tight font-semibold text-navy" :dir="locale === 'ar' ? 'rtl' : 'ltr'">
+                        <th class="min-w-[10.5rem] pe-2 text-start text-xs leading-tight font-semibold text-ink" :dir="locale === 'ar' ? 'rtl' : 'ltr'">
                             <Link :href="`/hotels/${h.id}`" class="hover:text-coral">{{ name(h) }}</Link>
                         </th>
                         <td v-for="d in data.dates" :key="d" class="relative h-8 min-w-7 rounded-md outline-none" tabindex="0"
-                            :style="{ background: isNum(h.values[d]) ? coralRamp(scale(h.values[d])) : '#F3F1EC' }"
+                            :style="{ background: isNum(h.values[d]) ? coralRamp(scale(h.values[d])) : 'var(--color-neutral)' }"
                             @pointerenter="active = `${h.id}|${d}`" @pointerleave="active = null" @focus="active = `${h.id}|${d}`" @blur="active = null">
                             <div v-if="active === `${h.id}|${d}`" role="tooltip"
                                  class="pointer-events-none absolute bottom-full left-1/2 z-10 mb-1.5 -translate-x-1/2 rounded-lg bg-navy px-2.5 py-1.5 text-[11px] whitespace-nowrap text-white shadow-lg">
@@ -51,7 +51,7 @@ const scale = (v) => (max.value - min.value > 0 ? (Number(v) - min.value) / (max
             <bdi class="tabular">{{ min.toFixed(0) }}%</bdi>
             <span class="h-2 w-32 rounded-full" :style="{ background: `linear-gradient(90deg, ${coralRamp(0)}, ${coralRamp(1)})` }" />
             <bdi class="tabular">{{ max.toFixed(0) }}%</bdi>
-            <span class="ms-3 inline-block size-2.5 rounded-sm bg-[#F3F1EC]" />{{ t('No report') }}
+            <span class="ms-3 inline-block size-2.5 rounded-sm bg-neutral" />{{ t('No report') }}
         </div>
     </div>
 </template>

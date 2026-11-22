@@ -178,6 +178,18 @@ class SettingsTest extends TestCase
             ->assertSessionHasErrors('email');
     }
 
+    public function test_theme_choice_is_saved_on_the_user_and_shared_with_the_page(): void
+    {
+        $user = $this->member($this->group(), 'viewer');
+
+        $this->actingAs($user)->post('/preferences/theme', ['theme' => 'dark'])->assertRedirect();
+        $this->assertSame('dark', $user->fresh()->theme);
+        $this->actingAs($user->fresh())->get('/settings/profile')->assertSee('data-theme-pref="dark"', false)
+            ->assertInertia(fn (Assert $page) => $page->where('auth.user.theme', 'dark'));
+
+        $this->actingAs($user)->post('/preferences/theme', ['theme' => 'purple'])->assertSessionHasErrors('theme');
+    }
+
     public function test_go_live_command_creates_a_group_and_invites_its_owner(): void
     {
         $this->artisan('fgre:create-group', [

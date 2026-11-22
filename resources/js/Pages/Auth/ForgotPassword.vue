@@ -17,7 +17,7 @@ const submit = () => form.post('/forgot-password', { preserveScroll: true });
         </p>
         <form class="space-y-5" @submit.prevent="submit">
             <label class="block">
-                <span class="mb-2 block text-[13px] font-bold text-navy">{{ t('Email') }}</span>
+                <span class="mb-2 block text-[13px] font-bold text-ink">{{ t('Email') }}</span>
                 <input v-model="form.email" type="email" class="field !h-12" required autofocus dir="ltr" autocomplete="username" placeholder="name@company.com" />
                 <span v-if="form.errors.email" class="mt-1 block text-xs font-semibold text-danger">{{ form.errors.email }}</span>
             </label>

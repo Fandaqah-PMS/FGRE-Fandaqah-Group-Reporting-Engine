@@ -2,6 +2,8 @@
 import { computed } from 'vue';
 import { Head, router, usePage } from '@inertiajs/vue3';
 import Icon from '../../Components/Icon.vue';
+import BrandLogo from '../../Components/BrandLogo.vue';
+import ThemeSwitch from '../../Components/ThemeSwitch.vue';
 import LoginForm from '../../Components/Auth/LoginForm.vue';
 import { useDocumentDirection, useI18n } from '../../lib/i18n';
 
@@ -37,15 +39,18 @@ const features = [
             <!-- art cluster in the far corner of the form side, faded long before the form -->
             <div class="brand-pattern-full absolute inset-x-0 top-0 h-[7.5rem] opacity-45 [background-size:200px_auto]" aria-hidden="true" />
             <div class="relative flex items-center justify-between">
-                <span class="rounded-2xl border border-line bg-white px-4 py-2 shadow-sm"><img src="/brand/logo.png" alt="Fandaqah" class="h-11 w-auto" /></span>
-                <button type="button" class="flex items-center gap-2 rounded-xl border border-line bg-white px-3 py-2 text-sm font-bold text-navy hover:border-coral/40" @click="toggleLocale">
+                <span class="rounded-2xl border border-line bg-surface px-4 py-2 shadow-sm"><BrandLogo class="h-11 w-auto" /></span>
+                <div class="flex items-center gap-2">
+                <ThemeSwitch />
+                <button type="button" class="flex items-center gap-2 rounded-xl border border-line bg-surface px-3 py-2 text-sm font-bold text-ink hover:border-coral/40" @click="toggleLocale">
                     <Icon name="globe" :size="16" class="text-coral" />{{ locale === 'ar' ? 'English' : 'العربية' }}
                 </button>
+            </div>
             </div>
 
             <div class="relative m-auto w-full max-w-[26rem] py-12">
                 <div class="eyebrow">{{ t('Group Reporting') }}</div>
-                <h1 class="mt-2 font-display text-[2.6rem] leading-[1.1] font-semibold text-navy">{{ t('Welcome back') }}</h1>
+                <h1 class="mt-2 font-display text-[2.6rem] leading-[1.1] font-semibold text-ink">{{ t('Welcome back') }}</h1>
                 <p class="mt-3 text-[15px] text-ink-2">{{ t('Sign in to see every hotel in your group, in one place.') }}</p>
                 <LoginForm class="mt-9" />
                 <p class="mt-8 text-center text-xs text-muted">{{ t('Accounts are created by your group administrator.') }}</p>
@@ -88,14 +93,17 @@ const features = [
         <!-- paper wash: strongest in the middle where the card sits -->
 
         <header class="relative flex items-center justify-between px-6 py-6 sm:px-10">
-            <span class="rounded-2xl bg-white px-4 py-2.5 shadow-sm"><img src="/brand/logo.png" alt="Fandaqah" class="h-10 w-auto" /></span>
-            <button type="button" class="flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-sm font-bold text-navy shadow-sm hover:text-coral" @click="toggleLocale">
+            <span class="rounded-2xl bg-surface px-4 py-2.5 shadow-sm"><BrandLogo class="h-10 w-auto" /></span>
+            <div class="flex items-center gap-2">
+                <ThemeSwitch />
+                <button type="button" class="flex items-center gap-2 rounded-xl bg-surface px-3 py-2 text-sm font-bold text-ink shadow-sm hover:text-coral" @click="toggleLocale">
                 <Icon name="globe" :size="16" class="text-coral" />{{ locale === 'ar' ? 'English' : 'العربية' }}
             </button>
+            </div>
         </header>
 
         <main class="relative m-auto w-full max-w-[28rem] px-5 py-10">
-            <div class="overflow-hidden rounded-[1.75rem] bg-white shadow-[0_30px_80px_-20px_rgba(38,46,67,0.35)]">
+            <div class="overflow-hidden rounded-[1.75rem] bg-surface shadow-[0_30px_80px_-20px_rgba(38,46,67,0.35)]">
                 <div class="relative overflow-hidden bg-navy px-8 py-7 text-white">
                     <div class="art-end absolute inset-y-0 end-0 w-2/3 opacity-60 [background-size:200px_auto]" aria-hidden="true" />
                     <div class="absolute inset-0 bg-gradient-to-r from-navy via-navy/85 to-navy/0 rtl:bg-gradient-to-l" aria-hidden="true" />
@@ -111,8 +119,8 @@ const features = [
                 </div>
             </div>
         </main>
-        <footer class="relative px-6 pb-6 text-center text-xs font-semibold text-navy/70 sm:px-10">
-            <span class="rounded-full bg-white/80 px-3 py-1">{{ t('Arabic and English · Any mailbox · Any PMS') }}</span>
+        <footer class="relative px-6 pb-6 text-center text-xs font-semibold text-ink/70 sm:px-10">
+            <span class="rounded-full bg-surface/80 px-3 py-1">{{ t('Arabic and English · Any mailbox · Any PMS') }}</span>
         </footer>
     </div>
 
@@ -122,9 +130,12 @@ const features = [
 
         <header class="relative flex items-center justify-between px-6 py-6 sm:px-10">
             <img src="/brand/logo-inverse.png" alt="Fandaqah" class="h-11 w-auto" />
-            <button type="button" class="flex items-center gap-2 rounded-xl bg-navy px-3 py-2 text-sm font-bold text-white shadow-lg ring-1 ring-white/20 hover:bg-navy-light" @click="toggleLocale">
+            <div class="flex items-center gap-2">
+                <ThemeSwitch on-dark />
+                <button type="button" class="flex items-center gap-2 rounded-xl bg-navy px-3 py-2 text-sm font-bold text-white shadow-lg ring-1 ring-white/20 hover:bg-navy-light" @click="toggleLocale">
                 <Icon name="globe" :size="16" class="text-coral" />{{ locale === 'ar' ? 'English' : 'العربية' }}
             </button>
+            </div>
         </header>
 
         <main class="relative m-auto grid w-full max-w-5xl items-center gap-10 px-6 py-10 lg:grid-cols-[1fr_27rem]">
@@ -138,7 +149,7 @@ const features = [
                     </span>
                 </div>
             </div>
-            <div class="rounded-[1.75rem] bg-white p-8 text-navy shadow-2xl">
+            <div class="rounded-[1.75rem] bg-surface p-8 text-ink shadow-2xl">
                 <h1 class="font-display text-[1.9rem] leading-tight font-semibold">{{ t('Welcome back') }}</h1>
                 <p class="mt-1.5 mb-7 text-sm text-ink-2">{{ t('Sign in to see every hotel in your group, in one place.') }}</p>
                 <LoginForm />

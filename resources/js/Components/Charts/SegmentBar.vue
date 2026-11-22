@@ -25,7 +25,7 @@ const shown = computed(() => props.parts.filter((p) => Number(p.value) > 0));
                     <span class="size-2 shrink-0 rounded-full" :style="{ background: p.color }" />{{ p.label }}
                 </div>
                 <div class="mt-1 flex items-baseline gap-1.5">
-                    <bdi class="text-lg font-semibold text-navy tabular">{{ format(p.value) }}</bdi>
+                    <bdi class="text-lg font-semibold text-ink tabular">{{ format(p.value) }}</bdi>
                     <bdi class="text-xs text-muted tabular">{{ share(p.value).toFixed(0) }}%</bdi>
                 </div>
             </li>

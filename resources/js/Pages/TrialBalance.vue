@@ -108,7 +108,7 @@ const marginRows = computed(() => props.summary.byHotel.map((h) => ({ id: h.id, 
     <PageHeader :eyebrow="t('Reports / Trial Balance')" :title="t('Trial Balance')">
         <template #subtitle>
             <Icon :name="scopeHotel ? 'building' : 'layers'" :size="15" class="text-coral" />
-            <b class="text-navy">{{ scopeHotel ? name(scopeHotel) : t('All hotels, consolidated') }}</b>
+            <b class="text-ink">{{ scopeHotel ? name(scopeHotel) : t('All hotels, consolidated') }}</b>
             <template v-if="date"><span class="text-muted">·</span><bdi class="tabular">{{ periodStart ? `${periodStart} → ` : '' }}{{ date }}</bdi></template>
         </template>
         <template #actions>
@@ -192,12 +192,12 @@ const marginRows = computed(() => props.summary.byHotel.map((h) => ({ id: h.id, 
                     <thead><tr>
                         <th class="sticky start-0 z-10">{{ t('Account') }}</th>
                         <th v-for="h in hotels" :key="h.id" class="!text-end">{{ name(h) }}</th>
-                        <th v-if="multi" class="!text-end !text-navy">{{ t('Group') }}</th>
+                        <th v-if="multi" class="!text-end !text-ink">{{ t('Group') }}</th>
                     </tr></thead>
                     <tbody v-for="s in sections" :key="s.key">
                         <tr><td :colspan="hotels.length + 2" class="!bg-paper !py-2 text-[11px] font-bold tracking-wider text-coral uppercase">{{ classLabel(s.key) }}</td></tr>
                         <tr v-for="a in s.accounts" :key="a.code">
-                            <td class="sticky start-0 bg-white"><span class="me-2 font-semibold text-muted" dir="ltr">{{ a.code }}</span>{{ a.name }}</td>
+                            <td class="sticky start-0 bg-surface"><span class="me-2 font-semibold text-muted" dir="ltr">{{ a.code }}</span>{{ a.name }}</td>
                             <td v-for="h in hotels" :key="h.id" class="text-end"><bdi>{{ bal(a.hotels[h.id]) }}</bdi></td>
                             <td v-if="multi" class="text-end font-bold"><bdi>{{ bal(a.total) }}</bdi></td>
                         </tr>

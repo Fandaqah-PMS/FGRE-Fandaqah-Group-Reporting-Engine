@@ -19,7 +19,7 @@ import HotelBars from '../Components/Charts/HotelBars.vue';
 import SegmentBar from '../Components/Charts/SegmentBar.vue';
 import Gauge from '../Components/Charts/Gauge.vue';
 import { compact, int, isNum, longDate, money, pct } from '../lib/format';
-import { BRAND, LAST_YEAR_BAR, MIX, THIS_YEAR } from '../lib/palette';
+import { BRAND, MIX, CHART } from '../lib/palette';
 import { useViewMode } from '../lib/view';
 import { useI18n } from '../lib/i18n';
 
@@ -110,7 +110,7 @@ const go = (date) => router.get('/manager-flash', { date }, { preserveScroll: tr
 
 // Day / MTD / YTD × this year / last year for one KPI.
 const periodCats = computed(() => [{ key: 'day', label: t('Day') }, { key: 'mtd', label: t('MTD') }, { key: 'ytd', label: t('YTD') }]);
-const yearSeries = computed(() => [{ key: 'ty', label: t('This year'), color: THIS_YEAR }, { key: 'ly', label: t('Last year'), color: LAST_YEAR_BAR }]);
+const yearSeries = computed(() => [{ key: 'ty', label: t('This year'), color: CHART.thisYear }, { key: 'ly', label: t('Last year'), color: CHART.lastYearBar }]);
 const byPeriod = (metric) => Object.fromEntries(['day', 'mtd', 'ytd'].map((p) => [p, { ty: col(p)[metric], ly: col(`${p}_ly`)[metric] }]));
 const kpiCharts = computed(() => [
     { metric: 'occupancy_pct', label: t('Occupancy'), format: (v, axis) => (axis ? `${compact(v)}%` : pct(v)) },
@@ -188,7 +188,7 @@ const flashCols = computed(() => [['day', t('Day')], ['mtd', t('MTD')], ['ytd', 
     <PageHeader :eyebrow="t('Reports / Manager Flash')" :title="t('Manager Flash')">
         <template #subtitle>
             <Icon :name="scopeHotel ? 'building' : 'layers'" :size="15" class="text-coral" />
-            <b class="text-navy">{{ scopeHotel ? name(scopeHotel) : t('All hotels, consolidated') }}</b>
+            <b class="text-ink">{{ scopeHotel ? name(scopeHotel) : t('All hotels, consolidated') }}</b>
             <template v-if="!empty"><span class="text-muted">·</span>{{ longDate(date, locale) }}</template>
             <span v-if="provisional" class="chip bg-coral-tint text-coral-dark">{{ t('Provisional') }}</span>
         </template>
@@ -262,8 +262,8 @@ const flashCols = computed(() => [['day', t('Day')], ['mtd', t('MTD')], ['ytd', 
                     <p class="mb-4 text-xs text-muted">{{ t('Day') }} · {{ t('vs last year') }}</p>
                     <ul class="grid grid-cols-2 gap-3">
                         <li v-for="a in activity" :key="a.label" class="rounded-2xl bg-paper p-4">
-                            <span class="grid size-8 place-items-center rounded-lg bg-white text-coral shadow-sm"><Icon :name="a.icon" :size="16" /></span>
-                            <div class="mt-3 text-xl font-semibold text-navy tabular" dir="ltr">{{ int(a.value) }}</div>
+                            <span class="grid size-8 place-items-center rounded-lg bg-surface text-coral shadow-sm"><Icon :name="a.icon" :size="16" /></span>
+                            <div class="mt-3 text-xl font-semibold text-ink tabular" dir="ltr">{{ int(a.value) }}</div>
                             <div class="mt-0.5 text-xs font-semibold text-ink-2">{{ a.label }}</div>
                             <div class="mt-1.5"><Delta :current="a.value" :previous="a.ly" /></div>
                         </li>
@@ -327,7 +327,7 @@ const flashCols = computed(() => [['day', t('Day')], ['mtd', t('MTD')], ['ytd', 
                         </tr></thead>
                         <tbody>
                             <tr v-for="h in hotels" :key="h.id">
-                                <td><Link :href="`/hotels/${h.id}?date=${date}`" class="font-bold text-navy hover:text-coral">{{ name(h) }}</Link><div class="text-xs text-muted">{{ h.pms }}</div></td>
+                                <td><Link :href="`/hotels/${h.id}?date=${date}`" class="font-bold text-ink hover:text-coral">{{ name(h) }}</Link><div class="text-xs text-muted">{{ h.pms }}</div></td>
                                 <td v-for="p in periodCats" :key="p.key" class="text-end"><bdi>{{ pct(h.periods[p.key]?.occupancy_pct) }}</bdi>
                                     <div><Delta :current="h.periods[p.key]?.occupancy_pct" :previous="h.periods[`${p.key}_ly`]?.occupancy_pct" kind="pp" /></div></td>
                                 <td v-for="p in periodCats" :key="`r${p.key}`" class="text-end"><bdi>{{ money(h.periods[p.key]?.total_revenue, 0) }}</bdi>

@@ -23,7 +23,7 @@ const defaults = computed(() => {
 </script>
 
 <template>
-    <button type="button" class="inline-flex items-center gap-2 rounded-xl border border-coral/30 bg-white px-3.5 py-2 text-sm font-bold text-coral transition hover:bg-coral hover:text-white"
+    <button type="button" class="inline-flex items-center gap-2 rounded-xl border border-coral/30 bg-surface px-3.5 py-2 text-sm font-bold text-coral transition hover:bg-coral hover:text-white"
             @click="open = true">
         <Icon name="mail" :size="16" />{{ t('Subscribe') }}
     </button>

@@ -26,23 +26,23 @@ onBeforeUnmount(() => { document.removeEventListener('pointerdown', onDoc); docu
 
 <template>
     <div ref="root" class="relative">
-        <button type="button" class="flex w-full max-w-[22rem] items-center gap-3 rounded-2xl border border-line bg-white px-3 py-1.5 text-start shadow-[var(--shadow-card)] transition hover:border-coral/40"
+        <button type="button" class="flex w-full max-w-[22rem] items-center gap-3 rounded-2xl border border-line bg-surface px-3 py-1.5 text-start shadow-[var(--shadow-card)] transition hover:border-coral/40"
                 :aria-expanded="open" aria-haspopup="listbox" @click="open = !open">
             <span class="grid size-8 shrink-0 place-items-center rounded-xl" :class="current ? 'bg-coral-tint text-coral' : 'bg-navy text-white'">
                 <Icon :name="current ? 'building' : 'layers'" :size="18" />
             </span>
             <span class="min-w-0 flex-1">
                 <span class="block text-[10px] font-bold tracking-wider text-muted uppercase">{{ current ? t('Single hotel') : t('Consolidated') }}</span>
-                <span class="block truncate text-sm font-bold text-navy">{{ current ? name(current) : t('All hotels (:n)', { n: scope.hotels.length }) }}</span>
+                <span class="block truncate text-sm font-bold text-ink">{{ current ? name(current) : t('All hotels (:n)', { n: scope.hotels.length }) }}</span>
             </span>
             <Icon name="chevron" :size="16" class="text-muted transition" :class="open && 'rotate-180'" />
         </button>
 
-        <div v-if="open" class="rise absolute start-0 top-full z-40 mt-2 w-[22rem] max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-line bg-white shadow-2xl" role="listbox">
+        <div v-if="open" class="rise absolute start-0 top-full z-40 mt-2 w-[22rem] max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-line bg-surface shadow-2xl" role="listbox">
             <button type="button" role="option" :aria-selected="!current" class="flex w-full items-center gap-3 px-4 py-3 text-start hover:bg-paper" @click="choose(null)">
                 <span class="grid size-8 place-items-center rounded-lg bg-navy text-white"><Icon name="layers" :size="16" /></span>
                 <span class="flex-1">
-                    <span class="block text-sm font-bold text-navy">{{ t('All hotels') }}</span>
+                    <span class="block text-sm font-bold text-ink">{{ t('All hotels') }}</span>
                     <span class="block text-xs text-muted">{{ t('Consolidated group view') }}</span>
                 </span>
                 <Icon v-if="!current" name="check" :size="16" class="text-coral" />
@@ -53,7 +53,7 @@ onBeforeUnmount(() => { document.removeEventListener('pointerdown', onDoc); docu
                         class="flex w-full items-center gap-3 px-4 py-2.5 text-start hover:bg-paper" @click="choose(h.id)">
                     <span class="grid size-8 place-items-center rounded-lg bg-coral-tint text-coral"><Icon name="building" :size="16" /></span>
                     <span class="min-w-0 flex-1">
-                        <span class="block truncate text-sm font-semibold text-navy">{{ name(h) }}</span>
+                        <span class="block truncate text-sm font-semibold text-ink">{{ name(h) }}</span>
                         <span class="block text-xs text-muted">{{ h.pms }}<template v-if="h.rooms"> · {{ t(':n rooms', { n: h.rooms }) }}</template></span>
                     </span>
                     <Icon v-if="current?.id === h.id" name="check" :size="16" class="text-coral" />

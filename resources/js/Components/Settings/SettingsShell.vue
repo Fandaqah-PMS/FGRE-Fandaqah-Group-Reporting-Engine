@@ -44,7 +44,7 @@ const sections = computed(() => [
                         <Icon :name="i.icon" :size="16" />
                     </span>
                     <span class="min-w-0">
-                        <span class="block text-[13.5px] font-bold whitespace-nowrap text-navy">{{ i.label }}</span>
+                        <span class="block text-[13.5px] font-bold whitespace-nowrap text-ink">{{ i.label }}</span>
                         <span class="block text-[11px] text-muted max-lg:hidden">{{ i.text }}</span>
                     </span>
                 </Link>

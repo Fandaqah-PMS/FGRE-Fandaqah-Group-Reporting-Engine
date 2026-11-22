@@ -47,12 +47,12 @@ const remove = (s) => {
         <div class="brand-pattern pointer-events-none absolute inset-y-0 end-0 w-1/2 opacity-[0.06]" />
         <div class="relative max-w-xl">
             <span class="grid size-14 place-items-center rounded-2xl bg-coral-tint text-coral"><Icon name="mail" :size="26" /></span>
-            <h2 class="mt-5 font-display text-2xl font-semibold text-navy">{{ t('Your hotels, in your inbox') }}</h2>
+            <h2 class="mt-5 font-display text-2xl font-semibold text-ink">{{ t('Your hotels, in your inbox') }}</h2>
             <p class="mt-2 text-ink-2">{{ t('Choose how often, which hotels and whether you want charts, tables or both. The email arrives after night audit, in Arabic or English.') }}</p>
             <div class="mt-6 grid gap-3 sm:grid-cols-3">
                 <div v-for="f in ['daily', 'weekly', 'monthly']" :key="f" class="rounded-2xl bg-paper p-4">
                     <Icon :name="FREQ[f][0]" :size="18" class="text-coral" />
-                    <div class="mt-2 font-bold text-navy">{{ t(FREQ[f][1]) }}</div>
+                    <div class="mt-2 font-bold text-ink">{{ t(FREQ[f][1]) }}</div>
                     <div class="mt-0.5 text-xs text-ink-2">{{ covers({ frequency: f }) }}</div>
                 </div>
             </div>
@@ -69,7 +69,7 @@ const remove = (s) => {
                 </span>
                 <div class="min-w-0 flex-1">
                     <div class="flex flex-wrap items-center gap-2">
-                        <h3 class="font-display text-lg font-semibold text-navy">{{ t(FREQ[s.frequency][1]) }} · {{ t('Manager Flash') }}</h3>
+                        <h3 class="font-display text-lg font-semibold text-ink">{{ t(FREQ[s.frequency][1]) }} · {{ t('Manager Flash') }}</h3>
                         <span v-if="s.is_active" class="chip bg-success-tint !py-0.5 text-success"><span class="size-1.5 rounded-full bg-success" />{{ t('Active') }}</span>
                         <span v-else class="chip bg-neutral !py-0.5 text-ink-2"><Icon name="lock" :size="11" />{{ t('Paused') }}</span>
                     </div>
@@ -78,11 +78,11 @@ const remove = (s) => {
             </div>
 
             <dl class="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 rounded-2xl bg-paper p-4 text-sm">
-                <div><dt class="text-[11px] font-bold text-muted">{{ t('Covers') }}</dt><dd class="mt-0.5 font-semibold text-navy">{{ covers(s) }}</dd></div>
+                <div><dt class="text-[11px] font-bold text-muted">{{ t('Covers') }}</dt><dd class="mt-0.5 font-semibold text-ink">{{ covers(s) }}</dd></div>
                 <div><dt class="text-[11px] font-bold text-muted">{{ t('Format') }}</dt>
-                    <dd class="mt-0.5 flex items-center gap-1.5 font-semibold text-navy"><Icon :name="CONTENT[s.content][0]" :size="14" class="text-coral" />{{ t(CONTENT[s.content][1]) }}</dd></div>
-                <div class="col-span-2 sm:col-span-1"><dt class="text-[11px] font-bold text-muted">{{ t('Hotels') }}</dt><dd class="mt-0.5 font-semibold text-navy">{{ hotelNames(s) }}</dd></div>
-                <div><dt class="text-[11px] font-bold text-muted">{{ t('Language') }}</dt><dd class="mt-0.5 font-semibold text-navy">{{ s.locale === 'ar' ? 'العربية' : 'English' }}<span v-if="s.include_attention" class="text-muted"> · {{ t('with needs attention') }}</span></dd></div>
+                    <dd class="mt-0.5 flex items-center gap-1.5 font-semibold text-ink"><Icon :name="CONTENT[s.content][0]" :size="14" class="text-coral" />{{ t(CONTENT[s.content][1]) }}</dd></div>
+                <div class="col-span-2 sm:col-span-1"><dt class="text-[11px] font-bold text-muted">{{ t('Hotels') }}</dt><dd class="mt-0.5 font-semibold text-ink">{{ hotelNames(s) }}</dd></div>
+                <div><dt class="text-[11px] font-bold text-muted">{{ t('Language') }}</dt><dd class="mt-0.5 font-semibold text-ink">{{ s.locale === 'ar' ? 'العربية' : 'English' }}<span v-if="s.include_attention" class="text-muted"> · {{ t('with needs attention') }}</span></dd></div>
             </dl>
 
             <div class="mt-4 flex flex-wrap items-center gap-2 border-t border-line pt-4">
@@ -90,10 +90,10 @@ const remove = (s) => {
                     <template v-if="sentAt(s.last_sent_at)">{{ t('Last sent') }} <bdi>{{ sentAt(s.last_sent_at) }}</bdi></template>
                     <template v-else>{{ t('Not sent yet') }}</template>
                 </span>
-                <a :href="`/subscriptions/${s.id}/preview`" target="_blank" rel="noopener" class="rounded-lg px-2.5 py-1.5 text-xs font-bold text-ink-2 hover:bg-paper hover:text-navy">{{ t('Preview') }}</a>
-                <button type="button" class="rounded-lg px-2.5 py-1.5 text-xs font-bold text-ink-2 hover:bg-paper hover:text-navy" @click="sendNow(s)">{{ t('Send me one now') }}</button>
-                <button type="button" class="rounded-lg px-2.5 py-1.5 text-xs font-bold text-ink-2 hover:bg-paper hover:text-navy" @click="toggle(s)">{{ s.is_active ? t('Pause') : t('Resume') }}</button>
-                <button type="button" class="rounded-lg px-2.5 py-1.5 text-xs font-bold text-navy hover:bg-paper" @click="edit(s)">{{ t('Edit') }}</button>
+                <a :href="`/subscriptions/${s.id}/preview`" target="_blank" rel="noopener" class="rounded-lg px-2.5 py-1.5 text-xs font-bold text-ink-2 hover:bg-paper hover:text-ink">{{ t('Preview') }}</a>
+                <button type="button" class="rounded-lg px-2.5 py-1.5 text-xs font-bold text-ink-2 hover:bg-paper hover:text-ink" @click="sendNow(s)">{{ t('Send me one now') }}</button>
+                <button type="button" class="rounded-lg px-2.5 py-1.5 text-xs font-bold text-ink-2 hover:bg-paper hover:text-ink" @click="toggle(s)">{{ s.is_active ? t('Pause') : t('Resume') }}</button>
+                <button type="button" class="rounded-lg px-2.5 py-1.5 text-xs font-bold text-ink hover:bg-paper" @click="edit(s)">{{ t('Edit') }}</button>
                 <button type="button" class="rounded-lg p-1.5 text-muted hover:bg-coral-tint hover:text-coral-dark" :aria-label="t('Remove')" @click="remove(s)"><Icon name="close" :size="16" /></button>
             </div>
         </article>

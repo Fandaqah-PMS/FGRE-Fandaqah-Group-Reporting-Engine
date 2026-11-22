@@ -22,8 +22,8 @@ const w = (v) => `${(Math.abs(Number(v) || 0) / max.value) * 50}%`;
     <ul class="space-y-3">
         <li v-for="row in rows" :key="row.id" class="text-[13px]">
             <div class="mb-1 flex items-center justify-between gap-2">
-                <span class="truncate font-semibold text-navy">{{ name(row) }}</span>
-                <bdi class="font-semibold text-navy tabular">{{ format(row.value) }}</bdi>
+                <span class="truncate font-semibold text-ink">{{ name(row) }}</span>
+                <bdi class="font-semibold text-ink tabular">{{ format(row.value) }}</bdi>
             </div>
             <div class="relative h-3 rounded-full bg-paper">
                 <span class="absolute inset-y-[-3px] start-1/2 w-px bg-ink-2/40" />

@@ -51,7 +51,7 @@ const upload = (e) => {
                 <option v-for="y in [year - 1, year, year + 1]" :key="y" :value="y">{{ y }}</option>
             </select>
             <template v-if="canManage">
-                <a :href="`/budgets/template?year=${year}`" class="flex items-center gap-2 rounded-xl border border-line bg-white px-3 py-2 text-[13px] font-semibold text-navy hover:border-coral/40">
+                <a :href="`/budgets/template?year=${year}`" class="flex items-center gap-2 rounded-xl border border-line bg-surface px-3 py-2 text-[13px] font-semibold text-ink hover:border-coral/40">
                     <Icon name="table" :size="15" class="text-coral" />{{ t('Download template') }}
                 </a>
                 <button type="button" class="btn-coral !py-2 text-[13px]" :disabled="form.processing" @click="pick"><Icon name="inbox" :size="15" />{{ t('Upload budget') }}</button>
@@ -99,15 +99,15 @@ const upload = (e) => {
                     </tr></thead>
                     <tbody>
                         <tr v-for="h in hotels" :key="h.id" class="border-t border-line">
-                            <td class="sticky start-0 bg-white px-4 py-2.5 font-bold text-navy">{{ name(h) }}<div class="text-[11px] font-normal text-muted" dir="ltr">{{ h.code }}</div></td>
+                            <td class="sticky start-0 bg-surface px-4 py-2.5 font-bold text-ink">{{ name(h) }}<div class="text-[11px] font-normal text-muted" dir="ltr">{{ h.code }}</div></td>
                             <td v-for="m in months" :key="m" class="px-2 py-2.5 text-end">
                                 <template v-if="cell(h.id, m)">
-                                    <bdi class="block font-semibold text-navy">{{ compact(cell(h.id, m).total_revenue) }}</bdi>
+                                    <bdi class="block font-semibold text-ink">{{ compact(cell(h.id, m).total_revenue) }}</bdi>
                                     <bdi class="block text-[11px] text-muted">{{ pct(occ(h, cell(h.id, m))) }}</bdi>
                                 </template>
                                 <span v-else class="text-muted">–</span>
                             </td>
-                            <td class="bg-coral-tint/50 px-3 text-end font-semibold text-navy tabular"><bdi>{{ compact(hotelYear(h)) }}</bdi></td>
+                            <td class="bg-coral-tint/50 px-3 text-end font-semibold text-ink tabular"><bdi>{{ compact(hotelYear(h)) }}</bdi></td>
                         </tr>
                     </tbody>
                 </table>

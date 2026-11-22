@@ -73,5 +73,6 @@ Route::middleware(['auth', 'group'])->group(function () {
     Route::redirect('/financials', '/trial-balance');
 
     Route::post('/groups/{group}/switch', [PreferencesController::class, 'switchGroup']);
+    Route::post('/preferences/theme', [PreferencesController::class, 'theme']);
     Route::post('/logout', [SessionController::class, 'destroy'])->name('logout');
 });

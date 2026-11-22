@@ -41,11 +41,11 @@ const ICON = { owner: 'shield', finance: 'scale', operations: 'flash', viewer: '
                 <div class="flex items-center gap-3">
                     <span class="grid size-10 place-items-center rounded-xl" :class="r.fixed ? 'bg-navy text-white' : 'bg-coral-tint text-coral'"><Icon :name="ICON[r.key] ?? 'user'" :size="18" /></span>
                     <div class="min-w-0 flex-1">
-                        <div class="font-bold text-navy">{{ t(`role_${r.key}`) }}</div>
+                        <div class="font-bold text-ink">{{ t(`role_${r.key}`) }}</div>
                         <div class="text-xs whitespace-nowrap text-muted">{{ t(':n people', { n: r.members }) }}</div>
                     </div>
                     <span v-if="r.fixed" class="chip bg-paper !py-0.5 text-[10px] text-ink-2"><Icon name="lock" :size="10" />{{ t('Fixed') }}</span>
-                    <span v-else-if="r.customized" class="chip bg-peach-tint !py-0.5 text-[10px] text-[#a65b37]">{{ t('Customised') }}</span>
+                    <span v-else-if="r.customized" class="chip bg-peach-tint !py-0.5 text-[10px] text-peach-ink">{{ t('Customised') }}</span>
                 </div>
                 <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-paper">
                     <div class="h-full rounded-full bg-coral transition-all" :style="{ width: `${(100 * (draft[r.key]?.length ?? 0)) / total}%` }" />
@@ -61,25 +61,25 @@ const ICON = { owner: 'shield', finance: 'scale', operations: 'flash', viewer: '
                     <thead>
                         <tr class="bg-paper">
                             <th class="px-5 py-3 text-start text-[11px] font-bold tracking-wider text-ink-2 uppercase rtl:tracking-normal">{{ t('Permission') }}</th>
-                            <th v-for="r in roles" :key="r.key" class="w-32 px-3 py-3 text-center text-xs font-bold text-navy">{{ t(`role_${r.key}`) }}</th>
+                            <th v-for="r in roles" :key="r.key" class="w-32 px-3 py-3 text-center text-xs font-bold text-ink">{{ t(`role_${r.key}`) }}</th>
                         </tr>
                     </thead>
                     <tbody v-for="c in categories" :key="c.label">
-                        <tr><td :colspan="roles.length + 1" class="border-t border-line bg-white px-5 pt-4 pb-1.5 text-[11px] font-bold tracking-[0.14em] text-coral uppercase rtl:tracking-normal">{{ t(c.label) }}</td></tr>
+                        <tr><td :colspan="roles.length + 1" class="border-t border-line bg-surface px-5 pt-4 pb-1.5 text-[11px] font-bold tracking-[0.14em] text-coral uppercase rtl:tracking-normal">{{ t(c.label) }}</td></tr>
                         <tr v-for="p in c.permissions" :key="p.key" class="hover:bg-paper/50">
                             <td class="px-5 py-2.5">
-                                <div class="font-semibold text-navy first-letter:uppercase">{{ t(`perm_${p.key}`) }}</div>
+                                <div class="font-semibold text-ink first-letter:uppercase">{{ t(`perm_${p.key}`) }}</div>
                                 <div class="text-xs text-muted">{{ t(p.description) }}</div>
                             </td>
                             <td v-for="r in roles" :key="r.key" class="px-3 py-2.5 text-center">
                                 <button type="button" role="checkbox" :aria-checked="has(r, p.key)" :aria-label="`${t(`role_${r.key}`)} · ${t(`perm_${p.key}`)}`"
                                         :disabled="r.fixed || !canEdit"
                                         class="relative inline-grid size-7 place-items-center rounded-lg border-2 transition"
-                                        :class="[has(r, p.key) ? (r.fixed ? 'border-navy/30 bg-navy/80 text-white' : 'border-coral bg-coral text-white') : 'border-line bg-white text-transparent',
+                                        :class="[has(r, p.key) ? (r.fixed ? 'border-navy/30 bg-navy/80 text-white' : 'border-coral bg-coral text-white') : 'border-line bg-surface text-transparent',
                                                  !r.fixed && canEdit && 'hover:border-coral/60', (r.fixed || !canEdit) && 'cursor-default']"
                                         @click="toggle(r, p.key)">
                                     <Icon name="check" :size="14" />
-                                    <span v-if="!r.fixed && has(r, p.key) !== isDefault(r, p.key)" class="absolute -end-1 -top-1 size-2.5 rounded-full border-2 border-white bg-peach" :title="t('Changed from the default')" />
+                                    <span v-if="!r.fixed && has(r, p.key) !== isDefault(r, p.key)" class="absolute -end-1 -top-1 size-2.5 rounded-full border-2 border-surface bg-peach" :title="t('Changed from the default')" />
                                 </button>
                             </td>
                         </tr>
@@ -92,7 +92,7 @@ const ICON = { owner: 'shield', finance: 'scale', operations: 'flash', viewer: '
                             <td v-for="r in roles" :key="r.key" class="px-2 py-3 text-center">
                                 <template v-if="!r.fixed">
                                     <button v-if="dirty(r)" type="button" class="rounded-lg bg-coral px-3 py-1.5 text-xs font-bold text-white hover:bg-coral-dark" @click="save(r)">{{ t('Save') }}</button>
-                                    <button v-else-if="r.customized" type="button" class="rounded-lg px-2 py-1.5 text-[11px] font-bold text-ink-2 hover:bg-white hover:text-navy" @click="reset(r)">{{ t('Reset to default') }}</button>
+                                    <button v-else-if="r.customized" type="button" class="rounded-lg px-2 py-1.5 text-[11px] font-bold text-ink-2 hover:bg-surface hover:text-ink" @click="reset(r)">{{ t('Reset to default') }}</button>
                                 </template>
                             </td>
                         </tr>

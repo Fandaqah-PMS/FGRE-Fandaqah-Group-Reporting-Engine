@@ -4,9 +4,16 @@ import { Link, useForm } from '@inertiajs/vue3';
 import SettingsShell from '../../Components/Settings/SettingsShell.vue';
 import Icon from '../../Components/Icon.vue';
 import { useI18n } from '../../lib/i18n';
+import { setTheme, themePref } from '../../lib/theme';
 
 const props = defineProps({ profile: Object, memberships: Array, subscriptionCount: Number });
 const { t, name, locale } = useI18n();
+
+const THEMES = [
+    { key: 'light', icon: 'sun', label: 'Light', text: 'Warm paper and white cards.' },
+    { key: 'dark', icon: 'moon', label: 'Dark', text: 'Deep navy, easy on the eyes at night.' },
+    { key: 'system', icon: 'monitor', label: 'System', text: 'Follows your device setting.' },
+];
 
 const details = useForm({ name: props.profile.name, email: props.profile.email, locale: props.profile.locale, current_password: '' });
 const emailChanged = computed(() => details.email.trim().toLowerCase() !== props.profile.email.toLowerCase());
@@ -33,9 +40,9 @@ const lastLogin = computed(() => (props.profile.last_login_at
         <section class="card rise relative overflow-hidden p-6">
             <div class="brand-pattern pointer-events-none absolute inset-y-0 end-0 w-1/3 opacity-[0.06]" />
             <div class="relative flex flex-wrap items-center gap-4">
-                <span class="grid size-16 place-items-center rounded-2xl bg-peach font-display text-2xl font-semibold text-navy">{{ initials }}</span>
+                <span class="grid size-16 place-items-center rounded-2xl bg-peach font-display text-2xl font-semibold text-on-peach">{{ initials }}</span>
                 <div class="min-w-0">
-                    <div class="font-display text-xl font-semibold text-navy">{{ profile.name }}</div>
+                    <div class="font-display text-xl font-semibold text-ink">{{ profile.name }}</div>
                     <div class="text-sm text-ink-2" dir="ltr">{{ profile.email }}</div>
                     <div v-if="lastLogin" class="mt-1 text-xs text-muted">{{ t('Last sign-in') }} <bdi>{{ lastLogin }}</bdi></div>
                 </div>
@@ -48,22 +55,22 @@ const lastLogin = computed(() => (props.profile.last_login_at
             <p class="card-sub mb-5">{{ t('Changing your email changes how you sign in.') }}</p>
             <div class="grid gap-4 sm:grid-cols-2">
                 <label class="block">
-                    <span class="mb-1.5 block text-[13px] font-bold text-navy">{{ t('Full name') }}</span>
+                    <span class="mb-1.5 block text-[13px] font-bold text-ink">{{ t('Full name') }}</span>
                     <input v-model="details.name" class="field" required maxlength="120" autocomplete="name" />
                     <span v-if="details.errors.name" class="mt-1 block text-xs font-semibold text-danger">{{ details.errors.name }}</span>
                 </label>
                 <label class="block">
-                    <span class="mb-1.5 block text-[13px] font-bold text-navy">{{ t('Email') }}</span>
+                    <span class="mb-1.5 block text-[13px] font-bold text-ink">{{ t('Email') }}</span>
                     <input v-model="details.email" type="email" class="field" required dir="ltr" autocomplete="email" />
                     <span v-if="details.errors.email" class="mt-1 block text-xs font-semibold text-danger">{{ details.errors.email }}</span>
                 </label>
                 <label v-if="emailChanged" class="block sm:col-span-2">
-                    <span class="mb-1.5 block text-[13px] font-bold text-navy">{{ t('Current password, to confirm the new email') }}</span>
+                    <span class="mb-1.5 block text-[13px] font-bold text-ink">{{ t('Current password, to confirm the new email') }}</span>
                     <input v-model="details.current_password" type="password" class="field sm:max-w-sm" dir="ltr" autocomplete="current-password" />
                     <span v-if="details.errors.current_password" class="mt-1 block text-xs font-semibold text-danger">{{ details.errors.current_password }}</span>
                 </label>
                 <div class="sm:col-span-2">
-                    <span class="mb-1.5 block text-[13px] font-bold text-navy">{{ t('Language') }}</span>
+                    <span class="mb-1.5 block text-[13px] font-bold text-ink">{{ t('Language') }}</span>
                     <div class="seg w-fit" role="radiogroup">
                         <button type="button" role="radio" :aria-checked="details.locale === 'ar'" :aria-pressed="details.locale === 'ar'" @click="details.locale = 'ar'">العربية</button>
                         <button type="button" role="radio" :aria-checked="details.locale === 'en'" :aria-pressed="details.locale === 'en'" @click="details.locale = 'en'">English</button>
@@ -76,6 +83,42 @@ const lastLogin = computed(() => (props.profile.last_login_at
             </div>
         </form>
 
+        <!-- Appearance -->
+        <section class="card rise p-6">
+            <h3 class="card-title">{{ t('Appearance') }}</h3>
+            <p class="card-sub mb-5">{{ t('Saved on your account, so every device follows it.') }}</p>
+            <div class="grid gap-3 sm:grid-cols-3" role="radiogroup" :aria-label="t('Theme')">
+                <button v-for="o in THEMES" :key="o.key" type="button" role="radio" :aria-checked="themePref === o.key"
+                        class="group relative overflow-hidden rounded-2xl border-2 p-3 text-start transition"
+                        :class="themePref === o.key ? 'border-coral' : 'border-line hover:border-muted/60'" @click="setTheme(o.key, true)">
+                    <!-- mini preview -->
+                    <div class="flex h-24 overflow-hidden rounded-xl ring-1 ring-black/5" aria-hidden="true">
+                        <template v-for="mode in (o.key === 'system' ? ['light', 'dark'] : [o.key])" :key="mode">
+                            <div class="flex flex-1" :class="mode === 'dark' ? 'bg-[#0e1320]' : 'bg-[#f8f7f4]'">
+                                <div class="w-1/4 border-e" :class="mode === 'dark' ? 'border-[#263046] bg-[#161c2b]' : 'border-[#ece9e3] bg-white'">
+                                    <div class="m-1.5 h-2 rounded-full bg-[#f15f5a]" />
+                                    <div class="mx-1.5 mt-1 h-1.5 rounded-full" :class="mode === 'dark' ? 'bg-[#263046]' : 'bg-[#ece9e3]'" />
+                                    <div class="mx-1.5 mt-1 h-1.5 rounded-full" :class="mode === 'dark' ? 'bg-[#263046]' : 'bg-[#ece9e3]'" />
+                                </div>
+                                <div class="flex-1 space-y-1.5 p-2">
+                                    <div class="h-6 rounded-md" :class="mode === 'dark' ? 'bg-[#33415f]' : 'bg-[#262e43]'" />
+                                    <div class="flex gap-1.5">
+                                        <div class="h-8 flex-1 rounded-md" :class="mode === 'dark' ? 'bg-[#161c2b]' : 'bg-white'" />
+                                        <div class="h-8 flex-1 rounded-md" :class="mode === 'dark' ? 'bg-[#161c2b]' : 'bg-white'" />
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                    <div class="mt-3 flex items-center gap-2 font-bold text-ink">
+                        <Icon :name="o.icon" :size="16" :class="themePref === o.key ? 'text-coral' : 'text-muted'" />{{ t(o.label) }}
+                    </div>
+                    <div class="mt-0.5 text-xs text-ink-2">{{ t(o.text) }}</div>
+                    <Icon v-if="themePref === o.key" name="check" :size="16" class="absolute end-4 top-4 rounded-full bg-coral p-0.5 text-white" />
+                </button>
+            </div>
+        </section>
+
         <!-- Password -->
         <form class="card rise p-6" @submit.prevent="savePassword">
             <div class="flex items-center gap-3">
@@ -87,17 +130,17 @@ const lastLogin = computed(() => (props.profile.last_login_at
             </div>
             <div class="mt-5 grid gap-4 sm:grid-cols-3">
                 <label class="block">
-                    <span class="mb-1.5 block text-[13px] font-bold text-navy">{{ t('Current password') }}</span>
+                    <span class="mb-1.5 block text-[13px] font-bold text-ink">{{ t('Current password') }}</span>
                     <input v-model="pw.current_password" type="password" class="field" required dir="ltr" autocomplete="current-password" />
                     <span v-if="pw.errors.current_password" class="mt-1 block text-xs font-semibold text-danger">{{ pw.errors.current_password }}</span>
                 </label>
                 <label class="block">
-                    <span class="mb-1.5 block text-[13px] font-bold text-navy">{{ t('New password') }}</span>
+                    <span class="mb-1.5 block text-[13px] font-bold text-ink">{{ t('New password') }}</span>
                     <input v-model="pw.password" type="password" class="field" required dir="ltr" autocomplete="new-password" />
                     <span v-if="pw.errors.password" class="mt-1 block text-xs font-semibold text-danger">{{ pw.errors.password }}</span>
                 </label>
                 <label class="block">
-                    <span class="mb-1.5 block text-[13px] font-bold text-navy">{{ t('Confirm new password') }}</span>
+                    <span class="mb-1.5 block text-[13px] font-bold text-ink">{{ t('Confirm new password') }}</span>
                     <input v-model="pw.password_confirmation" type="password" class="field" required dir="ltr" autocomplete="new-password" />
                 </label>
             </div>
@@ -118,7 +161,7 @@ const lastLogin = computed(() => (props.profile.last_login_at
             <ul class="divide-y divide-line">
                 <li v-for="m in memberships" :key="m.id" class="flex flex-wrap items-center gap-3 py-3">
                     <Icon name="layers" :size="17" class="text-coral" />
-                    <span class="flex-1 font-bold text-navy">{{ name(m) }}</span>
+                    <span class="flex-1 font-bold text-ink">{{ name(m) }}</span>
                     <span class="chip bg-navy text-white">{{ t(`role_${m.role}`) }}</span>
                     <span class="chip bg-paper text-ink-2">{{ m.hotels === null ? t('All hotels') : t(':n hotels', { n: m.hotels }) }}</span>
                 </li>

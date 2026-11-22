@@ -52,7 +52,7 @@ const hotelBalance = computed(() => ['guest', 'ar', 'deposit'].reduce((s, k) => 
     <PageHeader :eyebrow="t('Reports / Front office')" :title="t('Front Office Ledgers')">
         <template #subtitle>
             <Icon :name="scopeHotel ? 'building' : 'layers'" :size="15" class="text-coral" />
-            <b class="text-navy">{{ scopeHotel ? name(scopeHotel) : t('All hotels, consolidated') }}</b>
+            <b class="text-ink">{{ scopeHotel ? name(scopeHotel) : t('All hotels, consolidated') }}</b>
             <template v-if="date"><span class="text-muted">·</span>{{ t('Balance today from the night-audit trial balance') }} <bdi class="tabular">{{ date }}</bdi></template>
         </template>
         <template #actions>
@@ -96,7 +96,7 @@ const hotelBalance = computed(() => ['guest', 'ar', 'deposit'].reduce((s, k) => 
                     </tr></thead>
                     <tbody>
                         <tr v-for="r in rows" :key="r.id">
-                            <td><Link :href="`/hotels/${r.id}`" class="font-bold text-navy hover:text-coral">{{ name(r) }}</Link></td>
+                            <td><Link :href="`/hotels/${r.id}`" class="font-bold text-ink hover:text-coral">{{ name(r) }}</Link></td>
                             <td v-for="l in ledgers" :key="l.key" class="text-end">
                                 <bdi>{{ bal(r[l.key]) }}</bdi>
                                 <div class="text-xs text-muted">{{ t('Yesterday') }} <bdi>{{ bal(r.opening[l.key]) }}</bdi></div>
@@ -120,7 +120,7 @@ const hotelBalance = computed(() => ['guest', 'ar', 'deposit'].reduce((s, k) => 
         <template v-if="folios">
             <div class="pt-4">
                 <div class="eyebrow">{{ t('Guest trial balance') }}</div>
-                <h2 class="mt-1 font-display text-2xl font-semibold text-navy">{{ t('Guest folios') }}</h2>
+                <h2 class="mt-1 font-display text-2xl font-semibold text-ink">{{ t('Guest folios') }}</h2>
                 <p class="text-sm text-ink-2">{{ t('What each guest and company account owes at night audit.') }}</p>
             </div>
             <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -138,7 +138,7 @@ const hotelBalance = computed(() => ['guest', 'ar', 'deposit'].reduce((s, k) => 
                     <ul class="space-y-4">
                         <li v-for="h in folios.hotels" :key="h.id">
                             <div class="flex items-baseline justify-between gap-2 text-sm">
-                                <span class="truncate font-bold text-navy">{{ name(h) }}</span>
+                                <span class="truncate font-bold text-ink">{{ name(h) }}</span>
                                 <bdi class="font-medium tabular">{{ bal(h.owing) }}</bdi>
                             </div>
                             <div class="mt-1.5 flex h-2.5 gap-0.5 overflow-hidden rounded-full bg-paper">
@@ -175,7 +175,7 @@ const hotelBalance = computed(() => ['guest', 'ar', 'deposit'].reduce((s, k) => 
                             </tr></thead>
                             <tbody>
                                 <tr v-for="(f, i) in folioRows" :key="i">
-                                    <td class="font-bold text-navy"><bdi>{{ f.room ?? '–' }}</bdi></td>
+                                    <td class="font-bold text-ink"><bdi>{{ f.room ?? '–' }}</bdi></td>
                                     <td>
                                         <span v-if="f.unpaid" class="chip !px-2 !py-0.5 text-[11px] whitespace-nowrap bg-coral text-white"><Icon name="alert" :size="11" />{{ t('Left unpaid') }}</span>
                                         <span v-else-if="f.balance < 0" class="chip !px-2 !py-0.5 text-[11px] whitespace-nowrap bg-neutral text-ink-2">{{ t('In credit') }}</span>
@@ -187,7 +187,7 @@ const hotelBalance = computed(() => ['guest', 'ar', 'deposit'].reduce((s, k) => 
                                     <td class="text-xs whitespace-nowrap text-ink-2"><bdi>{{ stay(f) }}</bdi></td>
                                     <td class="text-end"><bdi>{{ money(f.charges, 0) }}</bdi></td>
                                     <td class="text-end"><bdi>{{ money(f.payments, 0) }}</bdi></td>
-                                    <td class="text-end font-semibold" :class="f.balance < 0 ? 'text-ink-2' : 'text-navy'"><bdi>{{ bal(f.balance) }}</bdi></td>
+                                    <td class="text-end font-semibold" :class="f.balance < 0 ? 'text-ink-2' : 'text-ink'"><bdi>{{ bal(f.balance) }}</bdi></td>
                                 </tr>
                             </tbody>
                         </table>

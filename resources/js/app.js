@@ -1,6 +1,7 @@
 import { createApp, h } from 'vue';
 import { createInertiaApp } from '@inertiajs/vue3';
 import AppLayout from './Layouts/AppLayout.vue';
+import { initTheme } from './lib/theme';
 
 createInertiaApp({
     title: (title) => (title ? `${title} · FGRE` : 'FGRE · Fandaqah Group Reporting'),
@@ -12,6 +13,7 @@ createInertiaApp({
         return page;
     },
     setup({ el, App, props, plugin }) {
+        initTheme(props.initialPage.props.auth?.user?.theme);
         createApp({ render: () => h(App, props) }).use(plugin).mount(el);
     },
     progress: { color: '#F15F5A' },

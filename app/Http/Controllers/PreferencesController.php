@@ -28,4 +28,13 @@ class PreferencesController extends Controller
 
         return back();
     }
+
+    /** Light / Dark / System, saved on the user so every device follows it. */
+    public function theme(Request $request): RedirectResponse
+    {
+        $theme = $request->validate(['theme' => ['required', Rule::in(['light', 'dark', 'system'])]])['theme'];
+        $request->user()->forceFill(['theme' => $theme])->save();
+
+        return back();
+    }
 }

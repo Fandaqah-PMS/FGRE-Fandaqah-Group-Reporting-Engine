@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 /**
  * Settings: per-group role permissions (override config/fgre_permissions.php),
- * an audit log of administrative changes, and the user's last sign-in.
+ * an audit log of administrative changes, the user's last sign-in and theme.
  */
 return new class extends Migration
 {
@@ -44,12 +44,13 @@ return new class extends Migration
 
         Schema::table('users', function (Blueprint $table) {
             $table->timestamp('last_login_at')->nullable()->after('locale');
+            $table->string('theme', 6)->default('system')->after('locale')->comment('light | dark | system');
         });
     }
 
     public function down(): void
     {
-        Schema::table('users', fn (Blueprint $table) => $table->dropColumn('last_login_at'));
+        Schema::table('users', fn (Blueprint $table) => $table->dropColumn(['last_login_at', 'theme']));
         Schema::dropIfExists('user_invite_tokens');
         Schema::dropIfExists('audit_logs');
         Schema::dropIfExists('group_roles');

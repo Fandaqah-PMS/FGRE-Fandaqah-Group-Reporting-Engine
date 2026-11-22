@@ -14,7 +14,7 @@ const hotels = computed(() => page.props.scope?.hotels ?? []);
 const ROLE = {
     owner: { icon: 'shield', text: 'Everything, including users, roles and settings.', cls: 'bg-navy text-white' },
     finance: { icon: 'scale', text: 'Reports and financials, budgets, review queue.', cls: 'bg-coral-tint text-coral-dark' },
-    operations: { icon: 'flash', text: 'Reports, exports and uploads.', cls: 'bg-peach-tint text-[#a65b37]' },
+    operations: { icon: 'flash', text: 'Reports, exports and uploads.', cls: 'bg-peach-tint text-peach-ink' },
     viewer: { icon: 'grid', text: 'Dashboard and reports, read only.', cls: 'bg-paper text-ink-2' },
 };
 
@@ -70,7 +70,7 @@ const remove = (m) => {
                     :class="roleFilter === r && '!border-coral ring-2 ring-coral/15'" @click="roleFilter = roleFilter === r ? 'all' : r">
                 <span class="grid size-10 shrink-0 place-items-center rounded-xl" :class="ROLE[r]?.cls"><Icon :name="ROLE[r]?.icon ?? 'user'" :size="18" /></span>
                 <span class="min-w-0">
-                    <span class="block text-lg leading-tight font-semibold text-navy tabular">{{ count(r) }}</span>
+                    <span class="block text-lg leading-tight font-semibold text-ink tabular">{{ count(r) }}</span>
                     <span class="block truncate text-xs font-semibold text-ink-2">{{ t(`role_${r}`) }}</span>
                 </span>
             </button>
@@ -92,9 +92,9 @@ const remove = (m) => {
                         <tr v-for="m in shown" :key="m.id">
                             <td>
                                 <div class="flex items-center gap-3">
-                                    <span class="grid size-9 shrink-0 place-items-center rounded-xl bg-peach text-xs font-bold text-navy">{{ initials(m.name) }}</span>
+                                    <span class="grid size-9 shrink-0 place-items-center rounded-xl bg-peach text-xs font-bold text-on-peach">{{ initials(m.name) }}</span>
                                     <div class="min-w-0">
-                                        <div class="truncate font-bold text-navy">{{ m.name }} <span v-if="m.is_me" class="text-xs font-medium text-muted">({{ t('you') }})</span></div>
+                                        <div class="truncate font-bold text-ink">{{ m.name }} <span v-if="m.is_me" class="text-xs font-medium text-muted">({{ t('you') }})</span></div>
                                         <div class="truncate text-xs text-ink-2" dir="ltr">{{ m.email }}</div>
                                     </div>
                                 </div>
@@ -103,12 +103,12 @@ const remove = (m) => {
                             <td class="max-w-[16rem] text-sm text-ink-2"><span class="line-clamp-2">{{ hotelNames(m) }}</span></td>
                             <td class="text-sm whitespace-nowrap">
                                 <bdi v-if="m.last_login_at" class="text-ink-2">{{ fmt(m.last_login_at) }}</bdi>
-                                <span v-else class="chip bg-peach-tint !py-0.5 text-[11px] text-[#a65b37]"><Icon name="mail" :size="11" />{{ t('Invitation pending') }}</span>
+                                <span v-else class="chip bg-peach-tint !py-0.5 text-[11px] text-peach-ink"><Icon name="mail" :size="11" />{{ t('Invitation pending') }}</span>
                             </td>
                             <td>
                                 <div v-if="!m.is_me" class="flex items-center justify-end gap-1">
-                                    <button v-if="!m.last_login_at" type="button" class="rounded-lg px-2 py-1.5 text-xs font-bold whitespace-nowrap text-ink-2 hover:bg-paper hover:text-navy" @click="resend(m)">{{ t('Resend invitation') }}</button>
-                                    <button type="button" class="rounded-lg p-1.5 text-ink-2 hover:bg-paper hover:text-navy" :aria-label="t('Edit')" :title="t('Edit')" @click="openDialog(m)"><Icon name="edit" :size="16" /></button>
+                                    <button v-if="!m.last_login_at" type="button" class="rounded-lg px-2 py-1.5 text-xs font-bold whitespace-nowrap text-ink-2 hover:bg-paper hover:text-ink" @click="resend(m)">{{ t('Resend invitation') }}</button>
+                                    <button type="button" class="rounded-lg p-1.5 text-ink-2 hover:bg-paper hover:text-ink" :aria-label="t('Edit')" :title="t('Edit')" @click="openDialog(m)"><Icon name="edit" :size="16" /></button>
                                     <button type="button" class="rounded-lg p-1.5 text-muted hover:bg-coral-tint hover:text-coral-dark" :aria-label="t('Remove')" :title="t('Remove')" @click="remove(m)"><Icon name="trash" :size="16" /></button>
                                 </div>
                             </td>
@@ -125,12 +125,12 @@ const remove = (m) => {
             <form id="user-form" class="space-y-6" @submit.prevent="submit">
                 <div v-if="!dialog.member" class="grid gap-4 sm:grid-cols-2">
                     <label class="block">
-                        <span class="mb-1.5 block text-[13px] font-bold text-navy">{{ t('Full name') }}</span>
+                        <span class="mb-1.5 block text-[13px] font-bold text-ink">{{ t('Full name') }}</span>
                         <input v-model="form.name" class="field" required maxlength="120" />
                         <span v-if="form.errors.name" class="mt-1 block text-xs font-semibold text-danger">{{ form.errors.name }}</span>
                     </label>
                     <label class="block">
-                        <span class="mb-1.5 block text-[13px] font-bold text-navy">{{ t('Email') }}</span>
+                        <span class="mb-1.5 block text-[13px] font-bold text-ink">{{ t('Email') }}</span>
                         <input v-model="form.email" type="email" class="field" required dir="ltr" />
                         <span v-if="form.errors.email" class="mt-1 block text-xs font-semibold text-danger">{{ form.errors.email }}</span>
                     </label>
@@ -144,7 +144,7 @@ const remove = (m) => {
                             <input v-model="form.role" type="radio" :value="r" class="sr-only" :disabled="roleLocked(r)" />
                             <span class="grid size-9 shrink-0 place-items-center rounded-xl" :class="ROLE[r]?.cls"><Icon :name="ROLE[r]?.icon ?? 'user'" :size="17" /></span>
                             <span>
-                                <span class="block font-bold text-navy">{{ t(`role_${r}`) }}</span>
+                                <span class="block font-bold text-ink">{{ t(`role_${r}`) }}</span>
                                 <span class="mt-0.5 block text-xs text-ink-2">{{ t(ROLE[r]?.text ?? '') }}</span>
                             </span>
                             <Icon v-if="form.role === r" name="check" :size="16" class="absolute end-3 top-3 text-coral" />

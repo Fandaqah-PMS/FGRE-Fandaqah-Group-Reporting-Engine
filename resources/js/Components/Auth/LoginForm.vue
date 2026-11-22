@@ -15,7 +15,7 @@ const submit = () => form.post('/login', { onFinish: () => form.reset('password'
 <template>
     <form class="space-y-5" @submit.prevent="submit">
         <div>
-            <label class="mb-2 block text-[13px] font-bold text-navy" for="email">{{ t('Email') }}</label>
+            <label class="mb-2 block text-[13px] font-bold text-ink" for="email">{{ t('Email') }}</label>
             <div class="relative">
                 <Icon name="mail" :size="18" class="pointer-events-none absolute start-3.5 top-1/2 -translate-y-1/2 text-muted" />
                 <input id="email" v-model="form.email" type="email" autocomplete="username" required autofocus dir="ltr"
@@ -24,7 +24,7 @@ const submit = () => form.post('/login', { onFinish: () => form.reset('password'
         </div>
         <div>
             <div class="mb-2 flex items-center justify-between">
-                <label class="text-[13px] font-bold text-navy" for="password">{{ t('Password') }}</label>
+                <label class="text-[13px] font-bold text-ink" for="password">{{ t('Password') }}</label>
                 <Link href="/forgot-password" class="text-xs font-bold text-coral hover:underline">{{ t('Forgot password?') }}</Link>
             </div>
             <div class="relative">

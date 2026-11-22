@@ -74,19 +74,19 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', onDoc));
         </div>
 
         <div v-if="hotels.length > 1 && view !== 'focus'" class="relative">
-            <button type="button" class="flex items-center gap-2 rounded-xl border border-line bg-white px-3 py-2 text-[13px] font-semibold text-navy hover:border-coral/40" @click="pickerOpen = !pickerOpen">
+            <button type="button" class="flex items-center gap-2 rounded-xl border border-line bg-surface px-3 py-2 text-[13px] font-semibold text-ink hover:border-coral/40" @click="pickerOpen = !pickerOpen">
                 <Icon name="building" :size="15" class="text-coral" />{{ pickerLabel }}<Icon name="chevron" :size="14" class="text-muted" />
             </button>
-            <div v-if="pickerOpen" class="rise absolute start-0 top-full z-40 mt-2 w-72 rounded-2xl border border-line bg-white p-2 shadow-2xl">
-                <button type="button" class="w-full rounded-lg px-3 py-2 text-start text-sm font-bold text-navy hover:bg-paper" @click="applyHotels(hotels.map((h) => h.id))">{{ t('All hotels') }}</button>
+            <div v-if="pickerOpen" class="rise absolute start-0 top-full z-40 mt-2 w-72 rounded-2xl border border-line bg-surface p-2 shadow-2xl">
+                <button type="button" class="w-full rounded-lg px-3 py-2 text-start text-sm font-bold text-ink hover:bg-paper" @click="applyHotels(hotels.map((h) => h.id))">{{ t('All hotels') }}</button>
                 <template v-if="regions.length > 1">
                     <div class="px-3 pt-2 pb-1 text-[10px] font-bold tracking-wider text-muted uppercase">{{ t('Hotel sets') }}</div>
-                    <button v-for="[region, ids] in regions" :key="region" type="button" class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-start text-sm text-navy hover:bg-paper" @click="applyHotels(ids)">
+                    <button v-for="[region, ids] in regions" :key="region" type="button" class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-start text-sm text-ink hover:bg-paper" @click="applyHotels(ids)">
                         <span class="font-semibold">{{ t(region) }}</span><span class="text-xs text-muted">{{ ids.length }}</span>
                     </button>
                 </template>
                 <div class="px-3 pt-2 pb-1 text-[10px] font-bold tracking-wider text-muted uppercase">{{ t('Pick hotels') }}</div>
-                <label v-for="h in hotels" :key="h.id" class="flex cursor-pointer items-center gap-2.5 rounded-lg px-3 py-1.5 text-sm text-navy hover:bg-paper">
+                <label v-for="h in hotels" :key="h.id" class="flex cursor-pointer items-center gap-2.5 rounded-lg px-3 py-1.5 text-sm text-ink hover:bg-paper">
                     <input type="checkbox" class="size-4 accent-coral" :checked="chosen.has(h.id)" @change="toggle(h.id)" />{{ name(h) }}
                 </label>
                 <button type="button" class="btn-coral mt-2 w-full !py-2 text-sm" :disabled="chosen.size === 0" @click="applyHotels([...chosen])">{{ t('Apply') }}</button>
@@ -94,12 +94,12 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', onDoc));
         </div>
 
         <div v-if="canExport" class="relative ms-auto">
-            <button type="button" class="flex items-center gap-2 rounded-xl border border-line bg-white px-3 py-2 text-[13px] font-semibold text-navy hover:border-coral/40" @click="exportOpen = !exportOpen">
+            <button type="button" class="flex items-center gap-2 rounded-xl border border-line bg-surface px-3 py-2 text-[13px] font-semibold text-ink hover:border-coral/40" @click="exportOpen = !exportOpen">
                 <Icon name="inbox" :size="15" class="rotate-180 text-coral" />{{ t('Export') }}
             </button>
-            <div v-if="exportOpen" class="rise absolute end-0 top-full z-40 mt-2 w-48 rounded-2xl border border-line bg-white p-1.5 shadow-2xl">
-                <button type="button" class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-navy hover:bg-paper" @click="exportOpen = false; emit('export')"><Icon name="table" :size="15" />{{ t('Excel (CSV)') }}</button>
-                <button type="button" class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-navy hover:bg-paper" @click="exportOpen = false; emit('print')"><Icon name="book" :size="15" />{{ t('PDF / print') }}</button>
+            <div v-if="exportOpen" class="rise absolute end-0 top-full z-40 mt-2 w-48 rounded-2xl border border-line bg-surface p-1.5 shadow-2xl">
+                <button type="button" class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-ink hover:bg-paper" @click="exportOpen = false; emit('export')"><Icon name="table" :size="15" />{{ t('Excel (CSV)') }}</button>
+                <button type="button" class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-ink hover:bg-paper" @click="exportOpen = false; emit('print')"><Icon name="book" :size="15" />{{ t('PDF / print') }}</button>
             </div>
         </div>
     </div>

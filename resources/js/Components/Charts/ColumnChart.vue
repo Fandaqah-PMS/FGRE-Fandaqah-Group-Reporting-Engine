@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue';
 import Legend from './Legend.vue';
 import AveragePill from './AveragePill.vue';
-import { AVERAGE, GRID, AXIS_TEXT } from '../../lib/palette';
+import { CHART } from '../../lib/palette';
 import { isNum } from '../../lib/format';
 import { niceTicks } from '../../lib/chart';
 import { useWidth } from '../../lib/useWidth';
@@ -57,7 +57,7 @@ const bar = (x, v) => {
 const tipLeft = computed(() => (active.value === null ? 0 : Math.min(width.value - 200, Math.max(0, gx(active.value) + groupW.value / 2 - 100))));
 const legend = computed(() => [
     ...props.series.map((s) => ({ label: s.label, color: s.color, kind: 'dot' })),
-    ...(avg.value !== null ? [{ label: t('Average'), color: AVERAGE, kind: 'dashed' }] : []),
+    ...(avg.value !== null ? [{ label: t('Average'), color: CHART.average, kind: 'dashed' }] : []),
 ]);
 </script>
 
@@ -70,30 +70,30 @@ const legend = computed(() => [
         <svg :width="width" :height="height" class="block" role="img" :aria-label="series.map((s) => s.label).join(', ')">
             <template v-if="!valueLabels">
                 <g v-for="tick in ticks" :key="tick">
-                    <line :x1="pad.left" :x2="width - pad.right" :y1="y(tick)" :y2="y(tick)" :stroke="GRID" stroke-dasharray="3 5" />
-                    <text :x="pad.left - 10" :y="y(tick)" text-anchor="end" dominant-baseline="middle" font-size="11" :fill="AXIS_TEXT">{{ format(tick, true) }}</text>
+                    <line :x1="pad.left" :x2="width - pad.right" :y1="y(tick)" :y2="y(tick)" :stroke="CHART.grid" stroke-dasharray="3 5" />
+                    <text :x="pad.left - 10" :y="y(tick)" text-anchor="end" dominant-baseline="middle" font-size="11" :fill="CHART.axisText">{{ format(tick, true) }}</text>
                 </g>
             </template>
-            <line :x1="pad.left" :x2="width - pad.right" :y1="base" :y2="base" :stroke="GRID" />
+            <line :x1="pad.left" :x2="width - pad.right" :y1="base" :y2="base" :stroke="CHART.grid" />
 
             <g v-for="(c, ci) in categories" :key="c.key" tabindex="0" class="outline-none"
                @pointerenter="active = ci" @pointerleave="active = null" @focus="active = ci" @blur="active = null">
-                <rect :x="pad.left + ci * band" :y="0" :width="band" :height="height - 4" :fill="active === ci ? '#F8F7F4' : 'transparent'" rx="10" />
+                <rect :x="pad.left + ci * band" :y="0" :width="band" :height="height - 4" :style="{ fill: active === ci ? 'var(--color-paper)' : 'transparent' }" rx="10" />
                 <path v-for="(s, si) in series" :key="s.key" :d="bar(gx(ci) + si * (barW + 3), values[c.key]?.[s.key])" :fill="s.color" />
                 <text v-if="valueLabels && isNum(values[c.key]?.[first])" :x="gx(ci) + barW / 2" :y="y(values[c.key][first]) - 7" text-anchor="middle"
-                      font-size="10.5" font-weight="600" :fill="AXIS_TEXT">{{ format(values[c.key][first], true) }}</text>
+                      font-size="10.5" font-weight="600" :fill="CHART.axisText">{{ format(values[c.key][first], true) }}</text>
                 <template v-if="ci % labelEvery === 0 || ci === categories.length - 1">
-                    <text :x="gx(ci) + groupW / 2" :y="base + 17" text-anchor="middle" font-size="11" :fill="AXIS_TEXT">{{ c.label }}</text>
-                    <text v-if="c.sub" :x="gx(ci) + groupW / 2" :y="base + 32" text-anchor="middle" font-size="11" font-weight="600" fill="#262E43">{{ c.sub }}</text>
+                    <text :x="gx(ci) + groupW / 2" :y="base + 17" text-anchor="middle" font-size="11" :fill="CHART.axisText">{{ c.label }}</text>
+                    <text v-if="c.sub" :x="gx(ci) + groupW / 2" :y="base + 32" text-anchor="middle" font-size="11" font-weight="600" class="fill-ink">{{ c.sub }}</text>
                 </template>
             </g>
-            <line v-if="avg !== null" :x1="pad.left" :x2="width - pad.right" :y1="y(avg)" :y2="y(avg)" :stroke="AVERAGE" stroke-width="1.5" stroke-dasharray="6 5" pointer-events="none" />
+            <line v-if="avg !== null" :x1="pad.left" :x2="width - pad.right" :y1="y(avg)" :y2="y(avg)" :stroke="CHART.average" stroke-width="1.5" stroke-dasharray="6 5" pointer-events="none" />
         </svg>
-        <div v-if="active !== null" role="tooltip" class="pointer-events-none absolute top-10 z-10 w-[200px] rounded-xl border border-line bg-white px-3 py-2.5 text-xs shadow-lg" :style="{ left: `${tipLeft}px` }">
+        <div v-if="active !== null" role="tooltip" class="pointer-events-none absolute top-10 z-10 w-[200px] rounded-xl border border-line bg-surface px-3 py-2.5 text-xs shadow-lg" :style="{ left: `${tipLeft}px` }">
             <div class="mb-1 font-semibold text-ink-2">{{ categories[active].tooltip ?? `${categories[active].label} ${categories[active].sub ?? ''}` }}</div>
             <div v-for="s in series" :key="s.key" class="flex items-center gap-2">
                 <span class="size-2 rounded-full" :style="{ background: s.color }" />
-                <b class="text-navy tabular">{{ format(values[categories[active].key]?.[s.key]) }}</b><span class="truncate text-muted">{{ s.label }}</span>
+                <b class="text-ink tabular">{{ format(values[categories[active].key]?.[s.key]) }}</b><span class="truncate text-muted">{{ s.label }}</span>
             </div>
         </div>
     </div>

@@ -72,7 +72,7 @@ function submit() {
     <Teleport to="body">
         <Transition enter-from-class="opacity-0" leave-to-class="opacity-0" enter-active-class="transition duration-200" leave-active-class="transition duration-150">
             <div v-if="open" class="fixed inset-0 z-50 flex items-end justify-center bg-navy/45 backdrop-blur-[2px] sm:items-center sm:p-6" @click.self="emit('close')" @keydown.esc="emit('close')">
-                <form class="flex max-h-[94vh] w-full max-w-5xl flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:rounded-3xl" role="dialog" aria-modal="true" :aria-label="t('Email this report')" @submit.prevent="submit">
+                <form class="flex max-h-[94vh] w-full max-w-5xl flex-col overflow-hidden rounded-t-3xl bg-surface shadow-2xl sm:rounded-3xl" role="dialog" aria-modal="true" :aria-label="t('Email this report')" @submit.prevent="submit">
                     <!-- Header -->
                     <div class="relative flex items-start gap-4 overflow-hidden bg-navy px-6 py-5 text-white">
                         <div class="brand-pattern pointer-events-none absolute inset-y-0 end-0 w-1/2 opacity-[0.08]" />
@@ -93,7 +93,7 @@ function submit() {
                                     <label v-for="f in FREQ" :key="f.key" class="group relative cursor-pointer rounded-2xl border-2 p-3.5 transition"
                                            :class="form.frequency === f.key ? 'border-coral bg-coral-tint/60' : 'border-line hover:border-muted/60'">
                                         <input v-model="form.frequency" type="radio" :value="f.key" class="sr-only" />
-                                        <span class="flex items-center gap-2 font-bold text-navy">
+                                        <span class="flex items-center gap-2 font-bold text-ink">
                                             <span class="grid size-8 place-items-center rounded-xl" :class="form.frequency === f.key ? 'bg-coral text-white' : 'bg-paper text-ink-2'"><Icon :name="f.icon" :size="16" /></span>
                                             {{ f.label }}
                                         </span>
@@ -134,11 +134,11 @@ function submit() {
                                     <label v-for="c in CONTENT" :key="c.key" class="relative cursor-pointer rounded-2xl border-2 p-3.5 transition"
                                            :class="form.content === c.key ? 'border-navy bg-paper' : 'border-line hover:border-muted/60'">
                                         <input v-model="form.content" type="radio" :value="c.key" class="sr-only" />
-                                        <span class="flex items-center gap-2 font-bold text-navy">
+                                        <span class="flex items-center gap-2 font-bold text-ink">
                                             <Icon :name="c.icon" :size="17" :class="form.content === c.key ? 'text-coral' : 'text-muted'" />{{ c.label }}
                                         </span>
                                         <span class="mt-1.5 block text-xs leading-relaxed text-ink-2">{{ c.text }}</span>
-                                        <Icon v-if="form.content === c.key" name="check" :size="16" class="absolute end-3 top-3 text-navy" />
+                                        <Icon v-if="form.content === c.key" name="check" :size="16" class="absolute end-3 top-3 text-ink" />
                                     </label>
                                 </div>
                             </fieldset>
@@ -163,7 +163,7 @@ function submit() {
 
                             <!-- Options -->
                             <div class="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-paper p-4">
-                                <label class="flex cursor-pointer items-center gap-3 text-sm font-semibold text-navy">
+                                <label class="flex cursor-pointer items-center gap-3 text-sm font-semibold text-ink">
                                     <span class="relative inline-flex h-6 w-11 shrink-0 rounded-full transition" :class="form.include_attention ? 'bg-coral' : 'bg-line'">
                                         <input v-model="form.include_attention" type="checkbox" class="peer sr-only" />
                                         <span class="absolute top-0.5 size-5 rounded-full bg-white shadow transition-all" :class="form.include_attention ? 'start-[1.375rem]' : 'start-0.5'" />
@@ -185,7 +185,7 @@ function submit() {
                     </div>
 
                     <!-- Footer -->
-                    <div class="flex flex-wrap items-center justify-end gap-2 border-t border-line bg-white px-6 py-4">
+                    <div class="flex flex-wrap items-center justify-end gap-2 border-t border-line bg-surface px-6 py-4">
                         <button type="button" class="rounded-xl px-4 py-2.5 text-sm font-bold text-ink-2 hover:bg-paper" @click="emit('close')">{{ t('Cancel') }}</button>
                         <button type="submit" class="btn-coral !py-2.5 text-sm" :disabled="form.processing || (hotels.length > 1 && !form.hotels.length)">
                             <Icon name="mail" :size="16" />{{ subscription ? t('Save') : t('Subscribe') }}

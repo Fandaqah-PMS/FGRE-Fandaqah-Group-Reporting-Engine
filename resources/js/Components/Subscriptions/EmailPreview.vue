@@ -16,10 +16,10 @@ const days = computed(() => (props.frequency === 'daily' ? [] : props.frequency 
 </script>
 
 <template>
-    <div class="overflow-hidden rounded-2xl border border-line bg-white text-[9px] shadow-sm" aria-hidden="true">
+    <div class="overflow-hidden rounded-2xl border border-line bg-surface text-[9px] shadow-sm" aria-hidden="true">
         <div class="bg-navy px-3 py-2.5">
             <div class="font-bold text-coral">{{ title }}</div>
-            <div class="mt-1 h-2 w-24 rounded bg-white/80" />
+            <div class="mt-1 h-2 w-24 rounded bg-surface/80" />
             <div class="mt-1 h-1.5 w-16 rounded bg-white/30" />
         </div>
         <div class="space-y-3 p-3">

@@ -15,7 +15,7 @@ const page = usePage();
 
 const STATUS = {
     critical: { label: 'Action needed', icon: 'alert', pill: 'bg-coral text-white', strip: 'bg-coral', tint: 'bg-coral-tint text-coral-dark', rank: 0 },
-    warning: { label: 'Watch', icon: 'trend', pill: 'bg-peach text-navy', strip: 'bg-peach', tint: 'bg-peach-tint text-[#b4643e]', rank: 1 },
+    warning: { label: 'Watch', icon: 'trend', pill: 'bg-peach text-on-peach', strip: 'bg-peach', tint: 'bg-peach-tint text-peach-ink', rank: 1 },
     info: { label: 'Note', icon: 'sparkles', pill: 'bg-neutral text-ink-2', strip: 'bg-muted/50', tint: 'bg-neutral text-ink-2', rank: 2 },
     ok: { label: 'On track', icon: 'check', pill: 'bg-success-tint text-success', strip: 'bg-success', tint: 'bg-success-tint text-success', rank: 3 },
 };
@@ -71,9 +71,9 @@ const shown = (c) => (expanded[c.hotel.id] ? c.issues : c.issues.slice(0, 3));
             </div>
             <div class="flex flex-wrap gap-2">
                 <div v-for="s in ['critical', 'warning', 'info', 'ok']" v-show="counts[s] || s === 'ok'" :key="s"
-                     class="flex items-center gap-2 rounded-xl border border-line bg-white py-1.5 ps-1.5 pe-3">
+                     class="flex items-center gap-2 rounded-xl border border-line bg-surface py-1.5 ps-1.5 pe-3">
                     <span class="grid size-7 place-items-center rounded-lg" :class="STATUS[s].pill"><Icon :name="STATUS[s].icon" :size="14" /></span>
-                    <span class="text-base leading-none font-semibold text-navy tabular">{{ counts[s] }}</span>
+                    <span class="text-base leading-none font-semibold text-ink tabular">{{ counts[s] }}</span>
                     <span class="text-xs font-semibold text-ink-2">{{ t(STATUS[s].label) }}</span>
                 </div>
             </div>
@@ -81,8 +81,8 @@ const shown = (c) => (expanded[c.hotel.id] ? c.issues : c.issues.slice(0, 3));
 
         <div class="space-y-4 bg-paper/50 p-4 sm:p-5">
             <!-- Group-level issues -->
-            <div v-if="groupIssues.length" class="rounded-2xl border border-line bg-white p-4">
-                <div class="mb-2 flex items-center gap-2 text-sm font-bold text-navy"><Icon name="layers" :size="16" class="text-coral" />{{ t('Group') }}</div>
+            <div v-if="groupIssues.length" class="rounded-2xl border border-line bg-surface p-4">
+                <div class="mb-2 flex items-center gap-2 text-sm font-bold text-ink"><Icon name="layers" :size="16" class="text-coral" />{{ t('Group') }}</div>
                 <Link v-for="(i, n) in groupIssues" :key="n" :href="href(i)" class="flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-paper">
                     <span class="grid size-8 shrink-0 place-items-center rounded-lg" :class="STATUS[i.level].tint"><Icon :name="ICON[i.type] ?? 'alert'" :size="15" /></span>
                     <span class="min-w-0 flex-1 text-sm text-ink-2">{{ msg(i) }}</span>
@@ -91,11 +91,11 @@ const shown = (c) => (expanded[c.hotel.id] ? c.issues : c.issues.slice(0, 3));
 
             <!-- Hotels with something to look at -->
             <div v-if="flagged.length" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                <article v-for="c in flagged" :key="c.hotel.id" class="relative flex flex-col overflow-hidden rounded-2xl border border-line bg-white transition hover:shadow-md">
+                <article v-for="c in flagged" :key="c.hotel.id" class="relative flex flex-col overflow-hidden rounded-2xl border border-line bg-surface transition hover:shadow-md">
                     <span class="absolute inset-x-0 top-0 h-1" :class="STATUS[c.status].strip" />
                     <header class="flex items-start justify-between gap-3 px-4 pt-4 pb-3">
                         <div class="min-w-0">
-                            <Link :href="`/manager-flash?view=focus&period=mtd&focus=${c.hotel.id}&date=${date}`" class="block truncate font-bold text-navy hover:text-coral">{{ name(c.hotel) }}</Link>
+                            <Link :href="`/manager-flash?view=focus&period=mtd&focus=${c.hotel.id}&date=${date}`" class="block truncate font-bold text-ink hover:text-coral">{{ name(c.hotel) }}</Link>
                             <div class="mt-0.5 text-[11px] text-muted">{{ c.hotel.pms }}<template v-if="c.hotel.rooms"> · {{ t(':n rooms', { n: c.hotel.rooms }) }}</template></div>
                         </div>
                         <span class="chip shrink-0 !px-2.5 !py-1 text-[11px]" :class="STATUS[c.status].pill"><Icon :name="STATUS[c.status].icon" :size="12" />{{ t(STATUS[c.status].label) }}</span>
@@ -104,7 +104,7 @@ const shown = (c) => (expanded[c.hotel.id] ? c.issues : c.issues.slice(0, 3));
                         <li v-for="(i, n) in shown(c)" :key="n">
                             <Link :href="href(i)" class="group flex items-center gap-3 rounded-xl px-2 py-2 transition hover:bg-paper">
                                 <span class="grid size-8 shrink-0 place-items-center rounded-lg" :class="STATUS[i.level].tint"><Icon :name="ICON[i.type] ?? 'alert'" :size="15" /></span>
-                                <span class="min-w-0 flex-1 text-[13px] leading-snug text-ink-2 group-hover:text-navy">{{ msg(i) }}</span>
+                                <span class="min-w-0 flex-1 text-[13px] leading-snug text-ink-2 group-hover:text-ink">{{ msg(i) }}</span>
                                 <Icon name="chevron" :size="14" class="shrink-0 -rotate-90 text-muted opacity-0 transition group-hover:opacity-100 rtl:rotate-90" />
                             </Link>
                         </li>
@@ -120,7 +120,7 @@ const shown = (c) => (expanded[c.hotel.id] ? c.issues : c.issues.slice(0, 3));
             <div v-if="onTrack.length" class="flex flex-wrap items-center gap-2 rounded-2xl border border-success/20 bg-success-tint/50 px-4 py-3">
                 <span class="me-1 flex items-center gap-2 text-sm font-bold text-success"><Icon name="check" :size="16" />{{ t('On track') }}</span>
                 <Link v-for="c in onTrack" :key="c.hotel.id" :href="`/manager-flash?view=focus&period=mtd&focus=${c.hotel.id}&date=${date}`"
-                      class="rounded-full border border-success/25 bg-white px-3 py-1 text-xs font-semibold text-navy hover:border-success">{{ name(c.hotel) }}</Link>
+                      class="rounded-full border border-success/25 bg-surface px-3 py-1 text-xs font-semibold text-ink hover:border-success">{{ name(c.hotel) }}</Link>
                 <span class="ms-auto hidden text-xs text-success/80 sm:inline">{{ t('No issues found in today’s checks.') }}</span>
             </div>
         </div>

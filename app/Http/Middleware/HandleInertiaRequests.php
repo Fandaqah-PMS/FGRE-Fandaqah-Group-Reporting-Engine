@@ -26,7 +26,7 @@ class HandleInertiaRequests extends Middleware
             'translations' => fn () => $this->translations($locale),
             'flash' => ['status' => fn () => $request->session()->get('status')],
             'auth' => fn () => $user === null ? null : [
-                'user' => ['name' => $user->name, 'email' => $user->email],
+                'user' => ['name' => $user->name, 'email' => $user->email, 'theme' => $user->theme ?? 'system'],
                 'groups' => $user->groups->map(fn ($g) => ['id' => $g->id, 'name' => $g->name, 'name_ar' => $g->name_ar])->values(),
                 'currentGroupId' => $user->current_group_id,
                 'role' => $user->roleIn(),

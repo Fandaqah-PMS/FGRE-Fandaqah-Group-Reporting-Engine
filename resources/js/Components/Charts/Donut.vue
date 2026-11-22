@@ -39,7 +39,7 @@ const activeArc = computed(() => arcs.value.find((a) => a.key === active.value))
 
 <template>
     <div class="flex flex-col items-center">
-        <div class="relative shrink-0 rounded-full bg-white p-3 shadow-[0_22px_45px_-18px_rgba(38,46,67,0.35),0_0_0_10px_rgba(237,235,230,0.55)]"
+        <div class="relative shrink-0 rounded-full bg-surface p-3 shadow-[0_22px_45px_-18px_rgba(14,19,32,0.35),0_0_0_10px_var(--color-neutral)]"
              :style="{ width: `${size}px`, height: `${size}px` }">
             <svg viewBox="0 0 200 200" class="size-full -rotate-90" role="img" :aria-label="centerLabel">
                 <defs>
@@ -48,15 +48,15 @@ const activeArc = computed(() => arcs.value.find((a) => a.key === active.value))
                         <stop offset="1" :stop-color="a.color" />
                     </linearGradient>
                 </defs>
-                <circle cx="100" cy="100" :r="R" fill="none" stroke="#EDEBE6" :stroke-width="STROKE" />
+                <circle cx="100" cy="100" :r="R" fill="none" class="stroke-neutral" :stroke-width="STROKE" />
                 <circle v-for="a in arcs" :key="a.key" cx="100" cy="100" :r="R" fill="none" :stroke="`url(#dg-${uid}-${a.i})`"
                         :stroke-width="active === a.key ? STROKE + 6 : STROKE" :stroke-dasharray="a.dash" :stroke-dashoffset="a.offset"
                         class="cursor-pointer outline-none transition-all" tabindex="0"
                         @pointerenter="active = a.key" @pointerleave="active = null" @focus="active = a.key" @blur="active = null" />
             </svg>
-            <div class="absolute inset-[27%] grid place-items-center rounded-full bg-white text-center shadow-[0_6px_16px_-6px_rgba(38,46,67,0.25),inset_0_1px_2px_rgba(38,46,67,0.06)]">
+            <div class="absolute inset-[27%] grid place-items-center rounded-full bg-surface text-center shadow-[0_6px_16px_-6px_rgba(38,46,67,0.25),inset_0_1px_2px_rgba(38,46,67,0.06)]">
                 <div class="px-1">
-                    <div class="text-[1.2rem] leading-none font-semibold text-navy tabular" dir="ltr">
+                    <div class="text-[1.2rem] leading-none font-semibold text-ink tabular" dir="ltr">
                         {{ activeArc ? format(activeArc.value) : (centerValue ?? format(total)) }}
                     </div>
                     <div class="mt-1 line-clamp-2 text-[10.5px] leading-tight font-semibold text-muted">{{ activeArc ? activeArc.label : centerLabel }}</div>
@@ -68,7 +68,7 @@ const activeArc = computed(() => arcs.value.find((a) => a.key === active.value))
                 @pointerenter="active = a.key" @pointerleave="active = null">
                 <span class="size-2.5 shrink-0 rounded-full" :style="{ background: a.color }" />
                 <span class="min-w-0 flex-1 font-medium text-ink-2">{{ a.label }}</span>
-                <bdi class="font-semibold text-navy tabular">{{ format(a.value) }}</bdi>
+                <bdi class="font-semibold text-ink tabular">{{ format(a.value) }}</bdi>
                 <bdi class="w-12 text-end text-xs text-muted tabular">{{ (a.share * 100).toFixed(1) }}%</bdi>
             </li>
         </ul>

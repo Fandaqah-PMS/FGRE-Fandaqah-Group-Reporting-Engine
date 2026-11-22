@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue';
 import Legend from './Legend.vue';
 import AveragePill from './AveragePill.vue';
-import { THIS_YEAR, LAST_YEAR, AVERAGE, GRID, AXIS_TEXT, SURFACE } from '../../lib/palette';
+import { CHART } from '../../lib/palette';
 import { isNum, shortDate } from '../../lib/format';
 import { niceTicks, runs, smoothPath } from '../../lib/chart';
 import { useWidth } from '../../lib/useWidth';
@@ -78,9 +78,9 @@ function onKey(event) {
 }
 const tipLeft = computed(() => (active.value === null ? 0 : Math.min(width.value - 200, Math.max(0, x(active.value) - 100))));
 const legend = computed(() => [
-    { label: props.tyLabel ?? t('This year'), color: THIS_YEAR, kind: 'line' },
-    ...(props.showLy ? [{ label: props.lyLabel ?? t('Last year'), color: LAST_YEAR, kind: 'dashed' }] : []),
-    ...(avg.value !== null ? [{ label: t('Average'), color: AVERAGE, kind: 'dashed' }] : []),
+    { label: props.tyLabel ?? t('This year'), color: CHART.thisYear, kind: 'line' },
+    ...(props.showLy ? [{ label: props.lyLabel ?? t('Last year'), color: CHART.lastYear, kind: 'dashed' }] : []),
+    ...(avg.value !== null ? [{ label: t('Average'), color: CHART.average, kind: 'dashed' }] : []),
 ]);
 </script>
 
@@ -95,35 +95,35 @@ const legend = computed(() => [
              @pointermove="onMove" @pointerleave="active = null" @focus="active = lastTy" @blur="active = null" @keydown="onKey">
             <defs>
                 <linearGradient :id="gid" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0" :stop-color="THIS_YEAR" stop-opacity="0.16" />
-                    <stop offset="1" :stop-color="THIS_YEAR" stop-opacity="0" />
+                    <stop offset="0" :stop-color="CHART.thisYear" stop-opacity="0.16" />
+                    <stop offset="1" :stop-color="CHART.thisYear" stop-opacity="0" />
                 </linearGradient>
             </defs>
             <g v-for="tick in ticks" :key="tick">
-                <line :x1="pad.left" :x2="width - pad.right" :y1="y(tick)" :y2="y(tick)" :stroke="GRID" stroke-dasharray="3 5" />
-                <text :x="pad.left - 10" :y="y(tick)" text-anchor="end" dominant-baseline="middle" font-size="11" :fill="AXIS_TEXT">{{ format(tick, true) }}</text>
+                <line :x1="pad.left" :x2="width - pad.right" :y1="y(tick)" :y2="y(tick)" :stroke="CHART.grid" stroke-dasharray="3 5" />
+                <text :x="pad.left - 10" :y="y(tick)" text-anchor="end" dominant-baseline="middle" font-size="11" :fill="CHART.axisText">{{ format(tick, true) }}</text>
             </g>
-            <line :x1="pad.left" :x2="width - pad.right" :y1="base" :y2="base" :stroke="GRID" />
-            <text v-for="l in xLabels" :key="l.i" :x="x(l.i)" :y="height - 8" font-size="11" :fill="AXIS_TEXT"
+            <line :x1="pad.left" :x2="width - pad.right" :y1="base" :y2="base" :stroke="CHART.grid" />
+            <text v-for="l in xLabels" :key="l.i" :x="x(l.i)" :y="height - 8" font-size="11" :fill="CHART.axisText"
                   :text-anchor="l.i === 0 ? 'start' : l.i === n - 1 ? 'end' : 'middle'">{{ xText(l.p) }}</text>
 
             <path v-for="(d, i) in tyArea" :key="`a${i}`" :d="d" :fill="`url(#${gid})`" />
-            <path v-for="(d, i) in lyLines" :key="`l${i}`" :d="d" fill="none" :stroke="LAST_YEAR" stroke-width="2" stroke-dasharray="5 5" stroke-linecap="round" />
-            <path v-for="(d, i) in tyLines" :key="`t${i}`" :d="d" fill="none" :stroke="THIS_YEAR" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
-            <line v-if="avg !== null" :x1="pad.left" :x2="width - pad.right" :y1="y(avg)" :y2="y(avg)" :stroke="AVERAGE" stroke-width="1.5" stroke-dasharray="6 5" />
+            <path v-for="(d, i) in lyLines" :key="`l${i}`" :d="d" fill="none" :stroke="CHART.lastYear" stroke-width="2" stroke-dasharray="5 5" stroke-linecap="round" />
+            <path v-for="(d, i) in tyLines" :key="`t${i}`" :d="d" fill="none" :stroke="CHART.thisYear" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+            <line v-if="avg !== null" :x1="pad.left" :x2="width - pad.right" :y1="y(avg)" :y2="y(avg)" :stroke="CHART.average" stroke-width="1.5" stroke-dasharray="6 5" />
 
-            <circle v-if="active === null && lastTy >= 0" :cx="x(lastTy)" :cy="y(points[lastTy].ty)" r="4.5" :fill="THIS_YEAR" :stroke="SURFACE" stroke-width="2" />
+            <circle v-if="active === null && lastTy >= 0" :cx="x(lastTy)" :cy="y(points[lastTy].ty)" r="4.5" :fill="CHART.thisYear" :stroke="CHART.surface" stroke-width="2" />
             <template v-if="active !== null">
-                <line :x1="x(active)" :x2="x(active)" :y1="pad.top" :y2="base" :stroke="AXIS_TEXT" opacity="0.3" />
-                <circle v-if="showLy && isNum(points[active].ly)" :cx="x(active)" :cy="y(points[active].ly)" r="4.5" :fill="LAST_YEAR" :stroke="SURFACE" stroke-width="2" />
-                <circle v-if="isNum(points[active].ty)" :cx="x(active)" :cy="y(points[active].ty)" r="4.5" :fill="THIS_YEAR" :stroke="SURFACE" stroke-width="2" />
+                <line :x1="x(active)" :x2="x(active)" :y1="pad.top" :y2="base" :stroke="CHART.axisText" opacity="0.3" />
+                <circle v-if="showLy && isNum(points[active].ly)" :cx="x(active)" :cy="y(points[active].ly)" r="4.5" :fill="CHART.lastYear" :stroke="CHART.surface" stroke-width="2" />
+                <circle v-if="isNum(points[active].ty)" :cx="x(active)" :cy="y(points[active].ty)" r="4.5" :fill="CHART.thisYear" :stroke="CHART.surface" stroke-width="2" />
             </template>
         </svg>
 
-        <div v-if="active !== null" role="tooltip" class="pointer-events-none absolute top-12 z-10 w-[200px] rounded-xl border border-line bg-white px-3 py-2.5 text-xs shadow-lg" :style="{ left: `${tipLeft}px` }">
+        <div v-if="active !== null" role="tooltip" class="pointer-events-none absolute top-12 z-10 w-[200px] rounded-xl border border-line bg-surface px-3 py-2.5 text-xs shadow-lg" :style="{ left: `${tipLeft}px` }">
             <div class="mb-1 font-semibold text-ink-2">{{ tipText(points[active]) }}</div>
-            <div class="flex items-center gap-2"><span class="h-[3px] w-3 rounded" :style="{ background: THIS_YEAR }" /><b class="text-navy tabular">{{ format(points[active].ty) }}</b><span class="truncate text-muted">{{ legend[0].label }}</span></div>
-            <div v-if="showLy" class="flex items-center gap-2"><span class="h-[3px] w-3 rounded" :style="{ background: LAST_YEAR }" /><b class="text-navy tabular">{{ format(points[active].ly) }}</b><span class="truncate text-muted">{{ legend[1].label }}</span></div>
+            <div class="flex items-center gap-2"><span class="h-[3px] w-3 rounded" :style="{ background: CHART.thisYear }" /><b class="text-ink tabular">{{ format(points[active].ty) }}</b><span class="truncate text-muted">{{ legend[0].label }}</span></div>
+            <div v-if="showLy" class="flex items-center gap-2"><span class="h-[3px] w-3 rounded" :style="{ background: CHART.lastYear }" /><b class="text-ink tabular">{{ format(points[active].ly) }}</b><span class="truncate text-muted">{{ legend[1].label }}</span></div>
         </div>
     </div>
 </template>
