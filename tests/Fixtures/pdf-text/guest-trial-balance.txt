@@ -1,0 +1,24 @@
+                                                                          Sample Plaza Hotel                                                       27.04.26
+                                                                                                                                                    13:39
+                                                                          Guest Trial Balance
+Room    Name                       Arr. Date  Dep. Date  Opening Balance  Debits  Transfer     Debit  Credits  Transfer  Credit  Closing Balance  Folio No.            Status
+102     GUEST,ALPHA                13.04.26   30.04.26   7,575.20         0.00                 0.00   0.00               0.00    7,575.20                              CKIN
+107     GUEST,BRAVO,Mr.            17.04.26   19.04.26   998.26           0.00                 0.00   0.00               0.00    998.26
+114     GUEST,CHARLIE              26.03.26   27.03.26   0.00             0.00                 0.00   0.00               0.00    0.00             9757,  9758,  9759,  CKOT
+                                                                                                                                                 9760,  9761
+130     GUEST,DELTA                26.04.26   27.04.26   615.83           0.00                 0.00   615.83             0.00    0.00             10300                CKO
+        ECHO,Mr.
+230     GUEST,FOXTROT              25.04.26   30.04.26   0.00             0.00                 0.00   1,434.09           0.00    -1,434.09                             CKIN
+9003    Sample Trading Co.         26.01.26   26.05.26   760.63           424.13               0.00   0.00               0.00    1,184.76                              CKIN
+SPAN    POS Span / Mada            31.12.24   19.06.26   5.10             144.39               0.00   144.39              0.00    5.10
+Filter  For Date 27.04.26                                                 Page    1  of  2                                                                      gl_trial_balance
+        Room Types ALL
+        Sort Order Room No
+        Include Checked-out
+                                                                          Sample Plaza Hotel                                                       27.04.26
+                                                                          Guest Trial Balance
+Room    Name                       Arr. Date  Dep. Date  Opening Balance  Debits  Transfer     Debit  Credits  Transfer  Credit  Closing Balance  Folio No.            Status
+501     GUEST,GOLF                 28.04.26   02.05.26   500.00           0.00                 0.00   0.00               0.00    500.00
+        Subtotal                                       10,455.02        568.52               0.00   2,194.31            0.00    8,829.23
+        Total                                          10,455.02        568.52               0.00   2,194.31            0.00    8,829.23
+Filter  For Date 27.04.26                                                 Page    2  of  2                                                                      gl_trial_balance

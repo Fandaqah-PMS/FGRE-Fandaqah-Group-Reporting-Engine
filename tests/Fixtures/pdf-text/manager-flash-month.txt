@@ -1,0 +1,18 @@
+                                                       Sample Plaza Hotel     27.04.26
+                                                                              13:45
+                                                       Manager - Flash
+                                            APRIL
+                                            2026
+Total Rooms in Hotel                        2444
+Rooms Occupied                              1164
+Available Rooms                             1280
+Complimentary Rooms                                3
+House Use Rooms                                    8
+Out of Order Rooms                          0
+% Rooms Occupied                            47.63
+ADR                                         424.26
+Room Revenue                                493,844.12
+Food And Beverage Revenue                   99,949.06
+Other Revenue                               12,042.95
+Total Revenue                               605,836.13
+Filter  Calendar/Month 2026, 04             Page 1 of 1                        manager_report

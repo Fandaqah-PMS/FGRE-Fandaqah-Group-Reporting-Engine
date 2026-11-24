@@ -1,0 +1,300 @@
+@import url('https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&family=El+Messiri:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700;800&display=swap');
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+/* dark: variant follows the resolved theme on <html data-theme> (Light / Dark / System). */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+/*
+ * Fandaqah identity (docs/BRAND.md). Core palette from the identity guide:
+ * coral #F15F5A · navy #262E43 · warm neutral #EDEBE6 · muted #889594 · peach #FCC5A9.
+ * Titles El Messiri, English body Montserrat, Arabic Almarai.
+ */
+@theme {
+    --font-sans: 'Montserrat', 'Almarai', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'El Messiri', 'Almarai', Georgia, serif;
+
+    /* Roles: surface = cards, inputs, bars; ink = text. Brand colours keep their names. */
+    --color-surface: #ffffff;
+    --color-ink: #262e43;
+    --color-on-peach: #262e43;
+    --color-peach-ink: #a65b37;
+
+    --color-coral: #f15f5a;
+    --color-coral-dark: #d94b46;
+    --color-coral-tint: #fdebe9;
+    --color-navy: #262e43;
+    --color-navy-light: #3a4360;
+    --color-neutral: #edebe6;
+    --color-paper: #f8f7f4;
+    --color-line: #ece9e3;
+    --color-muted: #889594;
+    --color-ink-2: #5b6374;
+    --color-peach: #fcc5a9;
+    --color-peach-tint: #fef1ea;
+    --color-success: #3f7a6f;
+    --color-success-tint: #e4efec;
+    --color-danger: #b73530;
+
+    --shadow-card: 0 1px 2px rgb(38 46 67 / 0.04), 0 10px 30px -12px rgb(38 46 67 / 0.12);
+    --shadow-coral: 0 10px 22px -6px rgb(241 95 90 / 0.45);
+    --radius-card: 1.125rem;
+}
+
+/*
+ * Dark theme: the same identity on a deep navy canvas. Surfaces step up from the page
+ * (paper → surface → navy), text is near white, tints become dark tints of their hue.
+ * Chart colours switch in resources/js/lib/palette.js (validated for the dark surface).
+ */
+:root[data-theme='dark'] {
+    color-scheme: dark;
+    --color-paper: #0e1320;
+    --color-surface: #161c2b;
+    --color-ink: #e8ecf3;
+    --color-ink-2: #a6b0c2;
+    --color-muted: #7f8b9b;
+    --color-line: #263046;
+    --color-neutral: #222a3b;
+    --color-navy: #33415f;
+    --color-navy-light: #3e4d70;
+    --color-coral-dark: #ff8b86;
+    --color-coral-tint: #3a2127;
+    --color-peach-tint: #3a2b22;
+    --color-peach-ink: #f2b48f;
+    --color-success: #5fc0a9;
+    --color-success-tint: #16302c;
+    --color-danger: #ff7b74;
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.35), 0 12px 32px -14px rgb(0 0 0 / 0.6);
+    --shadow-coral: 0 10px 24px -8px rgb(241 95 90 / 0.35);
+}
+
+/* Brand art is a bright pastel pattern: tone it down on the dark canvas. */
+:root[data-theme='dark'] :is(.art-end, .art-start, .art-center, .art-corner, .art-ribbon, .brand-pattern, .brand-pattern-full) {
+    filter: brightness(0.62) saturate(0.85);
+}
+
+html {
+    font-family: var(--font-sans);
+}
+
+:lang(ar),
+[dir='rtl'] {
+    font-family: 'Almarai', 'Montserrat', ui-sans-serif, system-ui, sans-serif;
+}
+
+[dir='rtl'] .font-display {
+    font-family: 'El Messiri', 'Almarai', serif;
+}
+
+body {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+@layer components {
+    .card {
+        @apply min-w-0 rounded-[var(--radius-card)] border border-line bg-surface shadow-[var(--shadow-card)];
+    }
+
+    .card-title {
+        @apply text-[15.5px] font-bold text-ink;
+    }
+
+    .card-sub {
+        @apply text-xs font-medium text-muted;
+    }
+
+    .eyebrow {
+        @apply text-[11px] font-bold tracking-[0.18em] text-coral uppercase;
+    }
+
+    [dir='rtl'] .eyebrow {
+        letter-spacing: 0;
+    }
+
+    .btn-coral {
+        @apply inline-flex items-center justify-center gap-2 rounded-xl bg-coral px-5 py-3 font-bold text-white shadow-[var(--shadow-coral)] transition hover:bg-coral-dark disabled:opacity-60;
+    }
+
+    .chip {
+        @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold;
+    }
+
+    .seg {
+        @apply flex max-w-full overflow-x-auto rounded-xl border border-line bg-surface p-1;
+        scrollbar-width: none;
+    }
+
+    .seg > button {
+        @apply flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] font-semibold whitespace-nowrap text-ink-2 transition hover:text-ink;
+    }
+
+    .seg > button[aria-pressed='true'],
+    .seg > button[aria-selected='true'] {
+        @apply bg-navy text-white shadow-sm;
+    }
+
+    .field {
+        @apply w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 text-ink outline-none transition placeholder:text-muted focus:border-coral focus:ring-4 focus:ring-coral/15;
+    }
+
+    .tbl {
+        @apply w-full text-sm;
+    }
+
+    .tbl thead th {
+        @apply bg-paper px-4 py-3 text-start text-[11px] font-bold tracking-wider text-ink-2 uppercase;
+    }
+
+    [dir='rtl'] .tbl thead th {
+        letter-spacing: 0;
+    }
+
+    .tbl tbody td {
+        @apply border-t border-line px-4 py-3;
+    }
+
+    .tbl tbody tr:hover td {
+        @apply bg-paper/60;
+    }
+}
+
+/*
+ * Numbers line up in tables and tiles, and use Montserrat in both languages: Almarai only
+ * ships heavy weights (700 / 800), which made figures look too bold in Arabic. Arabic letters
+ * inside a .tabular element still fall back to Almarai.
+ */
+.tabular {
+    font-family: 'Montserrat', 'Almarai', ui-sans-serif, system-ui, sans-serif;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Original brand pattern artwork (public/brand/pattern.png), faded toward the content. */
+.brand-pattern {
+    background-image: url('../../public/brand/pattern.png');
+    background-size: 340px auto;
+    background-repeat: repeat;
+    -webkit-mask-image: linear-gradient(to left, #000 35%, transparent 95%);
+    mask-image: linear-gradient(to left, #000 35%, transparent 95%);
+}
+
+[dir='rtl'] .brand-pattern {
+    -webkit-mask-image: linear-gradient(to right, #000 35%, transparent 95%);
+    mask-image: linear-gradient(to right, #000 35%, transparent 95%);
+}
+
+.brand-pattern-full {
+    background-image: url('../../public/brand/pattern.png');
+    background-size: 420px auto;
+    background-repeat: repeat;
+}
+
+/*
+ * Brand art placements (the identity's own approach: the pattern sits in a corner or an
+ * empty area and fades out before any text). Size with background-size where used.
+ *   .art-end     opaque at the inline end, fading toward the start (follows RTL)
+ *   .art-center  opaque in the middle, fading to both sides and top / bottom
+ *   .art-corner  a cluster in the top-end corner, fading diagonally
+ *   .art-ribbon  a thin full-width band of the pattern (header edge)
+ */
+.art-end,
+.art-center,
+.art-corner,
+.art-ribbon {
+    background-image: url('../../public/brand/pattern.png');
+    background-repeat: repeat;
+    background-size: 260px auto;
+    pointer-events: none;
+}
+
+.art-end {
+    -webkit-mask-image: linear-gradient(to left, #000 15%, transparent 85%);
+    mask-image: linear-gradient(to left, #000 15%, transparent 85%);
+}
+
+[dir='rtl'] .art-end {
+    -webkit-mask-image: linear-gradient(to right, #000 15%, transparent 85%);
+    mask-image: linear-gradient(to right, #000 15%, transparent 85%);
+}
+
+/* Mirror of .art-end: opaque at the inline start, fading toward the end. */
+.art-start {
+    background-image: url('../../public/brand/pattern.png');
+    background-repeat: repeat;
+    background-size: 260px auto;
+    pointer-events: none;
+    -webkit-mask-image: linear-gradient(to right, #000 15%, transparent 85%);
+    mask-image: linear-gradient(to right, #000 15%, transparent 85%);
+}
+
+[dir='rtl'] .art-start {
+    -webkit-mask-image: linear-gradient(to left, #000 15%, transparent 85%);
+    mask-image: linear-gradient(to left, #000 15%, transparent 85%);
+}
+
+.art-center {
+    -webkit-mask-image: radial-gradient(ellipse 50% 60% at 50% 50%, #000 15%, transparent 100%);
+    mask-image: radial-gradient(ellipse 50% 60% at 50% 50%, #000 15%, transparent 100%);
+}
+
+.art-corner {
+    -webkit-mask-image: radial-gradient(circle at 100% 0%, #000 20%, transparent 68%);
+    mask-image: radial-gradient(circle at 100% 0%, #000 20%, transparent 68%);
+}
+
+[dir='rtl'] .art-corner {
+    -webkit-mask-image: radial-gradient(circle at 0% 0%, #000 20%, transparent 68%);
+    mask-image: radial-gradient(circle at 0% 0%, #000 20%, transparent 68%);
+}
+
+.art-ribbon {
+    background-size: 150px auto;
+    background-position: center 38%;
+}
+
+@keyframes rise {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.rise {
+    animation: rise 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .rise {
+        animation: none;
+    }
+}
+
+/* PDF export (browser print): white page, flat cards, full-width tables. */
+@media print {
+    @page {
+        size: A4 landscape;
+        margin: 10mm;
+    }
+    body {
+        background: #fff;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    .card {
+        box-shadow: none;
+        break-inside: avoid;
+    }
+    .overflow-x-auto {
+        overflow: visible !important;
+    }
+    .rise {
+        animation: none;
+    }
+}
